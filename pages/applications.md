@@ -1,13 +1,11 @@
 ---
 layout: page
 show_meta: false
-title: "Applications"
+title: "Nos Applications"
 header:
   image_fullwidth: "header_unsplash_5.jpg"
 permalink: "/applications/"
 ---
-
-# Nos Applications
 
 Découvrez nos solutions logicielles conçues pour répondre à vos besoins professionnels.
 

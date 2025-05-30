@@ -7,8 +7,6 @@ permalink: "/en/blog/"
 lang: en
 ---
 
-# Blog
-
 Welcome to the MorelCorp blog. Discover our news, tips, and important announcements.
 
 <ul>

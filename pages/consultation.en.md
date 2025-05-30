@@ -7,6 +7,4 @@ permalink: "/en/consultation/"
 lang: en
 ---
 
-# Consulting
-
 We support companies in their digital transformation, project management, and process optimization with our technology expertise.

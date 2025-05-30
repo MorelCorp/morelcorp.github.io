@@ -18,11 +18,11 @@
   side: left
 
 - title: L'équipe
-  url: "/l-equipe/"
+  url: "/team/"
   side: left
 
 - title: Ressources
-  url: "/ressources/"
+  url: "/resources/"
   side: left
 
 - title: Recherche

@@ -1,14 +1,12 @@
 ---
 layout: page
 show_meta: false
-title: "Applications"
+title: "Our Applications"
 header:
   image_fullwidth: "header_unsplash_5.jpg"
 permalink: "/en/applications/"
 lang: en
 ---
-
-# Our Applications
 
 Discover our software solutions designed to meet your business needs.
 
