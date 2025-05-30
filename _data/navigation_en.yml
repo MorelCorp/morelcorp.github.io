@@ -1,0 +1,34 @@
+- title: Home
+  url: "/en/"
+  side: left
+
+- title: Applications
+  url: "/en/applications/"
+  side: left
+  dropdown:
+    - title: "PlanPrism"
+      url: "/en/applications/planprism/"
+
+- title: Consulting
+  url: "/en/consultation/"
+  side: left
+
+- title: Blog
+  url: "/en/blog/"
+  side: left
+
+- title: Our Team
+  url: "/en/team/"
+  side: left
+
+- title: Resources
+  url: "/en/resources/"
+  side: left
+
+- title: Search
+  url: "/en/search/"
+  side: right
+
+- title: Contact
+  url: "/en/contact/"
+  side: right 

@@ -46,6 +46,16 @@ format: post
 			{% if page.comments == true %}
 			{% include _comments.html %}
 			{% endif %}
+
+			{% if page.lang == 'en' %}
+			  <div style="text-align:center;margin:2em 0;">
+			    <a class="button" href="/en/blog/">Return to the list</a>
+			  </div>
+			{% else %}
+			  <div style="text-align:center;margin:2em 0;">
+			    <a class="button" href="/blog/">Retour à la liste</a>
+			  </div>
+			{% endif %}
 		</article>
 	</div><!-- /.medium-8.columns -->
 

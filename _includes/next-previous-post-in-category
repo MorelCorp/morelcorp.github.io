@@ -16,13 +16,15 @@
 {% endcomment %}
 
 {% assign cat = page.categories | first | join: '' %}
-{% for post in site.categories.[cat] %}
+{% assign lang = page.lang %}
+{% assign posts_in_lang = site.categories[cat] | where: "lang", lang | sort: "date" %}
+{% for post in posts_in_lang %}
 {% if post.url == page.url %}
 {% assign post_index0 = forloop.index0 %}
 {% assign post_index1 = forloop.index %}
 {% endif %}
 {% endfor %}
-{% for post in site.categories.[cat] %}
+{% for post in posts_in_lang %}
 {% if post_index0 == forloop.index %}
 {% assign next_post = post.url %}
 {% endif %}
@@ -31,9 +33,9 @@
 {% endif %}
 {% endfor %}
 {% if prev_post %}
-<a class="left button tiny radius icon-chevron-left r15" href="{{site.url}}{{site.baseurl}}{{ prev_post }}">{{ site.data.language.previous_post_in }} {{ cat | upcase }}</a>
+<a class="left button tiny radius icon-chevron-left r15" href="{{site.url}}{{site.baseurl}}{{ prev_post }}">&laquo; {{ prev_post | split: '/' | last | replace: '.html', '' | replace: '-', ' ' | capitalize }}</a>
 {% endif %}
 {% if next_post %}
-<a class="button tiny radius" href="{{site.url}}{{site.baseurl}}{{ next_post }}">{{ site.data.language.next_post_in }} {{ cat | upcase }}<span class="icon-chevron-right"></span></a>
+<a class="button tiny radius" href="{{site.url}}{{site.baseurl}}{{ next_post }}">{{ next_post | split: '/' | last | replace: '.html', '' | replace: '-', ' ' | capitalize }} &raquo;</a>
 {% endif %}
 

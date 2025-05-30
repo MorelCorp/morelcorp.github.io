@@ -3,16 +3,17 @@ layout: page
 title: "Blog"
 header:
   image_fullwidth: "header_unsplash_9.jpg"
-permalink: "/blog/"
+permalink: "/en/blog/"
+lang: en
 ---
 
 # Blog
 
-Bienvenue sur le blog de MorelCorp. Découvrez nos actualités, conseils et annonces importantes.
+Welcome to the MorelCorp blog. Discover our news, tips, and important announcements.
 
 <ul>
 {% for post in site.posts %}
-  {% if post.lang == 'fr' or post.lang == nil %}
+  {% if post.lang == 'en' %}
     <li>
       <a href="{{ post.url }}">{{ post.title }}</a> <small>{{ post.date | date: '%Y-%m-%d' }}</small><br>
       <em>{{ post.teaser }}</em>

@@ -25,7 +25,11 @@
 
 {% endcomment %}
       <ul class="left">
-        {% for link in site.data.navigation %}
+        {% assign nav = site.data.navigation %}
+        {% if page.lang == 'en' or site.language == 'en' %}
+          {% assign nav = site.data.navigation_en %}
+        {% endif %}
+        {% for link in nav %}
 
               {% if link.url contains 'http' %}
                 {% assign domain = '' %}
@@ -85,7 +89,11 @@
 
 {% endcomment %}
       <ul class="right">
-        {% for link in site.data.navigation %}
+        {% assign nav = site.data.navigation %}
+        {% if page.lang == 'en' or site.language == 'en' %}
+          {% assign nav = site.data.navigation_en %}
+        {% endif %}
+        {% for link in nav %}
 
               {% if link.url contains 'http' %}
                 {% assign domain = '' %}
@@ -106,6 +114,17 @@
             {% if link.dropdown == nil %}
               <li class="divider"></li>
               <li{% if link.url == page.url %} class="active"{% elsif page.homepage == true and link.url == '/' %} class="active"{% endif %}><a {% if link.class %}class="{{link.class}}"{% endif %} href="{{ domain }}{{ _baseurl }}{{ link.url }}"{% if link.url contains 'http' %} target="_blank"{% endif %}>{{ link.title | escape }}</a></li>
+              {%- if link.title == 'Recherche' or link.title == 'Search' -%}
+                <li class="divider"></li>
+                {% assign current_path = page.url %}
+                {% if page.lang == 'en' or site.language == 'en' %}
+                  {%- assign fr_path = current_path | remove_first: '/en' -%}
+                  <li><a href="{{ fr_path }}">FR</a></li>
+                {% else %}
+                  {%- assign en_path = '/en' | append: current_path -%}
+                  <li><a href="{{ en_path }}">EN</a></li>
+                {% endif %}
+              {%- endif -%}
 
             {% comment %}   If right side WITH dropdown menu do   {% endcomment %}
             {% else %}

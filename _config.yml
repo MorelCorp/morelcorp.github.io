@@ -123,6 +123,12 @@ defaults:
       # sidebar:        # Possible values › left, right › by default there will be no sidebar
       comments: false
       author: Jean-François Morel     # Default author for posts
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      permalink: "/post/:slug/"
 
 
 
@@ -272,3 +278,6 @@ asciidoctor:
     source-highlighter: coderay
     coderay-css: style
     icons: font
+
+# Default language is French. English version will be supported via a language switcher and alternate content/pages.
+# See _data/language.yml (FR) and _data/language_en.yml (to be created).
