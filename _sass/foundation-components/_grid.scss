@@ -29,7 +29,7 @@ $last-child-float: $opposite-direction !default;
 // $colNumber - Found in settings file
 // $totalColumns - Found in settings file
 @function grid-calc($colNumber, $totalColumns) {
-  @return percentage(calc($colNumber / $totalColumns));
+  @return percentage($colNumber / $totalColumns);
 }
 
 //
@@ -115,8 +115,8 @@ $last-child-float: $opposite-direction !default;
   // Gutter padding whenever a column isn't set to collapse
   // (use $collapse:null to do nothing)
   @else if $collapse ==false {
-    padding-left: calc($column-gutter / 2);
-    padding-right: calc($column-gutter / 2);
+    padding-left: rem-calc(15);
+    padding-right: rem-calc(15);
   }
 
   // If a column number is given, calculate width

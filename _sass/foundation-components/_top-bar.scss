@@ -39,7 +39,7 @@ $topbar-link-bg-active: $primary-color !default;
 $topbar-link-bg-active-hover: scale-color($primary-color, $lightness: -14%) !default;
 $topbar-link-font-family: $body-font-family !default;
 $topbar-link-text-transform: none !default;
-$topbar-link-padding: calc($topbar-height / 3) !default;
+$topbar-link-padding: rem-calc(15) !default;
 $topbar-back-link-size: rem-calc(18) !default;
 $topbar-link-dropdown-padding: rem-calc(20) !default;
 $topbar-button-font-size: 0.75rem !default;
@@ -349,6 +349,22 @@ $topbar-dropdown-arrows: true !default; //Set false to remove the \00bb >> text 
             padding-#{$opposite-direction}: $topbar-link-padding;
             padding-#{$default-float}: $topbar-link-padding;
             @include button-style($bg: $primary-color);
+          }
+
+          &.button.secondary {
+            @include button-style($bg: $secondary-color);
+          }
+
+          &.button.success {
+            @include button-style($bg: $success-color);
+          }
+
+          &.button.alert {
+            @include button-style($bg: $alert-color);
+          }
+
+          &.button.warning {
+            @include button-style($bg: $warning-color);
           }
 
           &.button.secondary {

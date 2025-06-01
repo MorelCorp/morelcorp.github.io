@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'jekyll', '~> 4.3'
+gem "jekyll", "~> 3"
 
 group :jekyll_plugins do
   gem 'jekyll-gist'
@@ -10,9 +10,10 @@ end
 
 gem 'asciidoctor', '~> 1.5.4'
 gem 'coderay', '1.1.1'
-
-# Required for the CSV plugin
-gem 'csv'
-gem 'base64'
+gem "base64"
 gem 'bigdecimal'
-gem 'logger'
+gem "kramdown-parser-gfm"
+gem 'fiddle'
+gem 'faraday-retry'
+
+gem 'wdm', '>= 0.1.0' if Gem.win_platform?

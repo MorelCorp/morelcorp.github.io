@@ -52,27 +52,18 @@ $modules: (
 // STRIP UNIT
 // It strips the unit of measure and returns it
 @function strip-unit($value) {
-  @if type-of($value)=="number" {
+  @if type-of($value) == "number" {
     @if (unitless($value)) {
       @return $value;
+    } @else {
+      // This is a common Sass trick to get the numerical part of a value with a unit.
+      @return $value / ($value * 0 + 1);
     }
-
-    @else if unit($value)=="em" {
-      @return calc($value / 1em);
-    }
-
-    @else if unit($value)=="px" {
-      @return calc($value / 1px);
-    }
-
-    @else if unit($value)=="pt" {
-      @return calc($value / 1pt);
-    }
-  }
-
-  @else {
-    @warn "Not a number value: #{$value}";
-    @return $value;
+  } @else {
+    @warn "Not a number value for strip-unit: #{$value}. Returning 0.";
+    // Attempting to handle strings like "16px" is complex and error-prone here.
+    // It's better if $value is always a SASS number with a unit if not unitless.
+    @return 0; // Fallback for non-numeric types to prevent further errors.
   }
 }
 
@@ -110,14 +101,31 @@ $modules: (
 
 // CONVERT TO REM
 @function convert-to-rem($value, $base-value: $rem-base) {
-  $value: calc(strip-unit($value) / strip-unit($base-value) * 1rem);
+  // Ensure inputs are numbers before division
+  $numeric-value: if(type-of($value) == 'number', strip-unit($value), $value);
+  $numeric-base: if(type-of($base-value) == 'number', strip-unit($base-value), $base-value);
 
-  @if ($value ==0rem) {
-    $value: 0;
+  // Check if inputs became valid numbers after strip-unit
+  @if type-of($numeric-value) != 'number' {
+    @warn "Cannot convert #{$value} to rem: it's not a valid number after stripping units.";
+    @return $value; // Fallback
+  }
+  @if type-of($numeric-base) != 'number' {
+    @warn "Cannot convert using base #{$base-value} for rem: it's not a valid number after stripping units.";
+    @return $numeric-value * 1rem; // Fallback, just apply rem unit
+  }
+  @if $numeric-base == 0 {
+    @warn "Cannot convert to rem: base value is zero.";
+    @return $numeric-value * 1rem; // Fallback
   }
 
+  $rem-value: ($numeric-value / $numeric-base) * 1rem;
+
+  @if ($rem-value == 0rem) {
+    @return 0;
+  }
   // Turn 0rem into 0
-  @return $value;
+  @return $rem-value;
 }
 
 @function data($attr) {
