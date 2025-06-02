@@ -16,7 +16,7 @@
 /* Basics
 ------------------------------------------------------------------- */
 
-$text-color         : #111;
+$text-color         : #050a30;
 $body-font-color    : $text-color;
 $body-bg            : #fdfdfd;
 
@@ -26,13 +26,13 @@ $body-bg            : #fdfdfd;
    https://color.adobe.com/de/Flat-Design-Colors-v2-color-theme-4341903/
 ------------------------------------------------------------------- */
 
-$ci-1               : #334D5C; // dark turquoise
+$ci-1               : #08104b; // dark blue
 $ci-2               : #45B29D; // turquoise
 $ci-3               : #EFC94C; // yellow
 $ci-4               : #E27A3F; // orange
 $ci-5               : #DF4949; // red
 $ci-6               : #A1D044; // green
-
+$ci-7               : #ff5e00; // pure orange
 
 
 /* Foundation Color Variables
@@ -78,17 +78,17 @@ $topbar-bg          : $topbar-bg-color;
 
 $topbar-dropdown-toggle-color: $ci-1;
 
-$topbar-link-color  : #000;
-$topbar-link-color-hover: #000;
-$topbar-link-color-active: #000;
-$topbar-link-color-active-hover: #000;
+$topbar-link-color  : $text-color;
+$topbar-link-color-hover: $grey-2;
+$topbar-link-color-active: $grey-2;
+$topbar-link-color-active-hover: $grey-2;
 
 $topbar-dropdown-label-color: $ci-2;
 $topbar-dropdown-link-bg-hover: $ci-6;
 
-$topbar-link-bg-active: $ci-6; // Active Navigation Link
-$topbar-link-bg-hover: $ci-6;
-$topbar-link-bg-active-hover: $ci-2;
+$topbar-link-bg-active: $ci-4; // Active Navigation Link
+$topbar-link-bg-hover: $ci-4;
+$topbar-link-bg-active-hover: $ci-7;
 
 
 $topbar-dropdown-bg: $ci-6; // Background Mobile Navigation

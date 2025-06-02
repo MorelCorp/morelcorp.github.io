@@ -31,7 +31,7 @@ baseurl: ''
 
 # This is for the editing function in _/includes/improve_content
 # Leave it empty if your site is not on GitHub/GitHub Pages
-improve_content: https://github.com/Phlow/feeling-responsive/edit/gh-pages
+improve_content: 
 
 # This URL points directly to the images directory making
 # things easier to link to images in posts and templates. It needs a slash at the end.
@@ -44,7 +44,8 @@ urlimg: '/images/'
 
 
 # Logo size is 600x80 pixels
-logo: "logo.png"
+logo_fr: "logo_fr.png"
+logo_en: "logo_en.png"
 
 # Plugins
 plugins:
@@ -167,17 +168,17 @@ bing_webmastertools_id          : '0FB4C028ABCF07C908C54386ABD2D97F'
 #                                                 More information » https://mathiasbynens.be/notes/touch-icons
 
 favicon-32x32                        : 'favicon-32x32.png'
-touch-icon-192x192                   : 'touch-icon-192x192.png'
-apple-touch-icon-180x180-precomposed : 'apple-touch-icon-180x180-precomposed.png'
-apple-touch-icon-152x152-precomposed : 'apple-touch-icon-152x152-precomposed.png'
-apple-touch-icon-144x144-precomposed : 'apple-touch-icon-144x144-precomposed.png'
-apple-touch-icon-120x120-precomposed : 'apple-touch-icon-120x120-precomposed.png'
-apple-touch-icon-114x114-precomposed : 'apple-touch-icon-114x114-precomposed.png'
-apple-touch-icon-76x76-precomposed   : 'apple-touch-icon-76x76-precomposed.png'
-apple-touch-icon-72x72-precomposed   : 'apple-touch-icon-72x72-precomposed.png'
-apple-touch-icon-precomposed         : 'apple-touch-icon-precomposed.png'
+touch-icon-192x192                   : 'favicon-32x32.png'
+apple-touch-icon-180x180-precomposed : 'favicon-32x32.png'
+apple-touch-icon-152x152-precomposed : 'favicon-32x32.png'
+apple-touch-icon-144x144-precomposed : 'favicon-32x32.png'
+apple-touch-icon-120x120-precomposed : 'favicon-32x32.png'
+apple-touch-icon-114x114-precomposed : 'favicon-32x32.png'
+apple-touch-icon-76x76-precomposed   : 'favicon-32x32.png'
+apple-touch-icon-72x72-precomposed   : 'favicon-32x32.png'
+apple-touch-icon-precomposed         : 'favicon-32x32.png'
 msapplication_tileimage              : 'msapplication_tileimage.png'               # Size 144x144
-msapplication_tilecolor              : '#fabb00'
+msapplication_tilecolor              : '#08104b'
 
 
 #       ______                __                __
