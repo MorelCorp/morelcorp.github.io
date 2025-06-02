@@ -28,9 +28,25 @@ format: post
           <div style="display:flex; align-items:center; gap:0.7em; font-size:1.1em; color:#444; margin-bottom:1.2em;">
             <span style="font-weight:500;">{{ page.author | default: '@MorelCorp' }}</span>
             <span style="color:#bbb;">&bull;</span>
-            <span style="color:#757575;">{{ page.reading_time }}</span>
+            {% if page.lang == 'fr' %}
+              {% assign fr_time = page.reading_time | replace: ' min read', ' minutes' | replace: '1 minutes', '1 minute' %}
+              {% unless fr_time contains 'lecture de' %}
+                <span style="color:#757575;">lecture de {{ fr_time }}</span>
+              {% else %}
+                <span style="color:#757575;">{{ fr_time }}</span>
+              {% endunless %}
+            {% else %}
+              <span style="color:#757575;">{{ page.reading_time | replace: 'min read', 'minutes read' }}</span>
+            {% endif %}
             <span style="color:#bbb;">&bull;</span>
-            <span style="color:#757575;">{{ page.date | date_localized: page.lang | capitalize }}</span>
+            {% assign months_fr = "janvier,février,mars,avril,mai,juin,juillet,août,septembre,octobre,novembre,décembre" | split: "," %}
+            {% assign month_index = page.date | date: "%m" | minus: 1 %}
+            {% assign month_fr = months_fr[month_index] %}
+            {% if page.lang == 'fr' %}
+              <span style="color:#757575;">{{ page.date | date: "%d" }} {{ month_fr }} {{ page.date | date: "%Y" }}</span>
+            {% else %}
+              <span style="color:#757575;">{{ page.date | date: "%B %d, %Y" }}</span>
+            {% endif %}
           </div>
         </div>
       </header>
