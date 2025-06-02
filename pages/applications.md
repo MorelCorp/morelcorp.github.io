@@ -3,8 +3,11 @@ layout: page
 show_meta: false
 title: "Nos Applications"
 header:
-  image_fullwidth: "header_unsplash_5.jpg"
+  image_fullwidth: "header_2.jpg"
 permalink: "/applications/"
+breadcrumb: true
+lang: fr
+show_title: false
 ---
 
 Découvrez nos solutions logicielles conçues pour répondre à vos besoins professionnels.

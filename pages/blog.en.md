@@ -2,9 +2,11 @@
 layout: page
 title: "Blog"
 header:
-  image_fullwidth: "header_unsplash_9.jpg"
+  image_fullwidth: "header_4.jpg"
 permalink: "/en/blog/"
+breadcrumb: true
 lang: en
+show_title: false
 ---
 
 Welcome to the MorelCorp blog. Discover our news, tips, and important announcements.

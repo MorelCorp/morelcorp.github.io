@@ -24,6 +24,14 @@
 - title: Ressources
   url: "/resources/"
   side: left
+  dropdown:
+  - title: "Outils"
+    url: "/resources/tools/"
+  - title: "Bibliographie"
+    url: "/resources/bibliography/"
+  - title: "Références"
+    url: "/resources/references/"
+
 
 - title: Recherche
   url: "/search/"

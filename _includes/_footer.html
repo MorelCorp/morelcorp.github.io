@@ -12,8 +12,13 @@
             <h5 class="shadow-black">{{ site.data.language.info_website }}</h5>
 
             <p class="shadow-black">
-              {{ site.description }}
-              <a href="{{ site.url }}{{ site.baseurl }}/info/">{{ site.data.language.more }}</a>
+              {% if page.lang == 'en' or site.language == 'en' %}
+                {{ site.description_en }}
+                <a href="{{ site.url }}{{ site.baseurl }}/info/">{{ site.data.language_en.more }}</a>
+              {% else %}
+                {{ site.description_fr }}
+                <a href="{{ site.url }}{{ site.baseurl }}/info/">{{ site.data.language.more }}</a>
+              {% endif %}
             </p>
           </div><!-- /.large-6.columns -->
 
@@ -60,7 +65,11 @@
       <div id="subfooter">
         <nav class="row">
           <section id="subfooter-left" class="small-12 medium-6 columns credits">
-            {{ site.credits }}
+            {% if page.lang == 'en' or site.language == 'en' %}
+              {{ site.credits_en }}
+            {% else %}
+              {{ site.credits_fr }}
+            {% endif %}
           </section>
 
           <section id="subfooter-right" class="small-12 medium-6 columns">

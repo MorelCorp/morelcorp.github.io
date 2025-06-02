@@ -500,3 +500,15 @@ font-smoothing: antialiased;
 .icon-warning:before { content: "\f131"; }
 .icon-xing:before { content: "\f135"; }
 .icon-youtube:before { content: "\f132"; }
+
+// Ensure breadcrumbs are always left-aligned and full-width
+.breadcrumbs {
+  float: none !important;
+  text-align: left !important;
+  margin: 0 0 1em 0 !important;
+  width: 100% !important;
+  display: block !important;
+  background: #f5f5f5; /* Optional: for visibility */
+  padding: 0.5em 1em;  /* Optional: for spacing */
+  box-sizing: border-box;
+}

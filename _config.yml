@@ -14,10 +14,12 @@ title: 'MorelCorp'
 slogan: 'Bienvenue chez MorelCorp'
 
 # The description is used on homepage and in the footer to quickly describe your website. Use a maximum of 150 characters for SEO-purposes.
-description: 'Processus et outils (et jeux...) pour les individus et leurs interactions'
+description_fr: 'Processus et outils (et jeux...) pour les individus et leurs interactions'
+description_en: 'Tools and processes (and games...) for individuals and their interactions'
 
 # The credits show up in the includes/_footer.html – It would be nice of you to leave a link to Phlow or Feeling Responsive as a thank you :)
-credits: '<p>Created with &hearts; by <a href="http://phlow.de/">Phlow</a> with <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> based on <a href="http://phlow.github.io/feeling-responsive/">Feeling Responsive</a>.</p>'
+credits_fr: '<p>Créé avec &hearts; par Jean-François Morel avec <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> basé sur <a href="http://phlow.github.io/feeling-responsive/">Feeling Responsive</a>.</p>'
+credits_en: '<p>Created with &hearts; by Jean-François Morel with <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> based on <a href="http://phlow.github.io/feeling-responsive/">Feeling Responsive</a>.</p>'
 
 # Main author of the website
 # See > authors.yml
@@ -80,6 +82,7 @@ exclude:
     - README.md
     - INSTALL.md
     - vendor
+    - src_material
 
 
 # The language setting is used in /includes/header.html for html-settings

@@ -1,7 +1,9 @@
 ---
 layout: frontpage
 header:
-  image_fullwidth: header_unsplash_12.jpg
+  image_fullwidth: header_1.jpg
+title: "Welcome to MorelCorp"
+description: ""
 permalink: /en/index.html
 homepage: true
 lang: en
