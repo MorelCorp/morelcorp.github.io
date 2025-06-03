@@ -2,12 +2,12 @@
   url: "/"
   side: left
 
-- title: Applications
-  url: "/applications/"
+- title: Solutions
+  url: "/solutions/"
   side: left
   dropdown:
     - title: "PlanPrism"
-      url: "/applications/planprism/"
+      url: "/solutions/planprism/"
 
 - title: Consultation
   url: "/consultation/"

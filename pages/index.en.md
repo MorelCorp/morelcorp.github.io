@@ -15,7 +15,7 @@ Welcome to the official website of MorelCorp. We specialize in innovative applic
 
 Discover our solutions:
 
-- [Applications](/en/applications/)
+- [Solutions](/en/solutions/)
 - [Consulting](/en/consultation/)
 - [Blog](/en/blog/)
 - [Our Team](/en/team/)

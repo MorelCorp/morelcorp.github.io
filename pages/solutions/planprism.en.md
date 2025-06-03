@@ -4,11 +4,9 @@ title: "PlanPrism"
 lang: en
 breadcrumb: true
 header:
-  image_fullwidth: "header_unsplash_8.jpg"
-permalink: "/en/applications/planprism/"
+  image_fullwidth: "header_planprism.jpg"
+permalink: "/en/solutions/planprism/"
 show_title: true
 ---
-
-# PlanPrism
 
 PlanPrism is our sprint planning super solution

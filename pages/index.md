@@ -47,11 +47,11 @@ homepage: true
 
 # Bienvenue chez MorelCorp
 
-Bienvenue sur le site officiel de MorelCorp. Nous sommes spécialisés dans le développement d'applications innovantes, la consultation technologique, et la création de ressources pour accompagner la transformation numérique de votre entreprise.
+Bienvenue sur le site officiel de MorelCorp. Nous sommes spécialisés dans le développement d'solutions innovantes, la consultation technologique, et la création de ressources pour accompagner la transformation numérique de votre entreprise.
 
 Découvrez nos solutions :
 
-- [Applications](/applications/)
+- [Solutions](/solutions/)
 - [Consultation](/consultation/)
 - [Blog](/blog/)
 - [L'équipe](/l-equipe/)

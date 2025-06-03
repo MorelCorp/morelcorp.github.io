@@ -34,9 +34,9 @@ format: post
             {% assign month_index = page.date | date: "%m" | minus: 1 %}
             {% assign month_fr = months_fr[month_index] %}
             {% if page.lang == 'fr' %}
-              <span style="color:#757575;">{{ page.date | date: "%d" }} {{ month_fr }} {{ page.date | date: "%Y" }}</span>
+              <span style="color:#757575;"><span class="icon-calendar pr20"></span>{{ page.date | date: "%d" }} {{ month_fr }} {{ page.date | date: "%Y" }}</span>
             {% else %}
-              <span style="color:#757575;">{{ page.date | date: "%B %d, %Y" }}</span>
+              <span style="color:#757575;"><span class="icon-calendar pr20"></span>{{ page.date | date: "%B %d, %Y" }}</span>
             {% endif %}
           </div>
         </div>
@@ -44,9 +44,6 @@ format: post
       <div itemprop="articleSection">
         {{ content }}
       </div>
-      {% if page.show_meta == true %}
-      {% include _meta_information.html %}
-      {% endif %}
       {% if page.comments == true %}
       {% include _comments.html %}
       {% endif %}
@@ -72,6 +69,7 @@ format: post
   </div><!-- /.medium-4.columns -->
   {% endif %}
 </div><!-- /.row -->
+
 <script>
 (function() {
   var article = document.querySelector('[itemprop="articleSection"]');

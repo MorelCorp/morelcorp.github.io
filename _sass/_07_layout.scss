@@ -73,6 +73,9 @@ body.video cite { color: #fff; }
 }
 #masthead-no-image-header {
     background-color: $primary-color;
+    height: auto;
+    min-height: 0;
+    padding: 0;
 }
 #masthead-with-text {
     text-align: center;
@@ -82,11 +85,8 @@ body.video cite { color: #fff; }
     text-transform: uppercase;
     text-shadow: 0 2px 3px rgba(0,0,0,.4);
 }
-#masthead-no-image-header {
-    height: 175px;
-}
 #masthead-no-image-header #logo img {
-    margin-top: 60px;
+    margin-top: 0;
 }
 
 /* Masthead › small-only
@@ -361,3 +361,20 @@ body.video cite { color: #fff; }
 .pr5  { padding-right: 5px !important; }
 .pr10 { padding-right: 10px !important; }
 .pr20 { padding-right: 20px !important; }
+
+/* Post Page Masthead Logo Adjustments */
+.post-page #masthead-no-image-header {
+  overflow: hidden;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.post-page #masthead-no-image-header #logo img {
+  margin: 0 !important;
+  height: 87px !important; /* fixed height for logo and bar */
+  width: auto;
+  display: block;
+}
