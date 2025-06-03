@@ -9,12 +9,14 @@ lang: fr
 show_meta: true
 comments: true
 permalink: post/confidence-ratio-method/
+cover_image:
+  src: /images/posts/planning.jpg
+  alt: "Photo par Jason Goodman sur Unsplash"
+  author: "Jason Goodman"
+  author_url: "https://unsplash.com/fr/@jasongoodman_youxventures"
+  source: "Unsplash"
+  source_url: "https://unsplash.com/"
 ---
-
-<figure>
-  <img src="/images/posts/planning.jpg" alt="Photo par Jason Goodman sur Unsplash" style="width:100%;max-width:700px;display:block;margin:0 auto;">
-  <figcaption style="text-align:center;font-size:0.95em;">Photo par <a href="https://unsplash.com/fr/@jasongoodman_youxventures" target="_blank" rel="noopener ugc nofollow">Jason Goodman</a> sur <a href="https://unsplash.com/" target="_blank" rel="noopener ugc nofollow">Unsplash</a></figcaption>
-</figure>
 
 Parlons d'estimations. Ce sujet a déclenché plus de débats dans les équipes de développement logiciel que vi vs emacs (bon, peut-être pas tout à fait, mais presque...).
 
