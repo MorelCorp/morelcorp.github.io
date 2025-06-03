@@ -8,7 +8,7 @@ date: 2025-06-03
 lang: fr
 show_meta: true
 comments: true
-permalink: post/methode-ratio-confiance/
+permalink: post/confidence-ratio-method/
 ---
 
 <figure>
