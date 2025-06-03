@@ -28,16 +28,7 @@ format: post
           <div style="display:flex; align-items:center; gap:0.7em; font-size:1.1em; color:#444; margin-bottom:1.2em;">
             <span style="font-weight:500;">{{ page.author | default: '@MorelCorp' }}</span>
             <span style="color:#bbb;">&bull;</span>
-            {% if page.lang == 'fr' %}
-              {% assign fr_time = page.reading_time | replace: ' min read', ' minutes' | replace: '1 minutes', '1 minute' %}
-              {% unless fr_time contains 'lecture de' %}
-                <span style="color:#757575;">lecture de {{ fr_time }}</span>
-              {% else %}
-                <span style="color:#757575;">{{ fr_time }}</span>
-              {% endunless %}
-            {% else %}
-              <span style="color:#757575;">{{ page.reading_time | replace: 'min read', 'minutes read' }}</span>
-            {% endif %}
+            <span id="reading-time" style="color:#757575;"></span>
             <span style="color:#bbb;">&bull;</span>
             {% assign months_fr = "janvier,février,mars,avril,mai,juin,juillet,août,septembre,octobre,novembre,décembre" | split: "," %}
             {% assign month_index = page.date | date: "%m" | minus: 1 %}
@@ -80,4 +71,23 @@ format: post
     {% include _sidebar.html %}
   </div><!-- /.medium-4.columns -->
   {% endif %}
-</div><!-- /.row --> 
+</div><!-- /.row -->
+<script>
+(function() {
+  var article = document.querySelector('[itemprop="articleSection"]');
+  if (!article) return;
+  var text = article.innerText || article.textContent || "";
+  var wordCount = text.trim().split(/\s+/).length;
+  var lang = document.documentElement.lang || document.body.lang || "en";
+  var wpm = (lang === "fr") ? 180 : 200;
+  var minutes = Math.max(1, Math.round(wordCount / wpm));
+  var readingTime = "";
+  if (lang.startsWith("fr")) {
+    readingTime = "lecture de " + (minutes === 1 ? "1 minute" : minutes + " minutes");
+  } else {
+    readingTime = (minutes === 1 ? "1 minute read" : minutes + " minutes read");
+  }
+  var el = document.getElementById("reading-time");
+  if (el) el.textContent = readingTime;
+})();
+</script> 
