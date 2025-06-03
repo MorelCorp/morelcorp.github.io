@@ -24,30 +24,38 @@
 
 {% assign category = include.category %}
 {% assign tag = include.tag %}
+{% assign lang = include.lang %}
 <ul class="side-nav">
 
   {% if category == NULL and tag == NULL %}
-
-    {% for post in site.posts limit:include.entries offset:include.offset %}
+    {% if lang %}
+      {% assign filtered_posts = site.posts | where: "lang", lang %}
+    {% else %}
+      {% assign filtered_posts = site.posts %}
+    {% endif %}
+    {% for post in filtered_posts limit:include.entries offset:include.offset %}
       <li><a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{% if post.subheadline %}{{ post.subheadline }} &middot; {% endif %}<strong>{{ post.title }}</strong></a></li>
     {% endfor %}
-      <li class="text-right"><a href="{{ site.url }}{{ site.baseurl }}/blog/archive/"><strong>{{ site.data.language.more }}</strong></a></li>
-
 
   {% elsif category %}
-
-    {% for post in site.categories.[category] limit:include.entries offset:include.offset %}
+    {% if lang %}
+      {% assign filtered_posts = site.categories.[category] | where: "lang", lang %}
+    {% else %}
+      {% assign filtered_posts = site.categories.[category] %}
+    {% endif %}
+    {% for post in filtered_posts limit:include.entries offset:include.offset %}
       <li><a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{% if post.subheadline %}{{ post.subheadline }} &middot; {% endif %}<strong>{{ post.title }}</strong></a></li>
     {% endfor %}
-      <li class="text-right"><a href="{{ site.url }}{{ site.baseurl }}/blog/archive/"><strong>{{ site.data.language.more }}</strong></a></li>
-
 
   {% elsif tag %}
-
-    {% for post in site.tags.[tag] limit:include.entries %}
+    {% if lang %}
+      {% assign filtered_posts = site.tags.[tag] | where: "lang", lang %}
+    {% else %}
+      {% assign filtered_posts = site.tags.[tag] %}
+    {% endif %}
+    {% for post in filtered_posts limit:include.entries %}
       <li><a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{% if post.subheadline %}{{ post.subheadline }} &middot; {% endif %}<strong>{{ post.title }}</strong></a></li>
     {% endfor %}
-
   {% endif %}
 </ul>
 
