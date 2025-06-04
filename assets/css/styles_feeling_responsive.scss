@@ -47,3 +47,44 @@ sitemap:
 {% endif %}
 
 @import "11_syntax-highlighting.scss";
+
+// Consultation help blocks
+.consult-help-block {
+  display: flex;
+  align-items: center;
+  margin: 2rem 0;
+  gap: 1.5rem;
+}
+.consult-help-svg {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.consult-help-svg svg {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+.consult-help-text {
+  flex: 1 1 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+.consult-help-left {
+  flex-direction: row;
+}
+.consult-help-right {
+  flex-direction: row-reverse;
+}
+@media (max-width: 600px) {
+  .consult-help-block {
+    flex-direction: column !important;
+    text-align: center;
+  }
+  .consult-help-svg {
+    margin-bottom: 0.5rem;
+  }
+}

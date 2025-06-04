@@ -1,0 +1,89 @@
+<div class="team-member-card">
+  <div class="team-member-header">
+    <div class="team-member-header-text">
+      <div class="team-member-name">{{ include.name }}</div>
+      <div class="team-member-title">{{ include.title }}</div>
+    </div>
+    <div class="team-member-photo">
+      {% if include.photo %}
+        <img src="{{ include.photo }}" alt="{{ include.name }}" />
+      {% else %}
+        <div class="team-member-photo-placeholder">?</div>
+      {% endif %}
+    </div>
+  </div>
+  <hr class="team-member-divider" />
+  <div class="team-member-description">{{ include.description | markdownify }}</div>
+</div>
+
+<style>
+.team-member-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 14px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.5em;
+  margin-bottom: 2em;
+  max-width: 700px;
+}
+.team-member-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5em;
+}
+.team-member-header-text {
+  flex: 1;
+  min-width: 0;
+}
+.team-member-photo {
+  flex: 0 0 auto;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1em;
+}
+.team-member-photo img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #fafafa;
+  border: none;
+}
+.team-member-photo-placeholder {
+  width: 100px;
+  height: 100px;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 2em;
+  border-radius: 8px;
+}
+.team-member-name {
+  font-weight: bold;
+  font-size: 1.3em;
+  margin-bottom: 0.2em;
+}
+.team-member-title {
+  color: #4a5568;
+  font-size: 1em;
+  margin-bottom: 0.2em;
+}
+.team-member-divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 1.2em 0 1em 0;
+}
+.team-member-description {
+  font-size: 1em;
+  color: #222;
+}
+</style> 
