@@ -1,7 +1,17 @@
 <div class="book-card">
-  <img src="{{ include.cover }}" alt="Cover of {{ include.title }}" class="book-cover"/>
+  {% if include.url %}
+    <a href="{{ include.url }}" target="_blank" rel="noopener noreferrer">
+      <img src="{{ include.cover }}" alt="Cover of {{ include.title }}" class="book-cover"/>
+    </a>
+  {% else %}
+    <img src="{{ include.cover }}" alt="Cover of {{ include.title }}" class="book-cover"/>
+  {% endif %}
   <div class="book-info">
-    <strong>{{ include.title }}</strong>
+    {% if include.url %}
+      <a href="{{ include.url }}" target="_blank" rel="noopener noreferrer" class="book-title-link"><strong>{{ include.title }}</strong></a>
+    {% else %}
+      <strong>{{ include.title }}</strong>
+    {% endif %}
     <div class="book-author">{{ include.author }}</div>
     <div class="book-meta">{{ include.year }}{% if include.pages %} | {{ include.pages }} pages{% endif %}</div>
   </div>
