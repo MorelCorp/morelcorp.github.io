@@ -10,94 +10,19 @@ format: frontpage
 </div><!-- /#header-home -->
 
 <div class="row">
+  <div class="medium-8 columns">
     {{ content }}
-</div><!-- /.row -->
-
-{% comment %}
-*
-* First check, if widget is empty or not by checking if there is a title
-*
-{% endcomment %}
-
-{% if page.widget1 or page.widget2 or page.widget3 %}
-<div class="row t60">
-	{% if page.widget1.image or page.widget1.video or page.widget1.title %}
-		{% include _frontpage-widget.html widget=page.widget1 %}
-	{% endif %}
-
-	{% if page.widget2.image or page.widget2.video or page.widget2.title %}
-		{% include _frontpage-widget.html widget=page.widget2 %}
-	{% endif %}
-
-	{% if page.widget3.image or page.widget3.video or page.widget3.title %}
-		{% include _frontpage-widget.html widget=page.widget3 %}
-	{% endif %}
-</div><!-- /.row -->
-{% endif %}
-
-{% comment %}
-*
-* First check, if there is a call for action-button
-*
-{% endcomment %}
-
-{% if page.callforaction.url contains 'http' %}
-{% assign url = '' %}
-{% else %}
-{% capture url %}{{ site.url }}{{ site.baseurl }}{% endcapture %}
-{% endif %}
-{% if page.callforaction %}
-    <div class="row t60 b60">
-        <div class="small-12 text-center columns">
-            <a class="button large radius {{ page.callforaction.style }}" href="{{ url }}{{ page.callforaction.url }}"{% if page.callforaction.url contains 'http' %} target="_blank" {% endif %}>{{ page.callforaction.text }}</a>
-        </div><!-- /.small-12.columns -->
-    </div><!-- /.row -->
-{% endif %}
-
-{% assign current_lang = page.lang | default: site.language %}
-{% if current_lang == "en" %}
-  {% assign lang_data = site.data.language_en %}
-{% else %}
-  {% assign lang_data = site.data.language %}
-{% endif %}
-{% assign posts_in_lang = site.posts | where: "lang", current_lang %}
-
-{% unless posts_in_lang == empty %}
-  <div class="row t30 b20 homepage">
-    <div class="small-12 columns">
-      {% for post in posts_in_lang limit:1 %}
-        {% if post.image.homepage %}
-          <p>
-            <a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}" title="{{ post.title | escape_once }}">
-              <img width="970" src="{{ site.urlimg }}{{ post.image.homepage }}" alt="{{ page.title | escape_once }}">
-            </a>
-          </p>
-          {% if post.image.caption_url and post.image.caption %}
-            <p class="text-right caption">
-              <a href="{{ post.image.caption_url }}">{{ post.image.caption }}</a>
-            </p>
-          {% endif %}
-        {% else %}
-          <h2>{{ lang_data.new_blog_entries }}</h2>
-        {% endif %}
-      {% endfor %}
+  </div>
+  <div class="medium-4 columns">
+    <div class="panel latest-posts-panel">
+      <h2>Derniers Articles</h2>
+      {% assign current_lang = page.lang | default: site.language %}
+      {% include list-posts entries='3' lang=current_lang %}
+      <p style="margin-top:1em;"><a href="{{ site.baseurl }}/blog/">Voir tous les articles</a></p>
     </div>
   </div>
+</div><!-- /.row -->
 
-  <div class="row">
-    <div class="medium-6 columns">
-      {% for post in posts_in_lang limit:1 %}
-        {% if post.subheadline %}<p class="subheadline">{{ post.subheadline }}</p>{% endif %}
-        <h2><a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
-        <p>
-          {% if post.meta_description %}{{ post.meta_description | strip_html | escape }}{% else %}{{ post.teaser | strip_html | escape }}{% endif %}
-          <a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}" title="Read {{ post.title | escape_once }}"><strong>{{ lang_data.read_more }}</strong></a>
-        </p>
-      {% endfor %}
-    </div>
-    <div class="medium-6 columns">
-      <p><strong>{{ lang_data.more_articles }}</strong></p>
-      {% include list-posts entries='3' offset='1' lang=current_lang %}
-    </div>
-  </div>
-{% endunless %}
+{%- comment -%}
+Suppression de toute section résiduelle d'articles ou de titres en bas de page.
+{%- endcomment -%}
