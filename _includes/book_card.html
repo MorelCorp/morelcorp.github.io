@@ -1,0 +1,8 @@
+<div class="book-card">
+  <img src="{{ include.cover }}" alt="Cover of {{ include.title }}" class="book-cover"/>
+  <div class="book-info">
+    <strong>{{ include.title }}</strong>
+    <div class="book-author">{{ include.author }}</div>
+    <div class="book-meta">{{ include.year }}{% if include.pages %} | {{ include.pages }} pages{% endif %}</div>
+  </div>
+</div> 

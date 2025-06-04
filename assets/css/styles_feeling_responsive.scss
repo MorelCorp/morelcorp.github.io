@@ -88,3 +88,39 @@ sitemap:
     margin-bottom: 0.5rem;
   }
 }
+
+// Book Cards Grid and Card Styles
+.book-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+  max-width: 100%;
+}
+.book-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.book-cover {
+  width: 120px;
+  height: auto;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+.book-info {
+  text-align: center;
+}
+.book-author {
+  font-style: italic;
+  color: #666;
+  margin: 0.5rem 0;
+}
+.book-meta {
+  font-size: 0.9em;
+  color: #999;
+}
