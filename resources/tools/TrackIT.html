@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackIT - Personal Task Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Noto Sans', 'Ubuntu', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0079bf, #026aa7);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #0079bf;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #005a8b;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .board {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .list {
+            background: #f1f2f4;
+            border-radius: 10px;
+            width: 272px;
+            min-width: 272px;
+            max-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .list:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .list.dragging-column {
+            opacity: 0.5;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .list.column-drag-over {
+            transform: translateX(10px) rotate(-2deg);
+            background: #e4f0f6;
+        }
+
+        .list.card-drag-over {
+            background: #e8f4fd;
+        }
+
+        .column-drag-band {
+            height: 5mm;
+            border-radius: 10px 10px 0 0;
+            cursor: grab;
+            position: relative;
+            z-index: 10;
+        }
+
+        .column-drag-band:active {
+            cursor: grabbing;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px 10px 5px 10px;
+        }
+
+        .list-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #172b4d;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #6b778c;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #ea5a52;
+            color: white;
+        }
+
+        .cards {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            word-wrap: break-word;
+        }
+
+        .card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+            transform: rotate(3deg);
+        }
+
+        .card.card-drag-over {
+            transform: translateX(5px) rotate(-1deg);
+            border-left: 3px solid #0079bf;
+        }
+
+        .card-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .add-card-section {
+            margin-top: 8px;
+            padding: 0 10px 10px 10px;
+        }
+
+        .add-card-btn, .add-list-btn {
+            color: #5e6c84;
+            background: none;
+            border: none;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .add-card-btn:hover, .add-list-btn:hover {
+            background: #e4e6ea;
+            color: #172b4d;
+        }
+
+        .add-card-form, .add-list-form {
+            margin-top: 8px;
+        }
+
+        .add-card-form textarea, .add-list-form input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dfe1e6;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .add-list-form input {
+            min-height: auto;
+        }
+
+        .add-card-form textarea:focus, .add-list-form input:focus {
+            outline: none;
+            border-color: #0079bf;
+        }
+
+        .form-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-list {
+            background: rgba(255, 255, 255, 0.24);
+            color: white;
+        }
+
+        .add-list:hover {
+            background: rgba(255, 255, 255, 0.32);
+        }
+
+        .add-list .add-list-form input {
+            background: white;
+            color: #172b4d;
+        }
+
+        /* Drag ghost image styling */
+        .drag-ghost {
+            opacity: 0.8;
+            background: #f1f2f4;
+            border-radius: 10px;
+            width: 272px;
+            min-height: 100px;
+            position: absolute;
+            top: -1000px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #172b4d;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #172b4d;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dfe1e6;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #0079bf;
+        }
+
+        #card-details-edit {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TrackIT</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="showImportModal()">Restore</button>
+            <button class="btn btn-secondary" onclick="exportData()">Backup</button>
+            <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+        </div>
+    </div>
+
+    <div class="board" id="board">
+        <!-- Lists will be rendered here -->
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideImportModal()">&times;</span>
+            <h2>Restore from Backup</h2>
+            <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+            <p style="margin-top: 10px; color: #6b778c; font-size: 14px;">
+                Select a TrackIT backup file (.json) to restore your data.
+            </p>
+        </div>
+    </div>
+
+    <!-- Card Edit Modal -->
+    <div id="cardEditModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideCardEditModal()">&times;</span>
+            <h2>Edit Card</h2>
+            <div class="form-group">
+                <label for="card-title-edit">Title/Summary:</label>
+                <input type="text" id="card-title-edit" placeholder="Card title or summary">
+            </div>
+            <div class="form-group">
+                <label for="card-details-edit">Details:</label>
+                <textarea id="card-details-edit" placeholder="Add more detailed information here..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="saveCardEdit()">Save (Ctrl+Enter)</button>
+                <button class="btn btn-secondary" onclick="deleteCard()">Delete</button>
+                <button class="btn btn-secondary" onclick="hideCardEditModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        let data = {
+            lists: []
+        };
+
+        // Drag and Drop Variables
+        let draggedCard = null;
+        let draggedCardSource = null;
+        let draggedColumn = null;
+        let draggedColumnIndex = null;
+
+        // Current editing card info
+        let currentEditingCard = null;
+
+        // Default color palette for new columns
+        const defaultColors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
+            '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#FF9F43',
+            '#10AC84', '#EE5A24', '#0984E3', '#6C5CE7', '#A29BFE',
+            '#FD79A8', '#E84393', '#74B9FF', '#00B894', '#FDCB6E'
+        ];
+
+        // Function to get a random color for new columns
+        function getRandomColor() {
+            return defaultColors[Math.floor(Math.random() * defaultColors.length)];
+        }
+
+        // Create drag ghost element for column dragging
+        function createDragGhost(listElement) {
+            const ghost = listElement.cloneNode(true);
+            ghost.className = 'list drag-ghost';
+            ghost.style.position = 'absolute';
+            ghost.style.top = '-1000px';
+            ghost.style.pointerEvents = 'none';
+            ghost.style.zIndex = '1000';
+            document.body.appendChild(ghost);
+            return ghost;
+        }
+
+        // Column drag handlers
+        function handleColumnDragStart(e, listIndex) {
+            e.stopPropagation();
+            draggedColumnIndex = listIndex;
+            draggedColumn = e.currentTarget.closest('.list');
+            
+            // Create and set custom drag image (whole column)
+            const dragGhost = createDragGhost(draggedColumn);
+            e.dataTransfer.setDragImage(dragGhost, 136, 50); // Center the drag image
+            
+            // Clean up ghost after a short delay
+            setTimeout(() => {
+                if (dragGhost && dragGhost.parentNode) {
+                    dragGhost.parentNode.removeChild(dragGhost);
+                }
+            }, 100);
+            
+            draggedColumn.classList.add('dragging-column');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+        }
+
+        function handleColumnDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (draggedColumnIndex !== null && !e.currentTarget.classList.contains('dragging-column')) {
+                e.dataTransfer.dropEffect = 'move';
+                e.currentTarget.classList.add('column-drag-over');
+            }
+        }
+
+        function handleColumnDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('column-drag-over');
+            }
+        }
+
+        function handleColumnDrop(e, targetIndex) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (draggedColumnIndex !== null && draggedColumnIndex !== targetIndex) {
+                // Move the column in data
+                const [movedColumn] = data.lists.splice(draggedColumnIndex, 1);
+                
+                // Adjust target index if moving from left to right
+                if (draggedColumnIndex < targetIndex) {
+                    data.lists.splice(targetIndex - 1, 0, movedColumn);
+                } else {
+                    data.lists.splice(targetIndex, 0, movedColumn);
+                }
+                
+                saveData();
+                renderBoard();
+            }
+        }
+
+        // Card drag handlers
+        function handleCardDragStart(e, listIndex, cardIndex) {
+            e.stopPropagation();
+            
+            draggedCard = { listIndex, cardIndex };
+            draggedCardSource = { listIndex, cardIndex };
+            e.currentTarget.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+        }
+
+        function handleCardDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (draggedCard && !e.currentTarget.classList.contains('dragging')) {
+                e.currentTarget.classList.add('card-drag-over');
+            }
+        }
+
+        function handleCardDragLeave(e) {
+            e.currentTarget.classList.remove('card-drag-over');
+        }
+
+        function handleCardDrop(e, targetListIndex, targetCardIndex) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (draggedCard) {
+                const sourceListIndex = draggedCard.listIndex;
+                const sourceCardIndex = draggedCard.cardIndex;
+                
+                // Don't do anything if dropped on itself
+                if (sourceListIndex === targetListIndex && sourceCardIndex === targetCardIndex) {
+                    return;
+                }
+                
+                // Get the card being moved
+                const movedCard = data.lists[sourceListIndex].cards[sourceCardIndex];
+                
+                // Remove from source
+                data.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);
+                
+                // Add to target position
+                let insertIndex = targetCardIndex;
+                
+                // If moving within the same list and source was before target, adjust index
+                if (sourceListIndex === targetListIndex && sourceCardIndex < targetCardIndex) {
+                    insertIndex = targetCardIndex;
+                } else if (sourceListIndex !== targetListIndex) {
+                    insertIndex = targetCardIndex;
+                }
+                
+                data.lists[targetListIndex].cards.splice(insertIndex, 0, movedCard);
+                
+                saveData();
+                renderBoard();
+            }
+        }
+
+        // Handle drop on empty column areas
+        function handleColumnCardDrop(e, targetListIndex) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (draggedCard && !e.target.classList.contains('card')) {
+                const sourceListIndex = draggedCard.listIndex;
+                const sourceCardIndex = draggedCard.cardIndex;
+                
+                // Get the card being moved
+                const movedCard = data.lists[sourceListIndex].cards[sourceCardIndex];
+                
+                // Remove from source
+                data.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);
+                
+                // Add to end of target column
+                data.lists[targetListIndex].cards.push(movedCard);
+                
+                saveData();
+                renderBoard();
+            }
+        }
+
+        function handleColumnCardDragOver(e) {
+            if (draggedCard && !e.target.classList.contains('card')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.add('card-drag-over');
+            }
+        }
+
+        function handleColumnCardDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('card-drag-over');
+            }
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('trackit-data');
+            if (savedData) {
+                data = JSON.parse(savedData);
+                
+                // Add colors to existing columns if they don't have them
+                data.lists.forEach(list => {
+                    if (!list.color) {
+                        list.color = getRandomColor();
+                    }
+                });
+            }
+            renderBoard();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('trackit-data', JSON.stringify(data));
+        }
+
+        // Render the board
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            data.lists.forEach((list, listIndex) => {
+                const listElement = document.createElement('div');
+                listElement.className = 'list';
+                
+                // Column drag band (colored header with saved color)
+                const dragBand = document.createElement('div');
+                dragBand.className = 'column-drag-band';
+                dragBand.style.backgroundColor = list.color;
+                dragBand.draggable = true;
+                
+                // Add column drag events to drag band only
+                dragBand.addEventListener('dragstart', (e) => handleColumnDragStart(e, listIndex));
+                listElement.addEventListener('dragover', handleColumnDragOver);
+                listElement.addEventListener('dragleave', handleColumnDragLeave);
+                listElement.addEventListener('drop', (e) => handleColumnDrop(e, listIndex));
+
+                // List header (title and delete button)
+                const listHeader = document.createElement('div');
+                listHeader.className = 'list-header';
+                listHeader.innerHTML = `
+                    <h3>${list.title}</h3>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteList(${listIndex})" title="Delete column">×</button>
+                `;
+
+                // Cards container
+                const cardsContainer = document.createElement('div');
+                cardsContainer.className = 'cards';
+                cardsContainer.id = `cards-${listIndex}`;
+                
+                // Add card drop events to cards container
+                cardsContainer.addEventListener('dragover', handleColumnCardDragOver);
+                cardsContainer.addEventListener('dragleave', handleColumnCardDragLeave);
+                cardsContainer.addEventListener('drop', (e) => handleColumnCardDrop(e, listIndex));
+
+                // Render cards
+                list.cards.forEach((card, cardIndex) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'card';
+                    cardElement.draggable = true;
+                    cardElement.innerHTML = `
+                        ${card.title || card}
+                        ${(card.details && card.details.trim()) ? '<span class="card-indicator">📝</span>' : ''}
+                    `;
+                    
+                    // Card events
+                    cardElement.addEventListener('click', () => editCard(listIndex, cardIndex));
+                    cardElement.addEventListener('dragstart', (e) => handleCardDragStart(e, listIndex, cardIndex));
+                    cardElement.addEventListener('dragover', handleCardDragOver);
+                    cardElement.addEventListener('dragleave', handleCardDragLeave);
+                    cardElement.addEventListener('drop', (e) => handleCardDrop(e, listIndex, cardIndex));
+                    
+                    cardsContainer.appendChild(cardElement);
+                });
+
+                // Add card section
+                const addCardSection = document.createElement('div');
+                addCardSection.className = 'add-card-section';
+                addCardSection.innerHTML = `
+                    <div class="add-card-btn" onclick="showAddCard(${listIndex})" id="add-card-btn-${listIndex}">
+                        + Add a card
+                    </div>
+                    <div class="add-card-form" id="add-card-form-${listIndex}" style="display: none;">
+                        <textarea id="card-text-input-${listIndex}" placeholder="Enter a title for this card..."></textarea>
+                        <div class="form-actions">
+                            <button onclick="addCard(${listIndex})" class="btn">Add Card</button>
+                            <button onclick="hideAddCard(${listIndex})" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                `;
+
+                // Assemble the list
+                listElement.appendChild(dragBand);
+                listElement.appendChild(listHeader);
+                listElement.appendChild(cardsContainer);
+                listElement.appendChild(addCardSection);
+                
+                board.appendChild(listElement);
+            });
+
+            // Add new list button
+            const addListElement = document.createElement('div');
+            addListElement.className = 'list add-list';
+            addListElement.innerHTML = `
+                <div class="add-list-btn" onclick="showAddList()" id="add-list-btn">+ Add a column</div>
+                <div class="add-list-form" id="add-list-form" style="display: none;">
+                    <input type="text" id="list-title-input" placeholder="Enter column title...">
+                    <div class="form-actions">
+                        <button onclick="addList()" class="btn">Add Column</button>
+                        <button onclick="hideAddList()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            `;
+            board.appendChild(addListElement);
+        }
+
+        // List management functions
+        function showAddList() {
+            document.getElementById('add-list-btn').style.display = 'none';
+            document.getElementById('add-list-form').style.display = 'block';
+            document.getElementById('list-title-input').focus();
+        }
+
+        function hideAddList() {
+            document.getElementById('add-list-btn').style.display = 'block';
+            document.getElementById('add-list-form').style.display = 'none';
+            document.getElementById('list-title-input').value = '';
+        }
+
+        function addList() {
+            const titleInput = document.getElementById('list-title-input');
+            const title = titleInput.value.trim();
+            
+            if (title) {
+                data.lists.push({
+                    title: title,
+                    cards: [],
+                    color: getRandomColor() // Assign random color to new column
+                });
+                saveData();
+                renderBoard();
+            }
+        }
+
+        function deleteList(listIndex) {
+            if (confirm('Are you sure you want to delete this column and all its cards?')) {
+                data.lists.splice(listIndex, 1);
+                saveData();
+                renderBoard();
+            }
+        }
+
+        // Card management functions
+        function showAddCard(listIndex) {
+            document.getElementById(`add-card-btn-${listIndex}`).style.display = 'none';
+            document.getElementById(`add-card-form-${listIndex}`).style.display = 'block';
+            document.getElementById(`card-text-input-${listIndex}`).focus();
+        }
+
+        function hideAddCard(listIndex) {
+            document.getElementById(`add-card-btn-${listIndex}`).style.display = 'block';
+            document.getElementById(`add-card-form-${listIndex}`).style.display = 'none';
+            document.getElementById(`card-text-input-${listIndex}`).value = '';
+        }
+
+        function addCard(listIndex) {
+            const textInput = document.getElementById(`card-text-input-${listIndex}`);
+            const text = textInput.value.trim();
+            
+            if (text) {
+                data.lists[listIndex].cards.push({
+                    title: text,
+                    details: ''
+                });
+                saveData();
+                renderBoard();
+            }
+        }
+
+        // Card editing functions
+        function editCard(listIndex, cardIndex) {
+            currentEditingCard = { listIndex, cardIndex };
+            const card = data.lists[listIndex].cards[cardIndex];
+            
+            // Handle both old string format and new object format
+            const title = typeof card === 'string' ? card : (card.title || '');
+            const details = typeof card === 'string' ? '' : (card.details || '');
+            
+            document.getElementById('card-title-edit').value = title;
+            document.getElementById('card-details-edit').value = details;
+            
+            document.getElementById('cardEditModal').style.display = 'block';
+            document.getElementById('card-title-edit').focus();
+        }
+
+        function saveCardEdit() {
+            if (currentEditingCard) {
+                const title = document.getElementById('card-title-edit').value.trim();
+                const details = document.getElementById('card-details-edit').value.trim();
+                
+                if (title) {
+                    data.lists[currentEditingCard.listIndex].cards[currentEditingCard.cardIndex] = {
+                        title: title,
+                        details: details
+                    };
+                    saveData();
+                    renderBoard();
+                    hideCardEditModal();
+                }
+            }
+        }
+
+        function deleteCard() {
+            if (currentEditingCard && confirm('Are you sure you want to delete this card?')) {
+                data.lists[currentEditingCard.listIndex].cards.splice(currentEditingCard.cardIndex, 1);
+                saveData();
+                renderBoard();
+                hideCardEditModal();
+            }
+        }
+
+        function hideCardEditModal() {
+            document.getElementById('cardEditModal').style.display = 'none';
+            currentEditingCard = null;
+            document.getElementById('card-title-edit').value = '';
+            document.getElementById('card-details-edit').value = '';
+        }
+
+        // Import/Export functions
+        function showImportModal() {
+            document.getElementById('importModal').style.display = 'block';
+        }
+
+        function hideImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+            document.getElementById('importFile').value = '';
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `trackit-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (importedData.lists && Array.isArray(importedData.lists)) {
+                            data = importedData;
+                            
+                            // Add colors to imported columns if they don't have them
+                            data.lists.forEach(list => {
+                                if (!list.color) {
+                                    list.color = getRandomColor();
+                                }
+                            });
+                            
+                            saveData();
+                            renderBoard();
+                            hideImportModal();
+                            alert('Data restored successfully!');
+                        } else {
+                            alert('Invalid backup file format.');
+                        }
+                    } catch (error) {
+                        alert('Error reading backup file. Please make sure it\'s a valid TrackIT backup.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Clear all data
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                data = { lists: [] };
+                saveData();
+                renderBoard();
+            }
+        }
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // CTRL+Enter to save card edit
+            if (e.ctrlKey && e.key === 'Enter' && currentEditingCard) {
+                e.preventDefault();
+                saveCardEdit();
+                return;
+            }
+            
+            // ESC to close modals and forms
+            if (e.key === 'Escape') {
+                hideImportModal();
+                hideCardEditModal();
+                hideAddList();
+                // Hide all add card forms
+                data.lists.forEach((_, index) => hideAddCard(index));
+            }
+            
+            // Enter to submit forms
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+                if (document.activeElement.id === 'list-title-input') {
+                    e.preventDefault();
+                    addList();
+                }
+                else if (document.activeElement.id === 'card-details-edit') {
+                    // Allow normal Enter behavior in details
+                    return;
+                }
+                else if (document.activeElement.id === 'card-title-edit') {
+                    e.preventDefault();
+                    document.getElementById('card-details-edit').focus();
+                }
+                // Handle Enter in card input fields
+                else if (document.activeElement.id && document.activeElement.id.startsWith('card-text-input-')) {
+                    e.preventDefault();
+                    const listIndex = parseInt(document.activeElement.id.split('-')[3]);
+                    addCard(listIndex);
+                }
+            }
+        });
+
+        // Handle clicks outside modals
+        document.addEventListener('click', function(e) {
+            const importModal = document.getElementById('importModal');
+            const cardEditModal = document.getElementById('cardEditModal');
+            
+            if (e.target === importModal) {
+                hideImportModal();
+            }
+            if (e.target === cardEditModal) {
+                hideCardEditModal();
+            }
+        });
+
+        // Clean up drag states on drag end
+        document.addEventListener('dragend', function(e) {
+            // Clean up all drag states
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('dragging', 'card-drag-over');
+            });
+            document.querySelectorAll('.list').forEach(list => {
+                list.classList.remove('dragging-column', 'column-drag-over', 'card-drag-over');
+            });
+            
+            // Reset drag variables
+            draggedCard = null;
+            draggedCardSource = null;
+            draggedColumn = null;
+            draggedColumnIndex = null;
+        });
+
+        // Initialize the app
+        loadData();
+    </script>
+</body>
+</html>
+

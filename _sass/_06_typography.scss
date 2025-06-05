@@ -512,3 +512,16 @@ font-smoothing: antialiased;
   padding: 0.5em 1em;  /* Optional: for spacing */
   box-sizing: border-box;
 }
+
+/* Custom: Programmer-style code blocks (dark background, pale text, line wrap) */
+pre code[class*="language-"], pre[class*="language-"], code[class*="language-"] {
+  background: #222 !important;
+  color: #e0e0e0 !important;
+  border-radius: 6px;
+  padding: 1em;
+  font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 1em;
+  white-space: pre-wrap;   /* Enables line wrapping */
+  word-break: break-word;  /* Helps break long words/lines */
+  overflow-x: auto;        /* Only shows scrollbar if absolutely needed */
+}

@@ -21,7 +21,7 @@ No more blind estimates! PlanPrism helps you:
 - Make better decisions about scope and capacity
 - Communicate clearly with your team and stakeholders
 
-[Discover PlanPrism](/solutions/planprism/)
+[Discover PlanPrism](/projects/planprism/)
 
 ## 🤝 Consulting & Support
 

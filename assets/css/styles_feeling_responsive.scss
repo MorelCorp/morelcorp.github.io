@@ -136,3 +136,69 @@ sitemap:
   font-size: 0.9em;
   color: #999;
 }
+
+/* Retro code/documentation block (old computer style) */
+.retro-codeblock {
+  background: #181c16;
+  color: #b6ffb6;
+  border-radius: 18px;
+  border: 2px solid #3a4a2b;
+  padding: 1.5em 2em;
+  font-family: 'Fira Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 1.05em;
+  margin: 2em 0;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+  line-height: 1.7;
+  word-break: break-word;
+  position: relative;
+}
+.retro-codeblock pre, .retro-codeblock code {
+  background: none;
+  color: #b6ffb6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: hidden;
+  padding-right: 0.5em;
+}
+.retro-clipboard-btn {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: rgba(10,18,40,0.65);
+  border: none;
+  border-radius: 8px;
+  padding: 6px;
+  margin: 0;
+  cursor: pointer;
+  z-index: 2;
+  opacity: 0.55;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.retro-clipboard-btn svg {
+  width: 28px;
+  height: 28px;
+  stroke: #b6ffb6;
+  filter: drop-shadow(0 0 2px #0a1a10);
+  transition: stroke 0.2s, filter 0.2s, transform 0.2s;
+}
+.retro-clipboard-btn:hover,
+.retro-clipboard-btn:focus {
+  opacity: 1;
+  background: rgba(30,60,30,0.95);
+  outline: none;
+  transform: scale(1.18);
+}
+.retro-clipboard-btn:hover svg,
+.retro-clipboard-btn:focus svg {
+  stroke: #eaffea;
+  filter: drop-shadow(0 0 8px #b6ffb6);
+  transform: scale(1.18);
+}
+.retro-clipboard-btn.copied svg {
+  stroke: #7fff7f;
+  filter: drop-shadow(0 0 8px #7fff7f);
+}

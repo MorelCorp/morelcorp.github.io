@@ -5,7 +5,7 @@ lang: en
 breadcrumb: true
 header:
   image_fullwidth: "header_planprism.jpg"
-permalink: "/en/solutions/planprism/"
+permalink: "/en/projects/planprism/"
 show_title: true
 ---
 

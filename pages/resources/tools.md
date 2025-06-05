@@ -6,9 +6,69 @@ header:
 permalink: /resources/tools/
 breadcrumb: true
 lang: fr
-show_title: false
+show_title: true
 ---
 
-# Outils
+Ces outils sont principalement utilisés pour aider au développement du site actuel. Ils sont de bons exemples de ce qui est possible avec l'IA. Précédemment, en tant que développeur, il était primordial de se poser une question du genre: Est-ce qu'automatiser cette tâche me prendrait moins de 10% du temps total prévu et m'aiderait à couper ce temps du tiers? (vous avez probablement votre propre version).
+Maintenant avec les IA génératives, la réponse est beaucoup plus souvent oui. Pour toutes tâches que je prévois un peu répétitive, je commence maintenant par tenter de me créer un outil pour. Si après 30 minutes ça n'aboutit pas, je passe à la tâche. Mais ça aboutit très souvent.
 
-This is a temporary placeholder page for Resources > Tools.
+Voici plusieurs outils qui me sont présentement utiles pour le développement du site actuel.
+
+<div class="tools-grid" style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+  {% include link-object.html
+    title="Markdown Editor"
+    url="/resources/tools/md-edit.html"
+    description="Éditeur Markdown en ligne pour créer et prévisualiser du contenu supportant une section frontmatter pour site Jekyll"
+    icon="edit.svg"
+  %}
+  {% include link-object.html
+    title="Extractor"
+    url="/resources/tools/Extractor.html"
+    description="Outil pour extraire les infos et images de livre du site hardcover.app (excellente alternative à GoodReads...)"
+    icon="export.svg"
+  %}
+  {% include link-object.html
+    title="TrackIT"
+    url="/resources/tools/TrackIT.html"
+    description="Ma version (quick and dirty) de Trello avec sauvegarde locale en backup."
+    icon="calendar.svg"
+  %}
+</div>
+<style>
+@media (min-width: 700px) {
+  .tools-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+</style>
+
+## Utiliser l'IA?
+
+Pour générer ce genre d'outil, je me suis bâtit un "template" que je remplis et entre dans mon IA générative préférée du moment (Chaude lutte entre Claude et Gemini...)
+
+{% include retro-codeblock.html content="
+Tool Name: [What should the tool be called?]
+Tool Description: [Brief description of what the tool does]
+
+Input Section:
+Input Type: [textarea/file-upload/text-input/dropdown/multiple-inputs]
+Input Label: [Label for the input field]
+Input Placeholder: [Placeholder text for input]
+Additional Inputs: [Any extra inputs needed - specify type and label]
+
+Processing Function:
+What it does: [Describe the conversion/processing logic needed]
+Output format: [How should the result be displayed - text/code/formatted/downloadable]
+
+UI Preferences:
+Theme: [dark/light/auto]
+Primary Color: [color preference or default]
+Layout: [single-column/two-column/tabbed]
+
+Additional Features:
+Copy to clipboard: [yes/no]
+Download result: [yes/no - specify file extension]
+Clear/Reset button: [yes/no]
+Example/Sample data: [provide sample input if helpful]
+Error handling: [specify any validation rules]
+" %}

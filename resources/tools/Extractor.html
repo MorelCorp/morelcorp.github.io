@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardcover Book Info Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .liquid-output {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .manual-input {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        .manual-input input {
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .proxy-options {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .proxy-option {
+            margin: 10px 0;
+        }
+        .cover-preview {
+            max-width: 200px;
+            max-height: 300px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .debug-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status-downloading {
+            background-color: #cce5ff;
+            color: #0056b3;
+        }
+        .status-copying {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-complete {
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Hardcover Book Info Extractor</h1>
+        <p>Extract book information from Hardcover.app URLs and generate Jekyll Liquid includes.</p>
+        
+        <div class="input-group">
+            <label for="bookUrl">Hardcover.app Book URL:</label>
+            <input type="url" id="bookUrl" placeholder="https://hardcover.app/books/..." value="https://hardcover.app/books/work-rules" />
+        </div>
+        
+        <button onclick="fetchBookInfo()">🔍 Fetch Book Info</button>
+        <button onclick="showManualInput()" style="background-color: #6c757d; margin-left: 10px;">✏️ Manual Entry</button>
+        
+        <div class="proxy-options">
+            <h4>Try different CORS proxies if one fails:</h4>
+            <div class="proxy-option">
+                <button onclick="fetchWithProxy('https://api.codetabs.com/v1/proxy?quest=')" style="font-size: 14px; padding: 6px 12px;">Try Proxy 1</button>
+                <button onclick="fetchWithProxy('https://cors-anywhere.herokuapp.com/')" style="font-size: 14px; padding: 6px 12px;">Try Proxy 2</button>
+                <button onclick="fetchWithProxy('https://thingproxy.freeboard.io/fetch/')" style="font-size: 14px; padding: 6px 12px;">Try Proxy 3</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Extracting book information...</p>
+        </div>
+        
+        <div id="result"></div>
+        
+        <div class="manual-input" id="manualInput" style="display: none;">
+            <h3>📝 Manual Book Info Entry</h3>
+            <p>If automatic extraction fails, you can manually enter the book information:</p>
+            <input type="text" id="manualTitle" placeholder="Book Title" />
+            <input type="text" id="manualAuthor" placeholder="Author(s)" />
+            <input type="number" id="manualYear" placeholder="Publication Year" />
+            <input type="number" id="manualPages" placeholder="Number of Pages" />
+            <input type="url" id="manualCover" placeholder="Cover Image URL" />
+            <button onclick="generateFromManualInput()">Generate Liquid Include</button>
+        </div>
+    </div>
+
+    <script>
+        const corsProxies = [
+            'https://api.codetabs.com/v1/proxy?quest=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://thingproxy.freeboard.io/fetch/',
+            'https://api.allorigins.win/get?url='
+        ];
+        
+        let currentBookInfo = null;
+        let currentBookUrl = '';
+        
+        async function fetchBookInfo() {
+            const url = document.getElementById('bookUrl').value.trim();
+            currentBookUrl = url;
+            
+            if (!url) {
+                showError('Please enter a Hardcover.app URL');
+                return;
+            }
+            
+            if (!url.includes('hardcover.app/books/')) {
+                showError('Please enter a valid Hardcover.app book URL');
+                return;
+            }
+            
+            // Try all proxies
+            for (let i = 0; i < corsProxies.length; i++) {
+                try {
+                    await fetchWithProxy(corsProxies[i], url);
+                    return; // Success, exit
+                } catch (error) {
+                    console.log(`Proxy ${i + 1} failed:`, error);
+                    if (i === corsProxies.length - 1) {
+                        // All proxies failed
+                        showError(`All CORS proxies failed. Error: ${error.message}<br><br>
+                            <strong>Possible solutions:</strong><br>
+                            1. Try again in a few minutes<br>
+                            2. Use the manual entry option below<br>
+                            3. Install a browser extension like "CORS Unblock"`);
+                        showManualInput();
+                    }
+                }
+            }
+        }
+        
+        async function fetchWithProxy(proxyUrl, targetUrl = null) {
+            const url = targetUrl || document.getElementById('bookUrl').value.trim();
+            currentBookUrl = url;
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            
+            try {
+                loadingDiv.style.display = 'block';
+                resultDiv.innerHTML = '';
+                
+                let fetchUrl;
+                if (proxyUrl.includes('allorigins')) {
+                    fetchUrl = proxyUrl + encodeURIComponent(url);
+                } else {
+                    fetchUrl = proxyUrl + url;
+                }
+                
+                console.log('Trying proxy:', proxyUrl);
+                const response = await fetch(fetchUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    }
+                });
+                
+                let html;
+                if (proxyUrl.includes('allorigins')) {
+                    const data = await response.json();
+                    html = data.contents;
+                } else {
+                    html = await response.text();
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extract book information
+                const bookInfo = extractBookInfo(doc, html);
+                
+                if (!bookInfo.title) {
+                    throw new Error('Could not extract book information from the page');
+                }
+                
+                currentBookInfo = bookInfo;
+                await displayResultAndAutomate(bookInfo);
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw error;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        function extractBookInfo(doc, html) {
+            const bookInfo = {};
+            
+            // Try multiple strategies to extract title
+            let titleElement = doc.querySelector('h1') || 
+                             doc.querySelector('[data-testid="book-title"]') ||
+                             doc.querySelector('.book-title');
+            
+            if (!titleElement) {
+                // Try regex on raw HTML
+                const titleMatch = html.match(/<title[^>]*>([^<]*?)\s*\|\s*Hardcover/i);
+                if (titleMatch) {
+                    bookInfo.title = titleMatch[1].trim();
+                }
+            } else {
+                bookInfo.title = titleElement.textContent.trim();
+            }
+            
+            // Extract author - try multiple selectors
+            let authorElement = doc.querySelector('a[href*="/authors/"]') || 
+                              doc.querySelector('[data-testid="book-author"]') ||
+                              doc.querySelector('.author-link');
+            
+            if (!authorElement) {
+                // Try to find "By [Author]" pattern
+                const byMatch = html.match(/By\s+([^<\n]+?)(?:\s*<|\s*\n)/i);
+                if (byMatch) {
+                    bookInfo.author = byMatch[1].trim();
+                }
+            } else {
+                bookInfo.author = authorElement.textContent.trim();
+            }
+            
+            // Extract year and pages - try multiple patterns
+            const yearPagePattern = /(\d{4})\s*[•·]\s*(\d+)\s*pages/i;
+            const yearPageMatch = html.match(yearPagePattern);
+            
+            if (yearPageMatch) {
+                bookInfo.year = yearPageMatch[1];
+                bookInfo.pages = yearPageMatch[2];
+            } else {
+                // Try separate patterns
+                const yearMatch = html.match(/\b(19|20)\d{2}\b/);
+                const pageMatch = html.match(/(\d+)\s*pages/i);
+                
+                bookInfo.year = yearMatch ? yearMatch[0] : '';
+                bookInfo.pages = pageMatch ? pageMatch[1] : '';
+            }
+            
+            // IMPROVED COVER IMAGE EXTRACTION
+            let coverUrl = '';
+            let originalUrl = '';
+            
+            console.log('Starting cover image extraction...');
+            
+            // Method 1: Look for img with alt matching book title
+            if (bookInfo.title) {
+                const titleImgs = doc.querySelectorAll(`img[alt="${bookInfo.title}"]`);
+                console.log(`Found ${titleImgs.length} images with alt="${bookInfo.title}"`);
+                
+                for (let img of titleImgs) {
+                    if (img.src && img.src.includes('img.hardcover.app/enlarge')) {
+                        coverUrl = img.src;
+                        console.log('Found cover via title alt:', coverUrl);
+                        break;
+                    }
+                }
+            }
+            
+            // Method 2: Look for any img with hardcover enlarge URL
+            if (!coverUrl) {
+                const enlargeImgs = doc.querySelectorAll('img[src*="img.hardcover.app/enlarge"]');
+                console.log(`Found ${enlargeImgs.length} enlarge images`);
+                
+                for (let img of enlargeImgs) {
+                    // Skip very small images (likely icons)
+                    if (img.width && img.width >= 80) {
+                        coverUrl = img.src;
+                        console.log('Found cover via enlarge:', coverUrl);
+                        break;
+                    }
+                }
+            }
+            
+            // Method 3: Regex search in HTML for the enlarge pattern
+            if (!coverUrl) {
+                const enlargePattern = /https:\/\/img\.hardcover\.app\/enlarge\?url=([^&\s"']+)[^"'\s]*/g;
+                let match;
+                while ((match = enlargePattern.exec(html)) !== null) {
+                    const fullUrl = match[0];
+                    // Look for URLs that seem to be book covers (not tiny icons)
+                    if (fullUrl.includes('width=100') || fullUrl.includes('width=150') || fullUrl.includes('height=15')) {
+                        coverUrl = fullUrl;
+                        console.log('Found cover via regex:', coverUrl);
+                        break;
+                    }
+                }
+            }
+            
+            // Extract the original high-res URL from the enlarge URL
+            if (coverUrl && coverUrl.includes('img.hardcover.app/enlarge')) {
+                const urlMatch = coverUrl.match(/url=([^&]+)/);
+                if (urlMatch) {
+                    originalUrl = decodeURIComponent(urlMatch[1]);
+                    console.log('Extracted original URL:', originalUrl);
+                }
+            }
+            
+            // Use original URL for download, display URL for preview
+            bookInfo.coverUrl = coverUrl;
+            bookInfo.originalCoverUrl = originalUrl || coverUrl;
+            
+            return bookInfo;
+        }
+        
+        function showManualInput() {
+            document.getElementById('manualInput').style.display = 'block';
+        }
+        
+        async function generateFromManualInput() {
+            const url = document.getElementById('bookUrl').value.trim();
+            
+            const bookInfo = {
+                title: document.getElementById('manualTitle').value.trim(),
+                author: document.getElementById('manualAuthor').value.trim(),
+                year: document.getElementById('manualYear').value.trim(),
+                pages: document.getElementById('manualPages').value.trim(),
+                coverUrl: document.getElementById('manualCover').value.trim()
+            };
+            
+            if (!bookInfo.title) {
+                showError('Please enter at least the book title');
+                return;
+            }
+            
+            bookInfo.originalCoverUrl = bookInfo.coverUrl;
+            currentBookInfo = bookInfo;
+            currentBookUrl = url;
+            await displayResultAndAutomate(bookInfo);
+        }
+        
+        async function displayResultAndAutomate(bookInfo) {
+            const liquid = generateLiquid(bookInfo);
+            const coverPreview = bookInfo.coverUrl ? `<img src="${bookInfo.coverUrl}" alt="Book Cover" class="cover-preview" />` : '';
+            
+            const resultHtml = `
+                <div class="result">
+                    <h2>✅ Book Information Extracted</h2>
+                    <p><strong>Title:</strong> ${bookInfo.title || 'Not found'}</p>
+                    <p><strong>Author:</strong> ${bookInfo.author || 'Not found'}</p>
+                    <p><strong>Year:</strong> ${bookInfo.year || 'Not found'}</p>
+                    <p><strong>Pages:</strong> ${bookInfo.pages || 'Not found'}</p>
+                    <p><strong>Cover URL:</strong> ${bookInfo.originalCoverUrl ? `<a href="${bookInfo.originalCoverUrl}" target="_blank">View Original Size</a>` : 'Not found'}</p>
+                    ${coverPreview}
+                    
+                    <h3>🔧 Generated Jekyll Liquid Include:</h3>
+                    <div class="liquid-output">${liquid}</div>
+                    
+                    <div id="statusMessages"></div>
+                </div>
+            `;
+            
+            document.getElementById('result').innerHTML = resultHtml;
+            
+            // Automatically download image and copy liquid
+            await automateDownloadAndCopy(liquid);
+        }
+        
+        async function automateDownloadAndCopy(liquid) {
+            const statusDiv = document.getElementById('statusMessages');
+            
+            try {
+                // Step 1: Download cover image
+                if (currentBookInfo && currentBookInfo.originalCoverUrl) {
+                    statusDiv.innerHTML = '<div class="status-message status-downloading">📥 Downloading cover image...</div>';
+                    await downloadBookCover();
+                    
+                    // Wait a moment for download to complete
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Copy liquid to clipboard
+                statusDiv.innerHTML = '<div class="status-message status-copying">📋 Copying Liquid include to clipboard...</div>';
+                await copyToClipboard(liquid);
+                
+                // Wait a moment
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Step 3: Show completion
+                statusDiv.innerHTML = '<div class="status-message status-complete">✅ Complete! Cover downloaded and Liquid include copied to clipboard!</div>';
+                
+            } catch (error) {
+                console.error('Automation error:', error);
+                statusDiv.innerHTML = `<div class="status-message" style="background-color: #f8d7da; color: #721c24;">⚠️ Automation partially failed: ${error.message}</div>`;
+            }
+        }
+        
+        function generateLiquid(bookInfo) {
+            const cleanTitle = bookInfo.title ? bookInfo.title.replace(/[^a-zA-Z0-9]/g, '_') : 'Unknown';
+            const imageFileName = `/images/books/${bookInfo.year || 'Unknown'}_${cleanTitle}.jpg`;
+            
+            // Extract slug from URL for the url parameter
+            let urlSlug = '';
+            if (currentBookUrl) {
+                const matches = currentBookUrl.match(/hardcover\.app\/books\/([^/?#]+)/);
+                if (matches) {
+                    urlSlug = matches[1];
+                }
+            }
+            
+            let liquid = `{% include book_card.html
+    cover="${imageFileName}"
+    title="${bookInfo.title || ''}"
+    author="${bookInfo.author || ''}"
+    year="${bookInfo.year || ''}"`;
+            
+            // Only include pages if they exist
+            if (bookInfo.pages) {
+                liquid += `
+    pages="${bookInfo.pages}"`;
+            }
+            
+            // Add URL if we have it
+            if (urlSlug) {
+                liquid += `
+    url="https://hardcover.app/books/${urlSlug}"`;
+            }
+            
+            liquid += `
+  %}`;
+            
+            return liquid;
+        }
+        
+        async function downloadBookCover() {
+            if (!currentBookInfo || !currentBookInfo.originalCoverUrl) {
+                throw new Error('No cover image available to download');
+            }
+            
+            const cleanTitle = currentBookInfo.title.replace(/[^a-zA-Z0-9]/g, '_');
+            const fileName = `${currentBookInfo.year}_${cleanTitle}.jpg`;
+            
+            try {
+                console.log('Downloading from:', currentBookInfo.originalCoverUrl);
+                
+                // Use fetch with CORS proxy to download the image
+                const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+                const response = await fetch(proxyUrl + encodeURIComponent(currentBookInfo.originalCoverUrl));
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch image: ${response.status}`);
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log(`Cover image downloaded as: ${fileName}`);
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                
+                // Fallback: try direct download
+                try {
+                    const link = document.createElement('a');
+                    link.href = currentBookInfo.originalCoverUrl;
+                    link.download = fileName;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (fallbackError) {
+                    // Final fallback: open the image URL directly
+                    window.open(currentBookInfo.originalCoverUrl, '_blank');
+                    throw new Error(`Download failed. Image opened in new tab - save it as: ${fileName}`);
+                }
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('result').innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                console.log('Liquid include copied to clipboard!');
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                console.log('Liquid include copied to clipboard (fallback)!');
+            }
+        }
+        
+        // Allow Enter key to trigger fetch
+        document.getElementById('bookUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                fetchBookInfo();
+            }
+        });
+    </script>
+</body>
+</html>

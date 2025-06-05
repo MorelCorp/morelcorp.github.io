@@ -21,7 +21,7 @@ Fini les estimations à l'aveugle ! PlanPrism t'aide à :
 - Prendre de meilleures décisions de portée et de capacité
 - Communiquer clairement avec ton équipe et tes parties prenantes
 
-[Découvrir PlanPrism](/solutions/planprism/)
+[Découvrir PlanPrism](/projects/planprism/)
 
 ## 🤝 Consultation & accompagnement
 

@@ -1,0 +1,26 @@
+<div class="retro-codeblock">
+  <button class="retro-clipboard-btn" title="Copy to clipboard" onclick="copyRetroCodeblock(this)">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b6ffb6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+  </button>
+  <pre><code>{{ include.content | escape }}</code></pre>
+</div>
+<script>
+function copyRetroCodeblock(btn) {
+  const pre = btn.parentElement.querySelector('pre code');
+  if (!pre) return;
+  const text = pre.innerText;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  } else {
+    // fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  }
+  btn.classList.add('copied');
+  setTimeout(() => btn.classList.remove('copied'), 1200);
+}
+</script> 

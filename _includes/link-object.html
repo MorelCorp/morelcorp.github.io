@@ -1,0 +1,14 @@
+<div class="link-object-card" style="display: flex; align-items: center; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 1.2rem; max-width: 420px;">
+  <div style="flex: 0 0 auto; margin-right: 1.2rem; display: flex; align-items: center; width: 32px; height: 32px;">
+    {% if include.icon %}
+      <span style="display: inline-block; width: 32px; height: 32px;">
+        <style scoped>.link-object-card svg{width:32px;height:32px;display:block;}</style>
+        {% include svg/{{ include.icon }} %}
+      </span>
+    {% endif %}
+  </div>
+  <div style="flex: 1 1 auto; min-width: 0;">
+    <a href="{{ include.url }}" target="_blank" rel="noopener" style="font-size: 1.2rem; font-weight: bold; color: #2b6cb0; text-decoration: none;">{{ include.title }}</a>
+    <p style="margin: 0.5rem 0 0 0; color: #4a5568; font-size: 0.98rem;">{{ include.description }}</p>
+  </div>
+</div> 
