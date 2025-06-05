@@ -26,11 +26,11 @@
   side: left
   dropdown:
     - title: "Tools"
-      url: "/resources/tools/"
+      url: "/en/resources/tools/"
     - title: "Bibliography"
-      url: "/resources/bibliography/"
+      url: "/en/resources/bibliography/"
     - title: "References"
-      url: "/resources/references/"
+      url: "/en/resources/references/"
 
 - title: Search
   url: "/en/search/"
