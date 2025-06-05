@@ -92,10 +92,22 @@ sitemap:
 // Book Cards Grid and Card Styles
 .book-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns when possible */
   gap: 2rem;
   margin: 2rem 0;
   max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .book-cards-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .book-cards-grid {
+    grid-template-columns: 1fr; /* 1 column on small screens */
+  }
 }
 .book-card {
   background: #fff;
