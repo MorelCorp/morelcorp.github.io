@@ -27,8 +27,8 @@ author: Jean-François Morel
 
 # This URL is the main address for absolute links. Don't include a slash at the end.
 #
-#url: 'https://www.morelcorp.ca'
-url: 'https://morelcorp.github.io'
+url: 'https://www.morelcorp.ca'
+#url: 'https://morelcorp.github.io'
 baseurl: ''
 
 # This is for the editing function in _/includes/improve_content
