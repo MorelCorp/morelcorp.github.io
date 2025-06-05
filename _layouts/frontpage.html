@@ -15,10 +15,20 @@ format: frontpage
   </div>
   <div class="medium-4 columns">
     <div class="panel latest-posts-panel">
-      <h2>Derniers Articles</h2>
+      {% if page.lang == 'en' or site.language == 'en' %}
+        <h2>Recent Posts</h2>
+      {% else %}
+        <h2>Derniers Articles</h2>
+      {% endif %}
       {% assign current_lang = page.lang | default: site.language %}
       {% include list-posts entries='3' lang=current_lang %}
-      <p style="margin-top:1em;"><a href="{{ site.baseurl }}/blog/">Voir tous les articles</a></p>
+      <p style="margin-top:1em;">
+        {% if page.lang == 'en' or site.language == 'en' %}
+          <a href="{{ site.baseurl }}/en/blog/">See all Posts</a>
+        {% else %}
+          <a href="{{ site.baseurl }}/blog/">Voir tous les articles</a>
+        {% endif %}
+      </p>
     </div>
   </div>
 </div><!-- /.row -->
