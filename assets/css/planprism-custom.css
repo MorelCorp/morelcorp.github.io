@@ -1,0 +1,126 @@
+/* PlanPrism Custom CSS Overrides */
+
+body {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: #C6DFFF !important; /* very light blue */
+}
+
+.navbar {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.planprism-navbar-logo {
+  height: 3rem !important;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 1rem;
+}
+
+.planprism-navbar-title {
+  font-size: 2rem !important;
+  font-weight: bold;
+  letter-spacing: 0.01em;
+}
+
+.planprism-sticky-back {
+  position: fixed;
+  top: 1.2rem;
+  right: 2rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.8rem;
+  min-width: unset;
+  max-width: 320px;
+}
+
+.planprism-back-logo {
+  height: 2.2rem;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 0.3rem;
+  display: inline-block;
+}
+
+.planprism-back-text {
+  font-size: 1.1rem;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 900px) {
+  .columns.is-gapless {
+    flex-direction: column;
+  }
+  aside.column.is-2 {
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+  main.column.is-10 {
+    padding: 1rem;
+  }
+  .planprism-sticky-back {
+    right: 1rem;
+    top: 0.7rem;
+    font-size: 1rem;
+    padding: 0.2rem 0.5rem;
+  }
+  .planprism-navbar-logo {
+    height: 2.2rem !important;
+    margin-right: 0.7rem;
+  }
+  .planprism-navbar-title {
+    font-size: 1.3rem !important;
+  }
+  .planprism-back-logo {
+    height: 1.5rem;
+    margin-right: 0.2rem;
+  }
+  .planprism-back-text {
+    font-size: 0.8rem;
+  }
+}
+
+.menu-list a.is-active, .menu-list a:hover {
+  background: #2a4365;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.menu-label {
+  color: #2a4365;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+aside.menu {
+  padding: 2rem 1rem 1rem 1rem;
+}
+
+.planprism-footer {
+  background: #2a4365;
+  color: #fff;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  border-top: 2px solid #e3e8f0;
+}
+
+.planprism-footer a { color: #e3e8f0; text-decoration: underline; }
+.planprism-footer a:hover { color: #fff; }
+
+/* Placeholder for further color/font overrides to match MorelCorp branding */
+
+.planprism-main-content code {
+  background: none;
+  color: #2a4365;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0.1em;
+  font-size: 1em;
+  font-family: monospace, monospace;
+  word-break: break-all;
+  display: inline;
+} 

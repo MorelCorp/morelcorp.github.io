@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }} | PlanPrism</title>
+  <meta name="description" content="{{ page.description }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="/assets/css/planprism-custom.css">
+  {% include _head.html %}
+  <style>
+    body {
+      background: #C6DFFF !important; /* very light blue */
+    }
+    .planprism-navbar-logo {
+      height: 3rem !important;
+      width: auto;
+      vertical-align: middle;
+      margin-right: 1rem;
+    }
+    .planprism-navbar-title {
+      font-size: 2rem !important;
+      font-weight: bold;
+      letter-spacing: 0.01em;
+    }
+    .planprism-sticky-back {
+      position: fixed;
+      top: 1.2rem;
+      right: 2rem;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.8rem;
+      min-width: unset;
+      max-width: 320px;
+    }
+    .planprism-back-logo {
+      height: 2.2rem;
+      width: auto;
+      vertical-align: middle;
+      margin-right: 0.3rem;
+      display: inline-block;
+    }
+    .planprism-back-text {
+      font-size: 1.1rem;
+      line-height: 1.2;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    @media (max-width: 900px) {
+      .columns.is-gapless {
+        flex-direction: column;
+      }
+      .planprism-sidebar {
+        display: none !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 80vw;
+        max-width: 320px;
+        background: #fff;
+        box-shadow: 2px 0 12px rgba(42,67,101,0.12);
+        z-index: 2000;
+        overflow-y: auto;
+        padding-top: 4rem;
+      }
+      .planprism-sidebar.is-active {
+        display: block !important;
+      }
+      .planprism-burger {
+        display: inline-block !important;
+        cursor: pointer;
+      }
+      .planprism-main-content {
+        padding: 1rem;
+      }
+      .planprism-sticky-back {
+        right: 1rem;
+        top: 0.7rem;
+        font-size: 1rem;
+        padding: 0.2rem 0.5rem;
+      }
+      .planprism-navbar-logo {
+        height: 2.2rem !important;
+        margin-right: 0.7rem;
+      }
+      .planprism-navbar-title {
+        font-size: 1.3rem !important;
+      }
+      .planprism-back-logo {
+        height: 1.5rem;
+        margin-right: 0.2rem;
+      }
+      .planprism-back-text {
+        font-size: 0.8rem;
+      }
+    }
+    .planprism-footer {
+      background: #2a4365;
+      color: #fff;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      border-top: 2px solid #e3e8f0;
+    }
+    .planprism-footer a { color: #e3e8f0; text-decoration: underline; }
+    .planprism-footer a:hover { color: #fff; }
+    /* Hide main site footer if included by default */
+    #footer, .footer, .site-footer { display: none !important; }
+    .planprism-main-content {
+      background: #C6DFFF !important;
+      border-radius: 0;
+      box-shadow: 0 2px 8px rgba(42,67,101,0.04);
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar is-light" role="navigation" aria-label="main navigation" style="position:relative;">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/planprism/" style="gap:1rem;align-items:center;">
+        <img src="/assets/img/planprism_logo.svg" alt="PlanPrism Logo" class="planprism-navbar-logo">
+        <span class="planprism-navbar-title">PlanPrism</span>
+      </a>
+      <a role="button" class="navbar-burger planprism-burger" aria-label="menu" aria-expanded="false" data-target="planprism-sidebar" tabindex="0" style="margin-left:1rem;display:none;">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-end">
+      <div class="navbar-item planprism-sticky-back">
+        <a class="button is-link is-light" href="/" title="Back to MorelCorp" style="display:flex;align-items:center;gap:0.2rem;padding:0.2rem 0.7rem;min-width:unset;">
+          <img src="/assets/img/morel.svg" alt="MorelCorp Logo" class="planprism-back-logo">
+          <span class="planprism-back-text">Back to MorelCorp</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+  <div class="columns is-gapless" style="min-height: 100vh;">
+    <aside id="planprism-sidebar" class="column is-2 is-narrow has-background-light planprism-sidebar" style="border-right:1px solid #eee; min-width:220px;">
+      {% include planprism_sidebar.html %}
+    </aside>
+    <main class="column is-10 p-5 planprism-main-content">
+      <section class="container">
+        {{ content }}
+      </section>
+    </main>
+  </div>
+  <footer class="planprism-footer has-text-centered p-4">
+    <span>&copy; {{ 'now' | date: '%Y' }} PlanPrism by MorelCorp. <a href="#">GitHub</a></span>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var burger = document.querySelector('.planprism-burger');
+      var sidebar = document.getElementById('planprism-sidebar');
+      if (burger && sidebar) {
+        burger.addEventListener('click', function() {
+          sidebar.classList.toggle('is-active');
+        });
+        // Optional: close sidebar when clicking outside
+        document.addEventListener('click', function(e) {
+          if (sidebar.classList.contains('is-active') && !sidebar.contains(e.target) && !burger.contains(e.target)) {
+            sidebar.classList.remove('is-active');
+          }
+        });
+        // Optional: close sidebar on ESC
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') sidebar.classList.remove('is-active');
+        });
+      }
+    });
+  </script>
+</body>
+</html> 
