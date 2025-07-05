@@ -16,80 +16,102 @@ cover_image:
   author_url: "https://unsplash.com/fr/@jasongoodman_youxventures"
   source: "Unsplash"
   source_url: "https://unsplash.com/"
+categories: [agile, planning, estimation]
+tags: [sprint-planning, confidence-ratio, capacity-planning]
 ---
 
-Let's talk about estimates for a minute. This topic has sparked more debates in software development teams than vi vs emacs (okay, maybe not quite, but close...).
+Let's talk about estimates. This topic has sparked more heated debates in software teams than vi vs emacs (okay, maybe not quite, but you get the idea).
 
-Story points seemed like the perfect solution, abstract, relative, immune to the dreaded hour-based micromanagement. And honestly? I still love story points. But they're incredibly hard to master, and most organizations fall into the same trap: using them as metrics to judge team performance. "Why did you only deliver 23 points this sprint when you committed to 30?"
+Story points? They seemed like the perfect solution: abstract, relative, immune to the dreaded hour-based micromanagement. And honestly? I still love story points. But let's be real—they're incredibly hard to master, and most organizations fall into the same trap: using them as a metric to judge team performance. "Why did you only deliver 23 points this sprint when you committed to 30?"
 
-Then there's the Kanban approach (forego estimation altogether, use task history and Monte Carlo simulations). It's mathematically sound but requires blind faith from stakeholders. Try explaining to a project manager that you can't give them a timeline because "the numbers will emerge from the data."
+Then there's the Kanban approach (ditch estimation, use task history and Monte Carlo simulations). It's mathematically sound, but it takes a leap of faith from stakeholders. Try telling a project manager you can't give them a timeline because "the numbers will emerge from the data." Good luck with that.
 
-The #NoEstimates movement? I'm quite fond of it. Let a small autonomous team do their best work, and you'll get gold.
+The #NoEstimates movement? I'm a fan. Let a small, autonomous team do their best work and you'll get magic.
 
-BUT there are real advantages to larger organizations: stability, resources, the ability to tackle bigger problems. And here's the uncomfortable truth: you can only be as Agile as your environment will allow. Most managers think in terms of hours. Not because they're dinosaurs, but because that's the language of business planning.
+BUT there are real advantages to big organizations: stability, resources, the ability to tackle bigger problems. And here's the uncomfortable truth: you can't be more Agile than your environment allows. Most managers think in hours. Not because they're dinosaurs, but because that's the language of business planning.
 
-> you can only be as Agile as your environment will allow
+> you can't be more Agile than your environment allows
 
-So what if we could bridge this gap?
+So what if we could bridge that gap?
 
 ## The Confidence Ratio Method
 
-I've been thinking about what I'm calling the "confidence ratio" approach, a best-of-both-worlds solution. Traditional managers get their hours, agilists can express uncertainty quantifiably.
+Most estimation methods in software development ignore uncertainty or hide it behind abstract numbers. The confidence ratio method puts uncertainty front and center, allowing you to plan a sprint with a clear, quantified view of risk.
 
-Here's how it works:
+## The Basics
 
-**Step 1: Make Your Original Estimate**
-Start with a time estimate in hours. Your team's best guess (not a commitment, just your most honest assessment).
+For each task:
 
-**Step 2: Add Your Confidence Percentage**
-Express how confident you are in that estimate (1-100%):
+1. **Estimate the work in hours** (e.g., 10h)
+2. **Assign a confidence percentage** (e.g., 80% if you're pretty sure, 50% if there are unknowns, etc.)
 
-- 90%: "Pretty sure about this, barring huge surprises"
-- 50%: "Could go either way, lots of unknowns"
-- 20%: "Total shot in the dark"
+With this, you get:
 
-**Step 3: Calculate Your Range**
+- **Optimistic estimate** = Original estimate × Confidence%
+- **Pessimistic estimate** = Original estimate ÷ Confidence%
 
-- **Optimistic estimate** = Original × Confidence%
-- **Pessimistic estimate** = Original ÷ Confidence%
+But how do you calculate the **confidence ratio for the entire sprint** while considering team capacity?
 
-Example: 10-hour task with 50% confidence = 5 to 20 hour range.
+## The Confidence Ratio Formula
 
-**Step 4: Plan with Ranges**
-Instead of committing to exactly X hours, you commit to a range. Sprint planning becomes: "Given our 80-hour capacity, we're 70% confident we can complete this scope." It will be up to each teams and each manager to define their comfort levels with regards to confidence (risk) depending on the current state of things.
+The sprint confidence ratio takes into account the team's actual capacity to give you a precise measure of success probability.
 
-## Why This Should Work
+**Formula:**
 
-**For Managers:** Concrete hours and realistic ranges. No more surprise revelations that the "3-point story" took three weeks.
+**If capacity ≥ total pessimistic:** Confidence = 100%  
+**If capacity ≤ total optimistic:** Confidence = 0%  
+**If capacity is between optimistic and pessimistic:** Confidence = (capacity - optimistic) ÷ (pessimistic - optimistic) × 100%
 
-**For Teams:** Express uncertainty without seeming unprofessional. That gnawing feeling about unknown complexity? Now it's quantified.
+This number tells you, for the entire set of tasks, what the real probability of success is given your capacity.
 
-**For Planning:** Make informed trade-offs. Want higher confidence? Reduce scope. Tight deadline? Accept lower confidence and the risk that comes with it or better yet, reduce scope.
+---
 
-**For Communication:** Stakeholders understand "15-40 hours" better than "5-point story."
+## Step-by-Step Example
 
-## Trying This Manually
+Let's walk through a simple example with 3 issues and a team capacity of 32 hours.
 
-Here's how you could experiment with this in your next planning session:
+| Issue | Original Estimate (h) | Confidence (%) | Optimistic (h) | Pessimistic (h) |
+| ----- | --------------------- | -------------- | -------------- | --------------- |
+| A     | 8                     | 80             | 6.4            | 10              |
+| B     | 12                    | 60             | 7.2            | 20              |
+| C     | 6                     | 90             | 5.4            | 6.7             |
 
-1. For each task, ask: "How many hours?" and "How confident are you?"
-2. Calculate ranges using the formulas above
-3. Sum optimistic and pessimistic totals
-4. Compare against team capacity
-5. Adjust scope based on your comfort with the confidence level
-6. Compute the interation total confidence ratio according to available time.
+**Team Capacity:** 32 hours
 
-A great and beautiful thing is it forces honest conversations. That 4-hour task with 30% confidence? Time to talk about what's creating the uncertainty. From this will probably emerge refinement tasks which will focus on raising the confidence level of the estimate up to acceptable levels.
+**1. Calculate optimistic and pessimistic for each issue**
 
-## Let's Experiment
+- A: 8h × 0.8 = 6.4h (optimistic), 8h ÷ 0.8 = 10h (pessimistic)
+- B: 12h × 0.6 = 7.2h (optimistic), 12h ÷ 0.6 = 20h (pessimistic)
+- C: 6h × 0.9 = 5.4h (optimistic), 6h ÷ 0.9 = 6.7h (pessimistic)
 
-Confession time: I haven't tried this with any team yet, but I'm convinced it should work. The math is straightforward, but robust enough for complex planning. You could even run Monte Carlo simulations on the ranges if you want to get fancy.
+**2. Add up the totals**
 
-The challenge is doing all this calculation manually. Spreadsheets work, but they're clunky for visualizing ranges, comparing capacity, and making it intuitive for everyone.
+- Total optimistic: 6.4 + 7.2 + 5.4 = **19h**
+- Total pessimistic: 10 + 20 + 6.7 = **36.7h**
 
-I'd love to see teams experiment with this approach. Maybe it evolves into something completely different. Maybe it fails spectacularly. But I think there's something here worth exploring.
+**3. Compare to team capacity**
 
-If only someone were to create an app that could handle all this math automatically and integrate with existing project management tools... (To Be Continued)
+- Capacity (32h) is between optimistic (19h) and pessimistic (36.7h)
+- So we use the interpolation formula: (32 - 19) ÷ (36.7 - 19) × 100%
+- Sprint confidence ratio = 13 ÷ 17.7 × 100% ≈ **73.4%**
+
+**4. What does this mean?**
+
+- You have **73.4% confidence** that the team can complete all three issues in the sprint, given a 32-hour capacity.
+- This method gives you a precise measure of success probability!
+
+---
+
+## Key Takeaways
+
+- The sprint confidence ratio gives you a precise measure of success probability
+- This method makes risk visible and actionable
+- You can adjust scope or refine tasks to reach your desired confidence level
+
+---
+
+**Try it in your next sprint!**  
+And if you want to see this math done automatically, check out [PlanPrism](/planprism/), our app that brings this method to life.
 
 Thanks for reading,
 JF

@@ -25,3 +25,13 @@ _PlanPrism sprint planning dashboard: visualize capacity, confidence, and manage
 - [Support](/planprism/support/)
 
 > **Note:** PlanPrism is currently English-only. For more information about the theory behind the app or technical details, see the [Confidence Method](/planprism/confidence-method/) and [Architecture](/planprism/architecture/) sections.
+
+## Key Features
+
+- **Jira Integration**: Seamlessly connects to your Jira instance
+- **Confidence-Based Estimation**: Uses individual confidence ratios for more accurate planning
+- **Capacity-Aware Confidence Calculation**: Advanced formula that considers team capacity to determine sprint success probability
+- **Real-Time Cutline**: Drag and drop interface to adjust sprint scope
+- **Visual Planning**: See your sprint take shape as you move issues around
+- **Team Capacity Management**: Set and track your team's available hours
+- **Sprint Confidence Metrics**: Get real-time feedback on your planning decisions

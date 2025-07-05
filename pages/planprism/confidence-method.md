@@ -24,21 +24,57 @@ Traditional single-point estimates (hours or story points) often fail to capture
    - 90%: "Pretty sure, few unknowns."
    - 50%: "Lots of uncertainty."
    - 20%: "Total guess."
-3. **Calculate the Range:**
+3. **Calculate the Range for Each Issue:**
    - **Optimistic Estimate** = Original × Confidence%
    - **Pessimistic Estimate** = Original ÷ Confidence%
    - Example: A 10-hour task at 50% confidence gives a range from 5 to 20 hours.
-4. **Plan with Ranges:**
-   - Instead of committing to a single number, you plan for a range.
-   - Sum optimistic and pessimistic totals for the sprint.
-   - Compare against team capacity and adjust scope or confidence as needed.
+4. **Sum the Ranges:**
+   - Add up all optimistic estimates for the sprint.
+   - Add up all pessimistic estimates for the sprint.
+5. **Calculate Sprint Confidence Ratio:**
+   - **If team capacity ≥ pessimistic total:** Confidence = 100%
+   - **If team capacity ≤ optimistic total:** Confidence = 0%
+   - **If in between:** Confidence = (capacity - optimistic) / (pessimistic - optimistic) × 100%
+
+#### Step-by-Step Example
+
+Let's say your team has 32 hours of capacity and three issues:
+
+**Issue 1:** 8 hours at 80% confidence
+
+- Optimistic: 8 × 0.80 = 6.4 hours
+- Pessimistic: 8 ÷ 0.80 = 10 hours
+
+**Issue 2:** 12 hours at 60% confidence
+
+- Optimistic: 12 × 0.60 = 7.2 hours
+- Pessimistic: 12 ÷ 0.60 = 20 hours
+
+**Issue 3:** 6 hours at 90% confidence
+
+- Optimistic: 6 × 0.90 = 5.4 hours
+- Pessimistic: 6 ÷ 0.90 = 6.67 hours
+
+**Totals:**
+
+- Optimistic total: 6.4 + 7.2 + 5.4 = 19 hours
+- Pessimistic total: 10 + 20 + 6.67 = 36.67 hours
+- Team capacity: 32 hours
+
+**Confidence Ratio:**
+
+- Capacity (32) is between optimistic (19) and pessimistic (36.67)
+- Confidence = (32 - 19) / (36.67 - 19) × 100%
+- Confidence = 13 / 17.67 × 100% = 73.6%
+
+This means your team has about 74% confidence they can complete the sprint within their 32-hour capacity.
 
 #### Benefits
 
-- **For Managers:** Concrete hours and realistic ranges.
+- **For Managers:** Concrete hours and realistic confidence levels.
 - **For Teams:** Express uncertainty without seeming unprofessional.
 - **For Planning:** Make informed trade-offs between scope and risk.
-- **For Communication:** Stakeholders understand 15–40 hours better than a single 5-point story.
+- **For Communication:** Stakeholders understand "74% confidence" better than a single 5-point story.
 
 ---
 
@@ -48,6 +84,10 @@ Traditional single-point estimates (hours or story points) often fail to capture
 
 - **Optimistic Estimate (Opt):** Opt = Original × (Confidence% / 100)
 - **Pessimistic Estimate (Pess):** Pess = Original ÷ (Confidence% / 100)
+- **Sprint Confidence Ratio:**
+  - If capacity ≥ pessimistic total: Confidence = 100%
+  - If capacity ≤ optimistic total: Confidence = 0%
+  - If in between: Confidence = (capacity - optimistic) / (pessimistic - optimistic) × 100%
 
 ### Example Calculation
 
@@ -60,13 +100,15 @@ Traditional single-point estimates (hours or story points) often fail to capture
 
 - Estimates and confidence % are pulled from Jira fields.
 - Calculations are performed in the frontend (React) and visualized for the user.
-- The backend persists configuration and cutline positions, but the core math is client-side for responsiveness.
+- The backend provides the confidence ratio calculation via API endpoint.
+- The app visualizes the range for each issue and the overall sprint confidence.
 
 ### Edge Cases & Defaults
 
 - If confidence is missing, a default (e.g., 80%) is used.
 - Confidence must be between 1 and 100 (validated in UI and backend).
 - If original estimate is missing, a default value is used (configurable).
+- If team capacity is not set, the confidence ratio cannot be calculated.
 
 ### Additional Notes
 

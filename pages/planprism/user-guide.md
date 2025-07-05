@@ -77,6 +77,56 @@ PlanPrism integrates with Jira to help you plan sprints with confidence, using r
 - _Q: Can I use PlanPrism with multiple Jira instances?_
   - A: Not currently, but support is planned.
 
+## Understanding the Confidence Ratio
+
+PlanPrism uses a sophisticated **capacity-aware confidence ratio** to help you make informed sprint planning decisions. This method takes into account your team's actual capacity, not just the estimates.
+
+### How It Works
+
+The confidence ratio is calculated using three key inputs:
+
+- **Total Optimistic Estimate**: The sum of all optimistic estimates for issues above the cutline
+- **Total Pessimistic Estimate**: The sum of all pessimistic estimates for issues above the cutline
+- **Team Capacity**: Your team's available hours for the sprint
+
+### The Formula
+
+**If your capacity ≥ total pessimistic estimate:**
+
+- Confidence = 100% (you're guaranteed to complete the work)
+
+**If your capacity ≤ total optimistic estimate:**
+
+- Confidence = 0% (you cannot complete the work)
+
+**If your capacity is between optimistic and pessimistic:**
+
+- Confidence = (capacity - optimistic) ÷ (pessimistic - optimistic) × 100%
+
+### Example
+
+Let's say you have three issues above the cutline:
+
+- Issue A: 8 hours original, 80% confidence → 6.4h optimistic, 10h pessimistic
+- Issue B: 12 hours original, 60% confidence → 7.2h optimistic, 20h pessimistic
+- Issue C: 6 hours original, 90% confidence → 5.4h optimistic, 6.7h pessimistic
+
+**Totals:** 19 hours optimistic, 36.7 hours pessimistic  
+**Team Capacity:** 32 hours
+
+Since 32 is between 19 and 36.7:
+Confidence = (32 - 19) ÷ (36.7 - 19) × 100% = 73.4%
+
+This means you have a 73.4% chance of completing all the work with your current capacity.
+
+### What This Tells You
+
+- **High confidence (80%+):** You're likely to complete all the work
+- **Medium confidence (50-80%):** You have a reasonable chance, but consider removing one issue
+- **Low confidence (below 50%):** You're unlikely to complete all the work; remove some issues
+
+The confidence ratio updates in real-time as you move the cutline, helping you find the optimal balance between ambition and achievability.
+
 ---
 
 ## 11. Walkthrough Screenshots

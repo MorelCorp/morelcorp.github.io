@@ -16,6 +16,8 @@ cover_image:
   author_url: "https://unsplash.com/fr/@jasongoodman_youxventures"
   source: "Unsplash"
   source_url: "https://unsplash.com/"
+categories: [agile, planification, estimation]
+tags: [planification-sprint, ratio-confiance, planification-capacite]
 ---
 
 Parlons d'estimations. Ce sujet a déclenché plus de débats dans les équipes de développement logiciel que vi vs emacs (bon, peut-être pas tout à fait, mais presque...).
@@ -26,70 +28,90 @@ Ensuite, il y a l'approche Kanban (abandonner complètement l'estimation, utilis
 
 Le mouvement #NoEstimates ? Je suis plutôt fan. Laisse une petite équipe autonome faire son meilleur travail, et tu obtiendras des merveilles...
 
-MAIS il y a de vrais avantages aux grandes organisations : stabilité, ressources, capacité de s'attaquer à de plus gros problèmes. Et voici la vérité inconfortable : tu ne peux seulement être aussi Agile que ton environnement te le permet. La plupart des managers pensent en termes d'heures. Pas parce qu'ils sont des dinosaures, mais parce que c'est le langage de la planification d'affaires.
+MAIS il y a de vrais avantages aux grandes organisations : stabilité, ressources, capacité de s'attaquer à de plus gros problèmes. Et voici la vérité inconfortable : tu ne peux pas être plus Agile que ton environnement ne te le permet. La plupart des managers pensent en termes d'heures. Pas parce qu'ils sont des dinosaures, mais parce que c'est le langage de la planification d'affaires.
 
-> tu ne peux seulement être aussi Agile que ton environnement te le permet
+> tu ne peux pas être plus Agile que ton environnement ne te le permet
 
 Et si on pouvait combler ce fossé ?
 
 ## La Méthode du Ratio de Confiance
 
-J'ai réfléchi à ce que j'appelle l'approche du "ratio de confiance", une solution qui combine le meilleur des deux mondes. Les gestionnaires traditionnels obtiennent leurs heures, les agilistes peuvent exprimer l'incertitude de manière quantifiable.
+La plupart des méthodes d'estimation en développement logiciel ignorent l'incertitude ou la cachent derrière des chiffres abstraits. La méthode du ratio de confiance met l'incertitude au premier plan, et permet de planifier un sprint avec une vision claire et chiffrée du risque.
 
-Voici comment ça fonctionne :
+## Les Bases
 
-**Étape 1 : Fais ton Estimation Originale**
-Commence avec une estimation de temps en heures. La meilleure supposition de ton équipe (pas un engagement, juste ton évaluation la plus honnête).
+Pour chaque tâche :
 
-**Étape 2 : Ajoute ton Pourcentage de Confiance**
-Exprime à quel point tu es confiant dans cette estimation (1-100%) :
+1. **Estime le travail en heures** (ex : 10h)
+2. **Assigne un pourcentage de confiance** (ex : 80% si tu es assez sûr, 50% s'il y a des inconnues, etc.)
 
-- 90% : "Assez sûr de ça, à moins de surprises énormes"
-- 50% : "Ça peut aller dans les deux sens, beaucoup d'inconnues"
-- 20% : "Coup de dé total"
+Avec ça, tu obtiens :
 
-**Étape 3 : Calcule ta Fourchette**
+- **Estimation optimiste** = Estimation originale × % de confiance
+- **Estimation pessimiste** = Estimation originale ÷ % de confiance
 
-- **Estimation optimiste** = Originale × % de Confiance
-- **Estimation pessimiste** = Originale ÷ % de Confiance
+Mais comment calculer le **ratio de confiance pour tout le sprint** en tenant compte de la capacité de l'équipe ?
 
-Exemple : tâche de 10 heures avec 50% de confiance = fourchette de 5 à 20 heures.
+## La Formule du Ratio de Confiance
 
-**Étape 4 : Planifie avec des Fourchettes**
-Au lieu de t'engager à exactement X heures, tu t'engages à une fourchette. La planification de sprint devient : "Avec notre capacité de 80 heures, on est 70% confiant qu'on peut compléter cette portée." Ce sera à chaque équipe et chaque manager de définir leurs niveaux de confort par rapport à la confiance (risque) selon l'état actuel des choses.
+Le ratio de confiance du sprint prend en compte la capacité réelle de l'équipe pour te donner une mesure précise de la probabilité de succès.
 
-## Pourquoi Ça Devrait Fonctionner
+**Formule :**
 
-**Pour les Gestionnaires :** Heures concrètes et fourchettes réalistes. Plus de révélations surprises que l'histoire "3 points" a pris trois semaines.
+**Si capacité ≥ total pessimiste :** Confiance = 100%  
+**Si capacité ≤ total optimiste :** Confiance = 0%  
+**Si capacité est entre optimiste et pessimiste :** Confiance = (capacité - optimiste) ÷ (pessimiste - optimiste) × 100%
 
-**Pour les Équipes :** Exprimer l'incertitude sans paraître non professionnel. Cette sensation persistante à propos de la complexité inconnue ? Maintenant c'est quantifié.
+Ce chiffre te dit, pour l'ensemble des tâches, quelle est la probabilité réelle de succès compte tenu de ta capacité.
 
-**Pour la Planification :** Prendre des décisions éclairées. Tu veux plus de confiance ? Réduis la portée. Échéance serrée ? Accepte une confiance plus faible et le risque qui vient avec ou mieux encore, réduis la portée.
+---
 
-**Pour la Communication :** Les parties prenantes comprennent mieux "15-40 heures" que "histoire 5 points."
+## Exemple pas à pas
 
-## Essayer Ça Manuellement
+Prenons un exemple simple avec 3 tâches et une capacité d'équipe de 32 heures.
 
-Voici comment tu pourrais expérimenter avec ça dans ta prochaine session de planification :
+| Tâche | Estimation originale (h) | Confiance (%) | Optimiste (h) | Pessimiste (h) |
+| ----- | ------------------------ | ------------- | ------------- | -------------- |
+| A     | 8                        | 80            | 6,4           | 10             |
+| B     | 12                       | 60            | 7,2           | 20             |
+| C     | 6                        | 90            | 5,4           | 6,7            |
 
-1. Pour chaque tâche, demande : "Combien d'heures ?" et "À quel point tu es confiant ?"
-2. Calcule les fourchettes avec les formules ci-dessus
-3. Additionne les totaux optimistes et pessimistes
-4. Compare avec la capacité d'équipe
-5. Ajuste la portée selon ton confort avec le niveau de confiance
-6. Calcule le ratio de confiance total de l'itération selon le temps disponible.
+**Capacité de l'équipe :** 32 heures
 
-Un beau side-effect, c'est que ça force des conversations honnêtes. Cette tâche de 4 heures avec 30% de confiance ? Il est temps de parler de ce qui crée l'incertitude. De ça vont probablement émerger des tâches de raffinement qui vont se concentrer sur hausser le niveau de confiance de l'estimation à des niveaux acceptables.
+**1. Calcule l'optimiste et le pessimiste pour chaque tâche**
 
-## Expérimentons
+- A : 8h × 0,8 = 6,4h (optimiste), 8h ÷ 0,8 = 10h (pessimiste)
+- B : 12h × 0,6 = 7,2h (optimiste), 12h ÷ 0,6 = 20h (pessimiste)
+- C : 6h × 0,9 = 5,4h (optimiste), 6h ÷ 0,9 = 6,7h (pessimiste)
 
-Confession : je n'ai pas encore essayé ça avec une équipe... mais je suis convaincu que ça devrait marcher. Les maths sont simples, mais assez robustes pour la planification complexe. Tu pourrais même faire des simulations Monte Carlo sur les fourchettes si tu veux devenir fancy.
+**2. Additionne les totaux**
 
-Le défi c'est de faire tous ces calculs manuellement. Les spreadsheets fonctionnent, mais c'est maladroit pour visualiser les fourchettes, comparer la capacité, et rendre ça intuitif pour tout le monde.
+- Total optimiste : 6,4 + 7,2 + 5,4 = **19h**
+- Total pessimiste : 10 + 20 + 6,7 = **36,7h**
 
-J'aimerais voir des équipes expérimenter avec cette approche. Peut-être que ça évolue vers quelque chose de complètement différent. Peut-être que ça échoue spectaculairement. Mais je pense qu'il y a quelque chose ici qui vaut la peine d'être exploré.
+**3. Compare à la capacité de l'équipe**
 
-Si seulement quelqu'un pouvait créer une app qui pourrait gérer toutes ces maths automatiquement et s'intégrer avec les outils de gestion de projet existants... (À Suivre)
+- Capacité (32h) est entre optimiste (19h) et pessimiste (36,7h)
+- Donc on utilise la formule d'interpolation : (32 - 19) ÷ (36,7 - 19) × 100%
+- Ratio de confiance du sprint = 13 ÷ 17,7 × 100% ≈ **73,4%**
+
+**4. Qu'est-ce que ça veut dire ?**
+
+- Tu as **73,4% de confiance** que l'équipe pourra compléter les trois tâches dans le sprint, avec une capacité de 32h.
+- Cette méthode te donne une mesure précise de la probabilité de succès !
+
+---
+
+## À retenir
+
+- Le ratio de confiance du sprint te donne une mesure précise de la probabilité de succès
+- Cette méthode rend le risque visible et actionnable
+- Tu peux ajuster le scope ou raffiner les tâches pour atteindre le niveau de confiance désiré
+
+---
+
+**Essaie dans ton prochain sprint !**  
+Et si tu veux voir ces calculs faits automatiquement, découvre [PlanPrism](/planprism/), notre app qui met cette méthode en pratique.
 
 Merci d'avoir lu,
 JF
