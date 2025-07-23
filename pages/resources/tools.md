@@ -36,8 +36,8 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
   {% include link-object.html
     title="Coach Fitness de Bureau"
     url="/resources/tools/fitness-coach/fitness-coach-tracker.html"
-    description="Un coach fitness minimaliste dans votre navigateur, conçu pour les travailleurs de bureau et à distance. Recevez des rappels d’exercices, suivez vos progrès et votre humeur, et restez actif toute la journée. Inclut un minuteur Pomodoro, des plans d’exercices quotidiens, des modes de focus (force, étirement, articulations), suivi de séries, et fonctionne hors-ligne. Aucune connexion requise—vos données restent sur votre appareil."
-    icon="logo.svg"
+    description="Coach fitness simple dans le navigateur pour travailleurs de bureau. Recevez des rappels d’exercices, suivez vos progrès et restez actif."
+    icon="feather.svg"
   %}
 </div>
 <style>

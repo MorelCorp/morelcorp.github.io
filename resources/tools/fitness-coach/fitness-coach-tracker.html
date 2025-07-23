@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkDay Fitness Coach</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         * {
             margin: 0;
@@ -589,7 +590,6 @@
         <button class="nav-btn" id="planBtn" title="Today's plan">📋</button>
         <button class="nav-btn" id="moodBtn" title="Track mood">😊</button>
         <button class="nav-btn" id="settingsBtn" title="Settings">⚙️</button>
-        <button class="nav-btn" id="installBtn" title="Install App" style="display:none;">⬇️</button>
     </div>
 
     <!-- Modals -->
@@ -1824,24 +1824,6 @@
 
             // Verify cookie functionality
             console.log('App initialized. State saved to cookies.');
-
-            // --- PWA Install Button Logic ---
-            let deferredPrompt = null;
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                const btn = document.getElementById('installBtn');
-                if (btn) btn.style.display = 'inline-block';
-            });
-            document.getElementById('installBtn').addEventListener('click', () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then(() => {
-                        deferredPrompt = null;
-                        document.getElementById('installBtn').style.display = 'none';
-                    });
-                }
-            });
         });
 
         function loadState() {
@@ -2580,25 +2562,13 @@
                 });
             });
         }
-
-        // --- PWA Install Button Logic ---
-        let deferredPrompt = null;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const btn = document.getElementById('installBtn');
-            if (btn) btn.style.display = 'inline-block';
-        });
-        document.getElementById('installBtn').addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    deferredPrompt = null;
-                    document.getElementById('installBtn').style.display = 'none';
-                });
-            }
-        });
     </script>
 </body>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 
 </html>

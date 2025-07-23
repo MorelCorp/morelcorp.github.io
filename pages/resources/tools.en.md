@@ -37,8 +37,8 @@ Here are several tools that are currently useful for developing the current site
   {% include link-object.html
     title="WorkDay Fitness Coach"
     url="/resources/tools/fitness-coach/fitness-coach-tracker.html"
-    description="A minimalist, browser-based fitness coach for office and remote workers. Get gentle exercise reminders, track your progress and mood, and keep your body moving throughout the workday. Features a Pomodoro-style timer, daily exercise plans, focus modes (strength, stretch, joints), streak tracking, and full offline support. No login required—your data stays on your device."
-    icon="logo.svg"
+    description="Simple browser-based fitness coach for office workers. Get exercise reminders, track your progress, and stay active during your workday."
+    icon="feather.svg"
   %}
 </div>
 <style>
