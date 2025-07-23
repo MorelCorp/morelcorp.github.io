@@ -33,6 +33,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     description="Ma version (quick and dirty) de Trello avec sauvegarde locale en backup."
     icon="calendar.svg"
   %}
+  {% include link-object.html
+    title="Coach Fitness de Bureau"
+    url="/resources/tools/fitness-coach/fitness-coach-tracker.html"
+    description="Un coach fitness minimaliste dans votre navigateur, conçu pour les travailleurs de bureau et à distance. Recevez des rappels d’exercices, suivez vos progrès et votre humeur, et restez actif toute la journée. Inclut un minuteur Pomodoro, des plans d’exercices quotidiens, des modes de focus (force, étirement, articulations), suivi de séries, et fonctionne hors-ligne. Aucune connexion requise—vos données restent sur votre appareil."
+    icon="logo.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {

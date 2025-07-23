@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkDay Fitness Coach</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+
+            @media (max-height: 600px) {
+                .modal-content {
+                    margin: 10px auto;
+                    max-height: calc(100vh - 20px);
+                }
+
+                .day-plan {
+                    max-height: calc(100vh - 250px);
+                }
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #1a1a2e;
+                color: #eee;
+                min-height: 100vh;
+                padding: 10px;
+            }
+
+            .container {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 15px;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+                color: #4cc9f0;
+                margin-bottom: 5px;
+            }
+
+            .streak {
+                display: inline-block;
+                background: #f72585;
+                color: white;
+                padding: 3px 10px;
+                border-radius: 15px;
+                font-size: 0.85em;
+                font-weight: bold;
+            }
+
+            .timer-section {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 15px;
+                margin-bottom: 15px;
+                text-align: center;
+                position: relative;
+            }
+
+            .timer-btn {
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #4361ee, #3f37c9);
+                color: white;
+                border: none;
+                font-size: 2em;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            }
+
+            .timer-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(67, 97, 238, 0.5);
+            }
+
+            .timer-btn.running {
+                background: linear-gradient(135deg, #f72585, #b5179e);
+            }
+
+            .timer-text {
+                font-size: 0.5em;
+                margin-top: 5px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .reset-btn {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: #888;
+                cursor: pointer;
+                font-size: 1.2em;
+                transition: all 0.3s ease;
+            }
+
+            .reset-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: rotate(180deg);
+            }
+
+            .exercise-card {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .exercise-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 15px;
+            }
+
+            .exercise-title {
+                font-size: 1.2em;
+                color: #4cc9f0;
+                flex: 1;
+            }
+
+            .help-btn {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: #888;
+                cursor: pointer;
+                font-size: 1em;
+                transition: all 0.3s ease;
+            }
+
+            .help-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .exercise-actions {
+                display: flex;
+                gap: 10px;
+            }
+
+            .btn-complete {
+                flex: 1;
+                background: #06ffa5;
+                color: #0a0a0a;
+                border: none;
+                padding: 15px;
+                border-radius: 8px;
+                font-size: 1.1em;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .btn-complete:hover {
+                background: #00cc82;
+                transform: translateY(-2px);
+            }
+
+            .btn-fail {
+                width: 50px;
+                background: #f72585;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 1.5em;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .btn-fail:hover {
+                background: #b5179e;
+                transform: translateY(-2px);
+            }
+
+            .stats-row {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .stat-card {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 10px;
+                border-radius: 8px;
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 1.3em;
+                font-weight: bold;
+                color: #4cc9f0;
+            }
+
+            .stat-label {
+                font-size: 0.7em;
+                color: #888;
+                margin-top: 2px;
+            }
+
+            .bottom-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: #0f0f23;
+                padding: 10px;
+                display: flex;
+                justify-content: space-around;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .nav-btn {
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 1.5em;
+                cursor: pointer;
+                padding: 10px;
+                transition: color 0.3s ease;
+            }
+
+            .nav-btn:hover {
+                color: #4cc9f0;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 1000;
+                padding: 20px;
+            }
+
+            .modal-content {
+                background: #1a1a2e;
+                border-radius: 12px;
+                padding: 20px;
+                max-width: 350px;
+                margin: 20px auto;
+                position: relative;
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .modal-title {
+                font-size: 1.3em;
+                color: #4cc9f0;
+            }
+
+            .close-modal {
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 1.5em;
+                cursor: pointer;
+            }
+
+            .mood-section {
+                margin: 15px 0;
+            }
+
+            .mood-label {
+                margin-bottom: 8px;
+                color: #aaa;
+                font-size: 0.9em;
+            }
+
+            .energy-levels {
+                display: flex;
+                justify-content: space-between;
+                gap: 5px;
+            }
+
+            .energy-btn {
+                background: none;
+                border: 2px solid #333;
+                border-radius: 8px;
+                padding: 8px 6px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .energy-btn:hover {
+                border-color: #4cc9f0;
+                transform: scale(1.05);
+            }
+
+            .energy-btn.selected {
+                background: #4cc9f0;
+                border-color: #4cc9f0;
+            }
+
+            .battery {
+                display: flex;
+                gap: 1px;
+                justify-content: center;
+                margin-bottom: 3px;
+            }
+
+            .battery-cell {
+                width: 6px;
+                height: 12px;
+                border: 1px solid #888;
+                border-radius: 1px;
+            }
+
+            .battery-cell.filled {
+                background: #06ffa5;
+                border-color: #06ffa5;
+            }
+
+            .emoji-row {
+                display: flex;
+                justify-content: space-around;
+                margin: 8px 0;
+                gap: 5px;
+            }
+
+            .emoji-btn {
+                background: none;
+                border: none;
+                font-size: 1.8em;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+                padding: 5px;
+                border-radius: 8px;
+            }
+
+            .emoji-btn:hover {
+                transform: scale(1.2);
+            }
+
+            .emoji-btn.selected {
+                background: rgba(76, 201, 240, 0.2);
+                border-radius: 8px;
+            }
+
+            .day-plan {
+                flex: 1;
+                overflow-y: auto;
+                margin: 10px 0;
+                max-height: calc(100vh - 300px);
+            }
+
+            .exercise-item {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 10px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .exercise-item.completed {
+                opacity: 0.6;
+                text-decoration: line-through;
+            }
+
+            .exercise-description {
+                background: rgba(76, 201, 240, 0.1);
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 10px;
+                font-size: 0.9em;
+                line-height: 1.5;
+            }
+
+            .btn-primary {
+                background: #4361ee;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 1em;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .btn-primary:hover {
+                background: #3f37c9;
+            }
+
+            .focus-selector {
+                display: flex;
+                gap: 10px;
+                margin: 20px 0;
+                flex-wrap: wrap;
+            }
+
+            .focus-btn {
+                flex: 1;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid #333;
+                border-radius: 8px;
+                color: #aaa;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                min-width: 70px;
+            }
+
+            .focus-btn:hover {
+                border-color: #4cc9f0;
+                color: #4cc9f0;
+            }
+
+            .focus-btn.active {
+                background: #4cc9f0;
+                border-color: #4cc9f0;
+                color: #0a0a0a;
+            }
+
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #06ffa5;
+                color: #0a0a0a;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.3s ease;
+                z-index: 2000;
+                max-width: 300px;
+            }
+
+            @media (max-width: 400px) {
+                .container {
+                    padding: 0;
+                }
+
+                .timer-btn {
+                    width: 120px;
+                    height: 120px;
+                    font-size: 1.5em;
+                }
+            }
+
+            /* Horizontal layout for wide screens */
+            @media (min-width: 768px) and (max-height: 500px) {
+                body {
+                    padding: 5px;
+                }
+
+                .container {
+                    max-width: 100%;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    align-items: flex-start;
+                }
+
+                .header {
+                    width: 100%;
+                    padding: 10px;
+                    margin-bottom: 10px;
+                }
+
+                .header h1 {
+                    font-size: 1.2em;
+                }
+
+                .timer-section {
+                    flex: 0 0 200px;
+                    margin-bottom: 0;
+                }
+
+                .timer-btn {
+                    width: 100px;
+                    height: 100px;
+                    font-size: 1.5em;
+                }
+
+                .exercise-card {
+                    flex: 1;
+                    min-width: 300px;
+                    margin-bottom: 0;
+                }
+
+                .stats-row {
+                    flex: 0 0 300px;
+                    margin-bottom: 0;
+                }
+
+                .bottom-nav {
+                    padding: 5px;
+                }
+
+                .nav-btn {
+                    font-size: 1.2em;
+                    padding: 5px;
+                }
+            }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 WorkDay Fitness</h1>
+            <span id="streakBadge" class="streak" style="display: none;">🔥 0 days</span>
+        </div>
+
+        <div class="timer-section">
+            <button class="timer-btn" id="timerBtn">
+                <span id="timerDisplay">25:00</span>
+                <span class="timer-text" id="timerText">Start</span>
+            </button>
+            <button class="reset-btn" id="resetBtn" title="Reset timer">↻</button>
+        </div>
+
+        <div class="exercise-card">
+            <div class="exercise-header">
+                <div class="exercise-title" id="exerciseTitle">Loading...</div>
+                <button class="help-btn" id="helpBtn" title="Exercise info">?</button>
+            </div>
+            <div class="exercise-actions">
+                <button class="btn-complete" id="completeBtn">✓ Complete</button>
+                <button class="btn-fail" id="failBtn" title="Too hard">👎</button>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="totalExercises">0</div>
+                <div class="stat-label">Done</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalReps">0</div>
+                <div class="stat-label">Reps</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Success</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="currentStreak">0</div>
+                <div class="stat-label">Streak</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" id="planBtn" title="Today's plan">📋</button>
+        <button class="nav-btn" id="moodBtn" title="Track mood">😊</button>
+        <button class="nav-btn" id="settingsBtn" title="Settings">⚙️</button>
+        <button class="nav-btn" id="installBtn" title="Install App" style="display:none;">⬇️</button>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="moodModal">
+        <div class="modal-content" style="max-height: auto; overflow: visible;">
+            <div class="modal-header">
+                <h2 class="modal-title">How are you feeling?</h2>
+                <button class="close-modal" onclick="closeModal('moodModal')">×</button>
+            </div>
+
+            <div class="mood-section">
+                <div class="mood-label">Energy Level:</div>
+                <div class="energy-levels" id="energyLevels">
+                    <button class="energy-btn" data-value="1">
+                        <div class="battery">
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell"></div>
+                            <div class="battery-cell"></div>
+                            <div class="battery-cell"></div>
+                            <div class="battery-cell"></div>
+                        </div>
+                    </button>
+                    <button class="energy-btn" data-value="2">
+                        <div class="battery">
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell"></div>
+                            <div class="battery-cell"></div>
+                            <div class="battery-cell"></div>
+                        </div>
+                    </button>
+                    <button class="energy-btn" data-value="3">
+                        <div class="battery">
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell"></div>
+                            <div class="battery-cell"></div>
+                        </div>
+                    </button>
+                    <button class="energy-btn" data-value="4">
+                        <div class="battery">
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell"></div>
+                        </div>
+                    </button>
+                    <button class="energy-btn" data-value="5">
+                        <div class="battery">
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                            <div class="battery-cell filled"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mood-section">
+                <div class="mood-label">Happiness:</div>
+                <div class="emoji-row" id="happinessRow">
+                    <button class="emoji-btn" data-value="1">😢</button>
+                    <button class="emoji-btn" data-value="2">😕</button>
+                    <button class="emoji-btn" data-value="3">😐</button>
+                    <button class="emoji-btn" data-value="4">🙂</button>
+                    <button class="emoji-btn" data-value="5">😄</button>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="saveMoodBtn">Save Mood</button>
+        </div>
+    </div>
+
+    <div class="modal" id="planModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Today's Exercise Plan</h2>
+                <button class="close-modal" onclick="closeModal('planModal')">×</button>
+            </div>
+
+            <div class="focus-selector">
+                <button class="focus-btn active" data-focus="general">General</button>
+                <button class="focus-btn" data-focus="strength">Strength</button>
+                <button class="focus-btn" data-focus="stretch">Stretch</button>
+                <button class="focus-btn" data-focus="articulation">Joints</button>
+            </div>
+
+            <div class="day-plan" id="dayPlan"></div>
+            <button class="btn-primary" id="regeneratePlanBtn">Generate New Plan</button>
+            <button class="btn-primary" id="restartPlanBtn">Restart Current Plan</button>
+        </div>
+    </div>
+
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="helpTitle">Exercise Guide</h2>
+                <button class="close-modal" onclick="closeModal('helpModal')">×</button>
+            </div>
+            <div class="exercise-description" id="exerciseDescription"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="close-modal" onclick="closeModal('settingsModal')">×</button>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; margin-bottom: 10px;">
+                    Timer Duration (minutes):
+                    <input type="number" id="timerMinutes" min="5" max="60" value="25"
+                        style="width: 60px; padding: 5px; margin-left: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                </label>
+            </div>
+
+            <button class="btn-primary" id="exportBtn">Export Progress</button>
+            <button class="btn-primary" id="importBtn">Import Progress</button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+            <button class="btn-primary" id="resetProgressBtn" style="background: #f72585; margin-top: 20px;">Reset All
+                Progress</button>
+        </div>
+    </div>
+
+    <script>
+        // Exercise definitions with descriptions
+        const exercises = [
+            // KNEE & LEG EXERCISES
+            {
+                name: 'Quad Sets',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Sit or lie with your leg straight. Tighten your thigh muscle by pushing the back of your knee into the floor. Hold for 5-10 seconds, then relax.'
+            },
+            {
+                name: 'Straight Leg Raises',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on your back with one leg bent and the other straight. Tighten your quad and lift your straight leg to the level of the bent knee.'
+            },
+            {
+                name: 'Clamshells',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on your side with knees bent and feet together. Keep your feet touching while raising your top knee like opening a clamshell.'
+            },
+            {
+                name: 'Side-Lying Leg Raises',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on your side with bottom leg bent and top leg straight. Lift the top leg to about 45 degrees, then slowly lower with control.'
+            },
+            {
+                name: 'Wall Sits',
+                baseReps: 15,
+                category: 'strength',
+                unit: 'seconds',
+                description: 'Stand against a wall with feet hip-width and 1-2 feet from wall. Slide down until knees are above ankles (not past toes).'
+            },
+            {
+                name: 'Single Leg Stand',
+                baseReps: 20,
+                category: 'articulation',
+                unit: 'seconds',
+                description: 'Stand on one leg, keeping hips level. Hold for balance. Switch legs.'
+            },
+            {
+                name: 'Heel Raises',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Stand tall and rise up onto your toes, then slowly lower back down. Hold wall for balance if needed.'
+            },
+            {
+                name: 'Toe Raises',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Stand and lift your toes while keeping heels on ground. Great for shin strength.'
+            },
+            {
+                name: 'Ankle Circles',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Sit or lie down, lift one foot and draw circles with your ankle. Do both directions.'
+            },
+            {
+                name: 'Knee Circles',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Stand with feet together, hands on knees. Make small circles with knees. Both directions.'
+            },
+
+            // CORE EXERCISES
+            {
+                name: 'Plank',
+                baseReps: 20,
+                category: 'strength',
+                unit: 'seconds',
+                description: 'Hold push-up position on forearms. Keep body straight from head to heels.'
+            },
+            {
+                name: 'Side Plank',
+                baseReps: 15,
+                category: 'strength',
+                unit: 'seconds',
+                description: 'Lie on side, prop up on forearm. Lift hips to form straight line. Hold.'
+            },
+            {
+                name: 'Dead Bug',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Lie on back, arms up, knees at 90°. Lower opposite arm and leg slowly, return, switch.'
+            },
+            {
+                name: 'Bird Dog',
+                baseReps: 10,
+                category: 'strength',
+                description: 'On hands and knees, extend opposite arm and leg. Hold 3 seconds, switch.'
+            },
+            {
+                name: 'Modified Bicycle',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Lie on back, hands behind head. Bring elbow to opposite knee, alternating slowly.'
+            },
+            {
+                name: 'Leg Drops',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Lie on back, legs up. Slowly lower legs without touching floor, raise back up.'
+            },
+            {
+                name: 'Russian Twists',
+                baseReps: 20,
+                category: 'strength',
+                description: 'Sit, lean back slightly, feet off ground. Rotate torso side to side.'
+            },
+            {
+                name: 'Mountain Climbers',
+                baseReps: 20,
+                category: 'strength',
+                description: 'In plank position, alternate bringing knees to chest quickly.'
+            },
+            {
+                name: 'Hollow Body Hold',
+                baseReps: 15,
+                category: 'strength',
+                unit: 'seconds',
+                description: 'Lie on back, press lower back down, lift shoulders and legs slightly. Hold.'
+            },
+            {
+                name: 'Superman',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Lie face down, lift chest and legs off ground simultaneously. Hold briefly.'
+            },
+
+            // UPPER BODY STRENGTH
+            {
+                name: 'Push Ups',
+                baseReps: 8,
+                category: 'strength',
+                description: 'Start in plank position. Lower chest to floor, push back up. Modify on knees if needed.'
+            },
+            {
+                name: 'Wide Push Ups',
+                baseReps: 8,
+                category: 'strength',
+                description: 'Push ups with hands wider than shoulders. Targets chest more.'
+            },
+            {
+                name: 'Diamond Push Ups',
+                baseReps: 5,
+                category: 'strength',
+                description: 'Push ups with hands forming diamond shape. Targets triceps.'
+            },
+            {
+                name: 'Pike Push Ups',
+                baseReps: 8,
+                category: 'strength',
+                description: 'In downward dog position, lower head toward floor. Great for shoulders.'
+            },
+            {
+                name: 'Tricep Dips',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Sit on floor, hands behind you. Lift hips and dip down by bending elbows.'
+            },
+            {
+                name: 'Arm Circles',
+                baseReps: 20,
+                category: 'articulation',
+                description: 'Extend arms to sides, make small circles. Do both directions.'
+            },
+            {
+                name: 'Shoulder Shrugs',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Lift shoulders up to ears, hold briefly, release down.'
+            },
+            {
+                name: 'Wall Push Ups',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Stand arm\'s length from wall. Place hands flat, do push ups against wall.'
+            },
+            {
+                name: 'Arm Pulses',
+                baseReps: 30,
+                category: 'strength',
+                description: 'Arms extended to sides, make small up and down pulses.'
+            },
+            {
+                name: 'Shoulder Taps',
+                baseReps: 20,
+                category: 'strength',
+                description: 'In plank position, tap opposite shoulder with hand, alternating.'
+            },
+
+            // STRETCHES
+            {
+                name: 'Hamstring Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit with one leg extended, reach toward toes. Feel stretch in back of thigh.'
+            },
+            {
+                name: 'Quad Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Stand, bend knee and grab ankle behind you. Pull heel toward buttocks.'
+            },
+            {
+                name: 'Calf Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Face wall, one foot back. Lean forward keeping back heel down.'
+            },
+            {
+                name: 'Hip Flexor Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Kneel on one knee, push hips forward. Feel stretch in front of hip.'
+            },
+            {
+                name: 'Child\'s Pose',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Kneel, sit back on heels, reach arms forward on floor. Relaxing back stretch.'
+            },
+            {
+                name: 'Cat-Cow Stretch',
+                baseReps: 10,
+                category: 'stretch',
+                description: 'On hands and knees, alternate arching and rounding spine slowly.'
+            },
+            {
+                name: 'Seated Twist',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit cross-legged, twist torso to one side. Hold, then switch.'
+            },
+            {
+                name: 'Figure 4 Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, cross ankle over opposite knee. Pull thigh toward chest.'
+            },
+            {
+                name: 'Butterfly Stretch',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit with soles of feet together, knees out. Gently press knees down.'
+            },
+            {
+                name: 'Side Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Stand or sit, reach one arm overhead and lean to opposite side.'
+            },
+            {
+                name: 'Neck Rolls',
+                baseReps: 5,
+                category: 'stretch',
+                description: 'Slowly roll head in circles. Be gentle, both directions.'
+            },
+            {
+                name: 'Shoulder Rolls',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Roll shoulders forward and backward in big circles.'
+            },
+            {
+                name: 'Wrist Circles',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Extend arms, rotate wrists in circles. Both directions.'
+            },
+            {
+                name: 'Chest Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Clasp hands behind back, lift arms up. Opens chest.'
+            },
+            {
+                name: 'IT Band Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Stand, cross one leg behind other. Lean away from back leg.'
+            },
+
+            // LOWER BODY STRENGTH
+            {
+                name: 'Bodyweight Squats',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Feet shoulder-width apart, lower hips back and down, stand back up.'
+            },
+            {
+                name: 'Jump Squats',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Regular squat but jump up explosively at the top.'
+            },
+            {
+                name: 'Lunges',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Step forward, lower back knee toward floor, push back to start.'
+            },
+            {
+                name: 'Reverse Lunges',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Step backward into lunge, return to start.'
+            },
+            {
+                name: 'Side Lunges',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Step wide to one side, bend knee while keeping other leg straight.'
+            },
+            {
+                name: 'Glute Bridges',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Lie on back, feet flat. Lift hips up squeezing glutes, lower slowly.'
+            },
+            {
+                name: 'Single Leg Glute Bridge',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Glute bridge with one leg extended. More challenging.'
+            },
+            {
+                name: 'Fire Hydrants',
+                baseReps: 15,
+                category: 'strength',
+                description: 'On hands and knees, lift leg out to side keeping knee bent.'
+            },
+            {
+                name: 'Donkey Kicks',
+                baseReps: 15,
+                category: 'strength',
+                description: 'On hands and knees, kick one leg back and up, keeping knee bent.'
+            },
+            {
+                name: 'Standing Hip Abduction',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Stand on one leg, lift other leg out to side. Hold wall for balance.'
+            },
+            {
+                name: 'Standing Hip Extension',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Stand on one leg, extend other leg behind you.'
+            },
+            {
+                name: 'Sumo Squats',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Wide stance squat with toes pointed out. Targets inner thighs.'
+            },
+            {
+                name: 'Bulgarian Split Squats',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Back foot elevated on surface, lower into lunge position.'
+            },
+            {
+                name: 'Calf Raises Single Leg',
+                baseReps: 12,
+                category: 'strength',
+                description: 'Rise onto toes on one leg, lower slowly. More challenging than regular.'
+            },
+
+            // BALANCE & STABILITY
+            {
+                name: 'Tree Pose',
+                baseReps: 30,
+                category: 'articulation',
+                unit: 'seconds',
+                description: 'Stand on one leg, place other foot on inner thigh or calf. Balance.'
+            },
+            {
+                name: 'Warrior III',
+                baseReps: 15,
+                category: 'articulation',
+                unit: 'seconds',
+                description: 'Stand on one leg, extend other leg back while leaning forward. T-shape.'
+            },
+            {
+                name: 'Standing Figure 4',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Stand on one leg, place ankle on opposite knee, sit back slightly.'
+            },
+            {
+                name: 'Heel to Toe Walk',
+                baseReps: 20,
+                category: 'articulation',
+                unit: 'steps',
+                description: 'Walk in straight line placing heel directly in front of toes.'
+            },
+            {
+                name: 'Single Leg Deadlift',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Stand on one leg, hinge at hip reaching toward floor, return up.'
+            },
+
+            // FULL BODY
+            {
+                name: 'Burpees',
+                baseReps: 8,
+                category: 'strength',
+                description: 'Squat, jump feet back to plank, push up, jump feet in, jump up.'
+            },
+            {
+                name: 'Bear Crawl',
+                baseReps: 10,
+                category: 'strength',
+                unit: 'steps',
+                description: 'On hands and feet (knees off ground), crawl forward maintaining position.'
+            },
+            {
+                name: 'Crab Walk',
+                baseReps: 10,
+                category: 'strength',
+                unit: 'steps',
+                description: 'Sit, lift hips, walk on hands and feet facing upward.'
+            },
+            {
+                name: 'Jumping Jacks',
+                baseReps: 30,
+                category: 'strength',
+                description: 'Jump feet apart while raising arms overhead, jump back.'
+            },
+            {
+                name: 'High Knees',
+                baseReps: 30,
+                category: 'strength',
+                description: 'Run in place bringing knees up high.'
+            },
+            {
+                name: 'Butt Kicks',
+                baseReps: 30,
+                category: 'strength',
+                description: 'Run in place kicking heels up to glutes.'
+            },
+            {
+                name: 'Star Jumps',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Jump spreading arms and legs wide like a star.'
+            },
+            {
+                name: 'Cross Body Toe Touch',
+                baseReps: 20,
+                category: 'strength',
+                description: 'Stand, kick leg up and touch with opposite hand. Alternate.'
+            },
+            {
+                name: 'Inchworm',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Stand, walk hands out to plank, walk feet to hands, stand.'
+            },
+            {
+                name: 'Skater Hops',
+                baseReps: 20,
+                category: 'strength',
+                description: 'Jump side to side landing on one leg, like ice skating.'
+            },
+
+            // YOGA INSPIRED
+            {
+                name: 'Downward Dog',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'From hands and knees, lift hips up and back. Inverted V shape.'
+            },
+            {
+                name: 'Cobra Pose',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie face down, press up with arms to arch back.'
+            },
+            {
+                name: 'Pigeon Pose',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'From plank, bring one knee forward behind wrist, extend other leg back.'
+            },
+            {
+                name: 'Happy Baby',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, grab feet, pull knees toward armpits.'
+            },
+            {
+                name: 'Thread the Needle',
+                baseReps: 10,
+                category: 'stretch',
+                description: 'On hands and knees, thread one arm under body, twisting spine.'
+            },
+            {
+                name: 'Seated Forward Fold',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit with legs extended, fold forward reaching for feet.'
+            },
+            {
+                name: 'Bridge Pose',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, press into feet to lift hips. Hold position.'
+            },
+            {
+                name: 'Puppy Pose',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'From hands and knees, walk hands forward, chest toward floor.'
+            },
+
+            // MOBILITY & JOINTS
+            {
+                name: 'Hip Circles',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Stand with hands on hips, make big circles with hips.'
+            },
+            {
+                name: 'Leg Swings Front-Back',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Hold wall, swing leg forward and back smoothly.'
+            },
+            {
+                name: 'Leg Swings Side-Side',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Hold wall, swing leg across body and out to side.'
+            },
+            {
+                name: 'Ankle Alphabet',
+                baseReps: 1,
+                category: 'articulation',
+                unit: 'alphabet',
+                description: 'Sit, lift foot, draw alphabet with big toe.'
+            },
+            {
+                name: 'Spine Twist',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Sit tall, rotate torso side to side keeping hips forward.'
+            },
+            {
+                name: 'Shoulder Blade Squeeze',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Squeeze shoulder blades together, hold 3 seconds, release.'
+            },
+            {
+                name: 'Pelvic Tilts',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Lie on back, tilt pelvis to flatten lower back against floor.'
+            },
+            {
+                name: 'Knee Hugs',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on back, hug knees to chest one at a time.'
+            },
+            {
+                name: 'Windshield Wipers',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on back, knees bent. Drop knees side to side slowly.'
+            },
+            {
+                name: 'Elbow Circles',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Hands on shoulders, make circles with elbows.'
+            },
+
+            // ADDITIONAL VARIETY
+            {
+                name: 'Frog Pumps',
+                baseReps: 20,
+                category: 'strength',
+                description: 'Lie on back, soles of feet together. Lift hips like glute bridge.'
+            },
+            {
+                name: 'Good Mornings',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Stand, hinge at hips keeping back straight, return up.'
+            },
+            {
+                name: 'Reverse Plank',
+                baseReps: 15,
+                category: 'strength',
+                unit: 'seconds',
+                description: 'Sit, place hands behind, lift hips to form straight line facing up.'
+            },
+            {
+                name: 'Side Lying Hip Circles',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on side, make small circles with top leg.'
+            },
+            {
+                name: 'Seated Leg Extensions',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Sit in chair, extend one leg straight, lower slowly.'
+            },
+            {
+                name: 'Standing Marches',
+                baseReps: 20,
+                category: 'articulation',
+                description: 'March in place lifting knees high.'
+            },
+            {
+                name: 'Toe Taps',
+                baseReps: 30,
+                category: 'articulation',
+                description: 'Lie on back, knees at 90°. Lower one toe to floor, return, alternate.'
+            },
+            {
+                name: 'Wall Angels',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Stand against wall, move arms up and down like snow angel.'
+            },
+            {
+                name: 'Prone Y-T-W',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Lie face down, lift arms in Y, T, then W positions.'
+            },
+            {
+                name: 'Seated Side Bends',
+                baseReps: 15,
+                category: 'articulation',
+                description: 'Sit tall, reach one arm overhead and lean to side.'
+            },
+            {
+                name: 'Heel Slides',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Lie on back, slide heel toward butt keeping foot on floor.'
+            },
+            {
+                name: 'Lateral Leg Lifts',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Lie on side, lift top leg up and down with control.'
+            },
+            {
+                name: 'Prone Leg Lifts',
+                baseReps: 10,
+                category: 'strength',
+                description: 'Lie face down, lift one leg up keeping it straight.'
+            },
+            {
+                name: 'Standing Calf Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Step back in lunge position, straighten back leg to stretch calf.'
+            },
+            {
+                name: 'Seated Calf Raises',
+                baseReps: 20,
+                category: 'strength',
+                description: 'Sit with feet flat, lift heels up, lower slowly.'
+            },
+            {
+                name: 'Half Kneeling Hip Flexor',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Kneel on one knee, other foot forward. Push hips forward.'
+            },
+            {
+                name: 'Band Pull Aparts',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Hold imaginary band, pull hands apart squeezing shoulder blades.'
+            },
+            {
+                name: 'Scapular Push Ups',
+                baseReps: 15,
+                category: 'strength',
+                description: 'In plank, keep arms straight, move shoulder blades together and apart.'
+            },
+            {
+                name: 'Banded Side Steps',
+                baseReps: 15,
+                category: 'strength',
+                description: 'Imagine band around ankles, step sideways maintaining tension.'
+            },
+            {
+                name: 'Seated Piriformis Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit, cross ankle over knee, lean forward gently.'
+            },
+            {
+                name: 'Standing Quad Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Stand, grab ankle behind you, pull heel to butt.'
+            },
+            {
+                name: 'Doorway Chest Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Place forearm on doorframe, step forward to stretch chest.'
+            },
+            {
+                name: 'Cross Body Shoulder Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Pull one arm across body with other arm.'
+            },
+            {
+                name: 'Tricep Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Reach arm overhead, bend elbow, use other hand to pull elbow.'
+            },
+            {
+                name: 'Wrist Flexor Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Extend arm, pull fingers back with other hand.'
+            },
+            {
+                name: 'Wrist Extensor Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Extend arm, push fingers down with other hand.'
+            },
+            {
+                name: 'Neck Side Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Tilt head to side, use hand to gently increase stretch.'
+            },
+            {
+                name: 'Upper Trap Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Tilt head to side, reach opposite arm down.'
+            },
+            {
+                name: 'Levator Scapulae Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Look down and to side, use hand to gently pull head.'
+            },
+            {
+                name: 'Standing Back Extension',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Stand, place hands on lower back, gently arch backward.'
+            },
+            {
+                name: 'Standing Side Reach',
+                baseReps: 10,
+                category: 'stretch',
+                description: 'Reach one arm overhead and lean to opposite side.'
+            },
+            {
+                name: 'Toe Touch Progression',
+                baseReps: 10,
+                category: 'stretch',
+                description: 'Stand, slowly roll down to touch toes, roll back up.'
+            },
+            {
+                name: 'Seated Spinal Twist',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit cross-legged, twist torso placing hand behind you.'
+            },
+            {
+                name: 'Supine Spinal Twist',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, drop knees to one side while keeping shoulders down.'
+            },
+            {
+                name: 'Standing IT Band Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Cross one leg behind other, lean away from back leg.'
+            },
+            {
+                name: 'Seated Hamstring Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit with one leg extended, reach toward toes.'
+            },
+            {
+                name: 'Standing Hamstring Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Place heel on low surface, keep leg straight, lean forward.'
+            },
+            {
+                name: 'Lying Hamstring Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, lift leg up, pull gently with hands or towel.'
+            },
+            {
+                name: 'Standing Glute Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Place ankle on knee, sit back slightly, feel stretch in glute.'
+            },
+            {
+                name: 'Lying Glute Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, cross ankle over knee, pull thigh toward chest.'
+            },
+            {
+                name: 'Adductor Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Stand wide, shift weight to one side bending knee.'
+            },
+            {
+                name: 'Frog Stretch',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'On hands and knees, spread knees wide, rock back and forth.'
+            },
+            {
+                name: 'Seated Adductor Stretch',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit with soles of feet together, press knees down gently.'
+            },
+            {
+                name: 'Low Lunge',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Deep lunge position with back knee on ground.'
+            },
+            {
+                name: 'High Lunge',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Deep lunge with back knee off ground, arms overhead.'
+            },
+            {
+                name: 'Lizard Pose',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Low lunge with both hands inside front foot.'
+            },
+            {
+                name: 'Reclined Butterfly',
+                baseReps: 30,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back with soles of feet together, let knees fall open.'
+            },
+            {
+                name: 'Supine Figure 4',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, ankle on knee, pull thigh toward chest.'
+            },
+            {
+                name: 'Knee to Chest',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, hug one knee to chest.'
+            },
+            {
+                name: 'Double Knee to Chest',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on back, hug both knees to chest.'
+            },
+            {
+                name: 'Lying Quad Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie on side, pull top ankle toward butt.'
+            },
+            {
+                name: 'Prone Quad Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lie face down, pull ankle toward butt.'
+            },
+            {
+                name: 'Standing TFL Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Stand with side to wall, cross outside leg behind, lean into wall.'
+            },
+            {
+                name: 'Seated Hip Flexor Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit on edge of surface, let one leg hang, pull other knee up.'
+            },
+            {
+                name: 'Psoas Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Lunge position, reach arm on same side as back leg overhead.'
+            },
+            {
+                name: 'Seated Shin Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Kneel, sit back on heels, lean back slightly.'
+            },
+            {
+                name: 'Standing Shin Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Point toes behind you, press top of foot into ground.'
+            },
+            {
+                name: 'Ankle Dorsiflexion Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Kneel with one foot forward, lean forward over front foot.'
+            },
+            {
+                name: 'Plantar Fascia Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Sit, pull toes back toward shin.'
+            },
+            {
+                name: 'Toe Stretch',
+                baseReps: 20,
+                category: 'stretch',
+                unit: 'seconds',
+                description: 'Kneel with toes tucked under, sit back gently.'
+            },
+            {
+                name: 'Standing Backbend',
+                baseReps: 10,
+                category: 'stretch',
+                description: 'Stand, hands on lower back, gently arch backward.'
+            },
+            {
+                name: 'Seated Cat-Cow',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Sit tall, alternate between arching and rounding spine.'
+            },
+            {
+                name: 'Standing Cat-Cow',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Stand with hands on knees, arch and round spine.'
+            },
+            {
+                name: 'Thoracic Extension',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Sit or stand, place hands behind head, open chest and look up.'
+            },
+            {
+                name: 'Thoracic Rotation',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Sit tall, rotate upper body side to side.'
+            },
+            {
+                name: 'Rib Cage Breathing',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Place hands on ribs, breathe expanding ribs laterally.'
+            },
+            {
+                name: 'Diaphragmatic Breathing',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Hand on belly, breathe making belly rise and fall.'
+            },
+            {
+                name: 'Box Breathing',
+                baseReps: 5,
+                category: 'articulation',
+                description: 'Breathe in 4, hold 4, out 4, hold 4. Repeat.'
+            },
+            {
+                name: 'Alternate Nostril Breathing',
+                baseReps: 10,
+                category: 'articulation',
+                description: 'Close one nostril, breathe in, switch, breathe out.'
+            }
+        ];
+
+        // App state - kept minimal for memory efficiency
+        let appState = {
+            currentExerciseIndex: 0,
+            exerciseProgress: {},
+            dailyStats: {},
+            moodData: {},
+            lastBackup: null,
+            streak: 0,
+            lastExerciseDate: null,
+            settings: {
+                timerMinutes: 25
+            },
+            dailyPlan: [],
+            completedToday: [],
+            currentFocus: 'general'
+        };
+
+        // Timer state
+        let timerInterval = null;
+        let timeRemaining = 25 * 60;
+        let isTimerRunning = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            initializeExerciseProgress();
+
+            // Check if it's a new day
+            const today = new Date().toDateString();
+            if (appState.lastPlanDate !== today) {
+                generateDailyPlan();
+            }
+
+            updateDisplay();
+            setupEventListeners();
+            checkMoodTracking();
+            checkBackupReminder();
+            showNextExercise();
+
+            // Check for day reset
+            setInterval(checkDayReset, 60000); // Check every minute
+
+            // Verify cookie functionality
+            console.log('App initialized. State saved to cookies.');
+
+            // --- PWA Install Button Logic ---
+            let deferredPrompt = null;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const btn = document.getElementById('installBtn');
+                if (btn) btn.style.display = 'inline-block';
+            });
+            document.getElementById('installBtn').addEventListener('click', () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(() => {
+                        deferredPrompt = null;
+                        document.getElementById('installBtn').style.display = 'none';
+                    });
+                }
+            });
+        });
+
+        function loadState() {
+            try {
+                let stored = null;
+
+                // Try localStorage first
+                if (typeof (Storage) !== "undefined") {
+                    stored = localStorage.getItem('fitnessCoachState');
+                    if (stored) {
+                        console.log('State loaded from localStorage');
+                    }
+                }
+
+                // Fallback to cookies
+                if (!stored) {
+                    stored = getCookie('fitnessCoachState');
+                    if (stored) {
+                        console.log('State loaded from cookies');
+                    }
+                }
+
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    // Merge with defaults to ensure all properties exist
+                    appState = { ...appState, ...parsed };
+                } else {
+                    console.log('No saved state found, using defaults');
+                }
+            } catch (e) {
+                console.error('Failed to load state:', e);
+                // Try to load critical data
+                try {
+                    const critical = getCookie('fitnessCoachCritical');
+                    if (critical) {
+                        const parsed = JSON.parse(critical);
+                        appState.streak = parsed.streak || 0;
+                        appState.currentExerciseIndex = parsed.currentExerciseIndex || 0;
+                        appState.currentFocus = parsed.currentFocus || 'general';
+                    }
+                } catch (e2) {
+                    console.error('Critical load also failed:', e2);
+                }
+            }
+
+            document.getElementById('timerMinutes').value = appState.settings.timerMinutes;
+            timeRemaining = appState.settings.timerMinutes * 60;
+            updateTimerDisplay();
+        }
+
+        function saveState() {
+            try {
+                // Clean up old data to save memory
+                cleanupOldData();
+
+                // Try localStorage first (more reliable)
+                if (typeof (Storage) !== "undefined") {
+                    localStorage.setItem('fitnessCoachState', JSON.stringify(appState));
+                    console.log('State saved to localStorage');
+                } else {
+                    // Fallback to cookies
+                    setCookie('fitnessCoachState', JSON.stringify(appState), 365);
+                    console.log('State saved to cookies');
+                }
+            } catch (e) {
+                console.error('Save state error:', e);
+                // Try to save critical data at least
+                try {
+                    const criticalData = {
+                        streak: appState.streak,
+                        currentExerciseIndex: appState.currentExerciseIndex,
+                        currentFocus: appState.currentFocus
+                    };
+                    setCookie('fitnessCoachCritical', JSON.stringify(criticalData), 365);
+                } catch (e2) {
+                    console.error('Critical save also failed:', e2);
+                }
+            }
+        }
+
+        function cleanupOldData() {
+            // Keep only last 30 days of data
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 30);
+
+            Object.keys(appState.dailyStats).forEach(date => {
+                if (new Date(date) < cutoffDate) {
+                    delete appState.dailyStats[date];
+                }
+            });
+
+            Object.keys(appState.moodData).forEach(date => {
+                if (new Date(date) < cutoffDate) {
+                    delete appState.moodData[date];
+                }
+            });
+        }
+
+        function setCookie(name, value, days) {
+            try {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+                return true;
+            } catch (e) {
+                console.error('Cookie set error:', e);
+                return false;
+            }
+        }
+
+        function getCookie(name) {
+            try {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) {
+                    return decodeURIComponent(parts.pop().split(';').shift());
+                }
+                return null;
+            } catch (e) {
+                console.error('Cookie get error:', e);
+                return null;
+            }
+        }
+
+        function initializeExerciseProgress() {
+            exercises.forEach(exercise => {
+                if (!appState.exerciseProgress[exercise.name]) {
+                    appState.exerciseProgress[exercise.name] = {
+                        currentReps: exercise.baseReps,
+                        successCount: 0,
+                        failCount: 0
+                    };
+                }
+            });
+        }
+
+        function generateDailyPlan(focus = null) {
+            const today = new Date().toDateString();
+
+            // Use provided focus or current focus
+            const planFocus = focus || appState.currentFocus || 'general';
+            appState.currentFocus = planFocus;
+
+            // Create a balanced plan for the day
+            appState.dailyPlan = [];
+            appState.completedToday = [];
+
+            // Filter exercises based on focus
+            let availableExercises = exercises;
+            if (planFocus !== 'general') {
+                availableExercises = exercises.filter(e => e.category === planFocus);
+            }
+
+            // Shuffle exercises for variety
+            const shuffled = [...availableExercises].sort(() => Math.random() - 0.5);
+
+            if (planFocus === 'general') {
+                // Balanced plan
+                const kneeExercises = shuffled.filter(e => e.category === 'articulation').slice(0, 4);
+                const strengthExercises = shuffled.filter(e => e.category === 'strength').slice(0, 4);
+                const stretchExercises = shuffled.filter(e => e.category === 'stretch').slice(0, 4);
+
+                // Mix them up for variety
+                appState.dailyPlan = [
+                    ...kneeExercises.slice(0, 2),
+                    ...strengthExercises.slice(0, 2),
+                    ...stretchExercises.slice(0, 2),
+                    ...kneeExercises.slice(2, 4),
+                    ...strengthExercises.slice(2, 4),
+                    ...stretchExercises.slice(2, 4)
+                ];
+            } else {
+                // Focused plan - 10-12 exercises of one type
+                appState.dailyPlan = shuffled.slice(0, 12);
+            }
+
+            appState.lastPlanDate = today;
+            appState.currentExerciseIndex = 0;
+            saveState();
+        }
+
+        function checkDayReset() {
+            const now = new Date();
+            const today = now.toDateString();
+
+            // Check if it's a new day
+            if (appState.lastPlanDate !== today) {
+                console.log('New day detected, generating fresh plan');
+
+                // Save yesterday's completion rate to adjust today's difficulty
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStats = appState.dailyStats[yesterday.toDateString()];
+
+                if (yesterdayStats) {
+                    const completionRate = yesterdayStats.exercises / (yesterdayStats.exercises + yesterdayStats.fails);
+
+                    // Adjust exercise difficulties based on yesterday's performance
+                    if (completionRate < 0.5) {
+                        // Too hard yesterday, reduce difficulty
+                        Object.values(appState.exerciseProgress).forEach(progress => {
+                            progress.currentReps = Math.max(Math.floor(progress.currentReps * 0.9), 1);
+                        });
+                    } else if (completionRate > 0.9 && yesterdayStats.exercises > 10) {
+                        // Too easy yesterday, increase difficulty
+                        Object.values(appState.exerciseProgress).forEach(progress => {
+                            progress.currentReps = Math.floor(progress.currentReps * 1.1);
+                        });
+                    }
+                }
+
+                generateDailyPlan(appState.currentFocus);
+                saveState();
+                updateDisplay();
+                showNextExercise();
+            }
+        }
+
+        function showNextExercise() {
+            if (appState.currentExerciseIndex >= appState.dailyPlan.length) {
+                // All exercises completed, allow restart
+                document.getElementById('exerciseTitle').textContent = 'Day Complete! 🎉';
+                return;
+            }
+
+            const exercise = appState.dailyPlan[appState.currentExerciseIndex];
+            const progress = appState.exerciseProgress[exercise.name];
+            const unit = exercise.unit || 'reps';
+
+            document.getElementById('exerciseTitle').textContent =
+                `${exercise.name}: ${progress.currentReps} ${unit}`;
+        }
+
+        function completeExercise() {
+            if (appState.currentExerciseIndex >= appState.dailyPlan.length) {
+                // Restart the plan
+                appState.currentExerciseIndex = 0;
+                showNextExercise();
+                return;
+            }
+
+            const exercise = appState.dailyPlan[appState.currentExerciseIndex];
+            const progress = appState.exerciseProgress[exercise.name];
+
+            // Update progress
+            progress.successCount++;
+
+            // Smart progression
+            if (progress.successCount % 5 === 0) {
+                progress.currentReps = Math.min(progress.currentReps + 1, exercise.baseReps * 3);
+            }
+
+            // Update daily stats
+            const today = new Date().toDateString();
+            if (!appState.dailyStats[today]) {
+                appState.dailyStats[today] = { exercises: 0, reps: 0, fails: 0 };
+            }
+            appState.dailyStats[today].exercises++;
+            appState.dailyStats[today].reps += progress.currentReps;
+
+            // Track completion
+            appState.completedToday.push({
+                exercise: exercise.name,
+                reps: progress.currentReps,
+                time: new Date().toISOString()
+            });
+
+            // Update streak
+            updateStreak();
+
+            // Move to next
+            appState.currentExerciseIndex++;
+
+            // Feedback
+            showNotification('Great job! 💪');
+
+            // Update everything
+            showNextExercise();
+            updateDisplay();
+            saveState();
+
+            // Reset timer
+            resetTimer();
+        }
+
+        function failExercise() {
+            if (appState.currentExerciseIndex >= appState.dailyPlan.length) return;
+
+            const exercise = appState.dailyPlan[appState.currentExerciseIndex];
+            const progress = appState.exerciseProgress[exercise.name];
+
+            // Update progress
+            progress.failCount++;
+
+            // Reduce difficulty
+            if (progress.failCount % 3 === 0) {
+                progress.currentReps = Math.max(Math.floor(progress.currentReps * 0.8), 1);
+            }
+
+            // Update daily stats
+            const today = new Date().toDateString();
+            if (!appState.dailyStats[today]) {
+                appState.dailyStats[today] = { exercises: 0, reps: 0, fails: 0 };
+            }
+            appState.dailyStats[today].fails++;
+
+            // Feedback
+            showNotification('No worries! Adjusted difficulty. 🎯');
+
+            // Move to next
+            appState.currentExerciseIndex++;
+
+            // Update everything
+            showNextExercise();
+            updateDisplay();
+            saveState();
+        }
+
+        function updateDisplay() {
+            const today = new Date().toDateString();
+            const todayStats = appState.dailyStats[today] || { exercises: 0, reps: 0, fails: 0 };
+
+            document.getElementById('totalExercises').textContent = todayStats.exercises;
+            document.getElementById('totalReps').textContent = todayStats.reps;
+
+            const total = todayStats.exercises + todayStats.fails;
+            const successRate = total > 0 ? Math.round((todayStats.exercises / total) * 100) : 0;
+            document.getElementById('successRate').textContent = `${successRate}%`;
+
+            document.getElementById('currentStreak').textContent = appState.streak;
+
+            // Update streak badge
+            if (appState.streak > 0) {
+                const badge = document.getElementById('streakBadge');
+                badge.textContent = `🔥 ${appState.streak} days`;
+                badge.style.display = 'inline-block';
+            }
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (appState.lastExerciseDate === today) {
+                return;
+            } else if (appState.lastExerciseDate === yesterday.toDateString()) {
+                appState.streak++;
+            } else {
+                appState.streak = 1;
+            }
+
+            appState.lastExerciseDate = today;
+        }
+
+        // Timer functions
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timerDisplay').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                const btn = document.getElementById('timerBtn');
+                btn.classList.add('running');
+                document.getElementById('timerText').textContent = 'Pause';
+
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateTimerDisplay();
+
+                    if (timeRemaining <= 0) {
+                        timerComplete();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            const btn = document.getElementById('timerBtn');
+            btn.classList.remove('running');
+            document.getElementById('timerText').textContent = 'Resume';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeRemaining = appState.settings.timerMinutes * 60;
+            updateTimerDisplay();
+            document.getElementById('timerText').textContent = 'Start';
+        }
+
+        function timerComplete() {
+            pauseTimer();
+            showNotification('Time for exercise! 🏃‍♂️');
+
+            // Simple beep
+            const audio = new Audio();
+            audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHGm98OScSgwNUqzn77ViFAUyh9n1 kEEGFWu/8+OWT';
+            audio.play().catch(() => { }); // Ignore errors
+
+            resetTimer();
+        }
+
+        // Mood tracking
+        function checkMoodTracking() {
+            const now = new Date();
+            const today = now.toDateString();
+            const hour = now.getHours();
+
+            if (!appState.moodData[today]) {
+                appState.moodData[today] = { morning: null, afternoon: null };
+            }
+
+            if (hour >= 9 && hour < 13 && !appState.moodData[today].morning) {
+                showNotification('How are you feeling? 😊');
+            } else if (hour >= 14 && hour < 18 && !appState.moodData[today].afternoon) {
+                showNotification('Afternoon check-in! 😊');
+            }
+
+            // Check again in 30 minutes
+            setTimeout(checkMoodTracking, 30 * 60 * 1000);
+        }
+
+        function saveMood() {
+            const selectedEnergy = document.querySelector('.energy-btn.selected');
+            const selectedHappiness = document.querySelector('.emoji-btn.selected');
+
+            if (!selectedEnergy || !selectedHappiness) {
+                showNotification('Please select both energy and happiness levels');
+                return;
+            }
+
+            const now = new Date();
+            const today = now.toDateString();
+            const hour = now.getHours();
+            const timeOfDay = hour < 14 ? 'morning' : 'afternoon';
+
+            if (!appState.moodData[today]) {
+                appState.moodData[today] = { morning: null, afternoon: null };
+            }
+
+            appState.moodData[today][timeOfDay] = {
+                energy: parseInt(selectedEnergy.dataset.value),
+                happiness: parseInt(selectedHappiness.dataset.value),
+                time: now.toISOString()
+            };
+
+            saveState();
+            closeModal('moodModal');
+            showNotification('Mood tracked! 😊');
+        }
+
+        // Plan display
+        function showDayPlan() {
+            const planDiv = document.getElementById('dayPlan');
+            planDiv.innerHTML = '';
+
+            // Update focus button state
+            document.querySelectorAll('.focus-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.focus === appState.currentFocus) {
+                    btn.classList.add('active');
+                }
+            });
+
+            if (appState.dailyPlan.length === 0) {
+                planDiv.innerHTML = '<p style="text-align: center; color: #888;">No plan generated yet. Select a focus and generate a plan!</p>';
+                return;
+            }
+
+            appState.dailyPlan.forEach((exercise, index) => {
+                const progress = appState.exerciseProgress[exercise.name];
+                const isCompleted = index < appState.currentExerciseIndex;
+                const isCurrent = index === appState.currentExerciseIndex;
+
+                const item = document.createElement('div');
+                item.className = `exercise-item ${isCompleted ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <span>${exercise.name} - ${progress.currentReps} ${exercise.unit || 'reps'}</span>
+                    <span>${isCompleted ? '✓' : isCurrent ? '→' : ''}</span>
+                `;
+                planDiv.appendChild(item);
+            });
+
+            document.getElementById('planModal').style.display = 'block';
+        }
+
+        // Help display
+        function showExerciseHelp() {
+            if (appState.currentExerciseIndex >= appState.dailyPlan.length) return;
+
+            const exercise = appState.dailyPlan[appState.currentExerciseIndex];
+            document.getElementById('helpTitle').textContent = exercise.name;
+            document.getElementById('exerciseDescription').textContent = exercise.description;
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        // Backup reminder
+        function checkBackupReminder() {
+            const lastBackup = appState.lastBackup ? new Date(appState.lastBackup) : null;
+            const now = new Date();
+
+            if (!lastBackup || (now - lastBackup) > 7 * 24 * 60 * 60 * 1000) {
+                showNotification('Weekly backup reminder! 💾');
+            }
+
+            // Check again tomorrow
+            setTimeout(checkBackupReminder, 24 * 60 * 60 * 1000);
+        }
+
+        // File operations
+        function exportData() {
+            const dataStr = JSON.stringify(appState, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `fitness-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            appState.lastBackup = new Date().toISOString();
+            saveState();
+            showNotification('Progress exported! 📁');
+            console.log('Data exported successfully');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        // Validate imported data
+                        if (imported.exerciseProgress && imported.dailyStats) {
+                            appState = { ...appState, ...imported };
+                            saveState();
+                            location.reload(); // Reload to apply all changes
+                            console.log('Data imported successfully');
+                        } else {
+                            throw new Error('Invalid data format');
+                        }
+                    } catch (error) {
+                        showNotification('Import failed! Check file format.');
+                        console.error('Import error:', error);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Notifications
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Modal functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Test storage functionality
+        function testStorage() {
+            console.log('Testing storage capabilities...');
+
+            // Test localStorage
+            if (typeof (Storage) !== "undefined") {
+                try {
+                    const testKey = 'fitnessTest';
+                    const testValue = 'test_' + Date.now();
+                    localStorage.setItem(testKey, testValue);
+                    const retrieved = localStorage.getItem(testKey);
+                    localStorage.removeItem(testKey);
+
+                    if (retrieved === testValue) {
+                        console.log('✅ localStorage working correctly');
+                    } else {
+                        console.log('⚠️ localStorage test failed');
+                    }
+                } catch (e) {
+                    console.log('⚠️ localStorage not available:', e.message);
+                }
+            } else {
+                console.log('⚠️ localStorage not supported');
+            }
+
+            // Test cookie storage
+            const testKey = 'fitnessCoachTest';
+            const testValue = 'test_' + Date.now();
+
+            // Write test
+            if (setCookie(testKey, testValue, 1)) {
+                const retrieved = getCookie(testKey);
+
+                if (retrieved === testValue) {
+                    console.log('✅ Cookie storage working correctly');
+                    // Clean up test cookie
+                    setCookie(testKey, '', -1);
+                } else {
+                    console.log('⚠️ Cookie storage limited (value mismatch)');
+                    console.log('Expected:', testValue, 'Got:', retrieved);
+                }
+            } else {
+                console.log('⚠️ Cookie storage not available');
+            }
+
+            // Log current state size
+            const stateSize = new Blob([JSON.stringify(appState)]).size;
+            console.log(`Current state size: ${(stateSize / 1024).toFixed(2)} KB`);
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            // Timer
+            document.getElementById('timerBtn').addEventListener('click', toggleTimer);
+            document.getElementById('resetBtn').addEventListener('click', resetTimer);
+
+            // Exercise
+            document.getElementById('completeBtn').addEventListener('click', completeExercise);
+            document.getElementById('failBtn').addEventListener('click', failExercise);
+            document.getElementById('helpBtn').addEventListener('click', showExerciseHelp);
+
+            // Navigation
+            document.getElementById('planBtn').addEventListener('click', showDayPlan);
+            document.getElementById('moodBtn').addEventListener('click', () => {
+                document.getElementById('moodModal').style.display = 'block';
+            });
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                document.getElementById('settingsModal').style.display = 'block';
+            });
+
+            // Mood tracking
+            document.querySelectorAll('.energy-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.energy-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            document.getElementById('saveMoodBtn').addEventListener('click', saveMood);
+
+            // Plan
+            document.getElementById('restartPlanBtn').addEventListener('click', () => {
+                appState.currentExerciseIndex = 0;
+                showNextExercise();
+                closeModal('planModal');
+                showNotification('Plan restarted! Let\'s go! 💪');
+            });
+
+            // Focus selection
+            document.querySelectorAll('.focus-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.focus-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            document.getElementById('regeneratePlanBtn').addEventListener('click', () => {
+                const selectedFocus = document.querySelector('.focus-btn.active').dataset.focus;
+                generateDailyPlan(selectedFocus);
+                showDayPlan();
+                showNextExercise();
+                showNotification(`New ${selectedFocus} plan generated! 🎯`);
+            });
+
+            // Settings
+            document.getElementById('timerMinutes').addEventListener('change', (e) => {
+                appState.settings.timerMinutes = parseInt(e.target.value);
+                saveState();
+                resetTimer();
+            });
+
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            document.getElementById('importBtn').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+            document.getElementById('fileInput').addEventListener('change', importData);
+
+            document.getElementById('resetProgressBtn').addEventListener('click', () => {
+                if (confirm('Reset all progress? This cannot be undone!')) {
+                    appState = {
+                        currentExerciseIndex: 0,
+                        exerciseProgress: {},
+                        dailyStats: {},
+                        moodData: {},
+                        lastBackup: null,
+                        streak: 0,
+                        lastExerciseDate: null,
+                        settings: { timerMinutes: 25 },
+                        dailyPlan: [],
+                        completedToday: [],
+                        currentFocus: 'general'
+                    };
+                    saveState();
+                    location.reload();
+                }
+            });
+
+            // Test storage on load
+            testStorage();
+
+            // Close modals on outside click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // --- PWA Install Button Logic ---
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('installBtn');
+            if (btn) btn.style.display = 'inline-block';
+        });
+        document.getElementById('installBtn').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    document.getElementById('installBtn').style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

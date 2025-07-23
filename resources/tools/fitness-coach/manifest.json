@@ -1,0 +1,20 @@
+{
+    "name": "WorkDay Fitness Coach",
+    "short_name": "Fitness Coach",
+    "start_url": "./fitness-coach-tracker.html",
+    "display": "standalone",
+    "background_color": "#1a1a2e",
+    "theme_color": "#4cc9f0",
+    "icons": [
+      {
+        "src": "icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
