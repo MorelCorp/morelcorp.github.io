@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            color: #4cc9f0;
+            margin-bottom: 8px;
+        }
+
+        .streak {
+            display: inline-block;
+            background: #f72585;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .challenge-title {
+            font-size: 1.3em;
+            color: #4cc9f0;
+        }
+
+        .challenge-target {
+            font-size: 1.1em;
+            color: #06ffa5;
+            font-weight: bold;
+        }
+
+        .challenge-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .challenge-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-start {
+            flex: 1;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start:hover {
+            background: linear-gradient(135deg, #3f37c9, #3730a3);
+            transform: translateY(-2px);
+        }
+
+        .btn-start:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            flex: 1;
+            background: #06ffa5;
+            color: #0a0a0a;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background: #00cc82;
+            transform: translateY(-2px);
+        }
+
+        .btn-fail {
+            flex: 1;
+            background: #f72585;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-fail:hover {
+            background: #b5179e;
+            transform: translateY(-2px);
+        }
+
+        .challenge-card.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .plank-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .plank-actions .btn-success,
+        .plank-actions .btn-fail {
+            width: 50px;
+            display: none;
+        }
+
+        .plank-timer {
+            text-align: center;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            color: #4cc9f0;
+            margin-bottom: 10px;
+        }
+
+        .timer-status {
+            font-size: 1.1em;
+            color: #aaa;
+        }
+
+        .countdown-display {
+            font-size: 4em;
+            font-weight: bold;
+            color: #f72585;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stats-title {
+            font-size: 1.2em;
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #06ffa5;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0f0f23;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            color: #4cc9f0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 350px;
+            margin: 20px auto;
+            position: relative;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            color: #4cc9f0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .setting-group {
+            margin: 15px 0;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .countdown-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .countdown-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .countdown-btn:hover {
+            border-color: #4cc9f0;
+            color: #4cc9f0;
+        }
+
+        .countdown-btn.active {
+            background: #4cc9f0;
+            border-color: #4cc9f0;
+            color: #0a0a0a;
+        }
+
+        .btn-primary {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-primary:hover {
+            background: #3f37c9;
+        }
+
+        .log-section {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .log-success {
+            border-left: 3px solid #06ffa5;
+        }
+
+        .log-fail {
+            border-left: 3px solid #f72585;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #06ffa5;
+            color: #0a0a0a;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Add padding to bottom for nav */
+        body {
+            padding-bottom: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 Challenge Tracker</h1>
+            <span id="streakBadge" class="streak" style="display: none;">🔥 0 days</span>
+        </div>
+
+        <div class="challenge-grid">
+            <!-- Pushup Challenge -->
+            <div class="challenge-card" id="pushupCard">
+                <div class="challenge-header">
+                    <div class="challenge-title">💪 Push-ups</div>
+                    <div class="challenge-target" id="pushupTarget">10 reps</div>
+                </div>
+                <div class="challenge-stats">
+                    <span>Today: <span id="pushupToday">0</span></span>
+                    <span>Best: <span id="pushupBest">0</span></span>
+                    <span>Total: <span id="pushupTotal">0</span></span>
+                </div>
+                <div class="challenge-actions">
+                    <button class="btn-success" id="pushupSuccess">👍</button>
+                    <button class="btn-fail" id="pushupFail">👎</button>
+                </div>
+            </div>
+
+            <!-- Situp Challenge -->
+            <div class="challenge-card" id="situpCard">
+                <div class="challenge-header">
+                    <div class="challenge-title">🏃 Sit-ups</div>
+                    <div class="challenge-target" id="situpTarget">10 reps</div>
+                </div>
+                <div class="challenge-stats">
+                    <span>Today: <span id="situpToday">0</span></span>
+                    <span>Best: <span id="situpBest">0</span></span>
+                    <span>Total: <span id="situpTotal">0</span></span>
+                </div>
+                <div class="challenge-actions">
+                    <button class="btn-success" id="situpSuccess">👍</button>
+                    <button class="btn-fail" id="situpFail">👎</button>
+                </div>
+            </div>
+
+            <!-- Plank Challenge -->
+            <div class="challenge-card" id="plankCard">
+                <div class="challenge-header">
+                    <div class="challenge-title">🏋️ Plank</div>
+                    <div class="challenge-target" id="plankTarget">30s</div>
+                </div>
+                <div class="challenge-stats">
+                    <span>Today: <span id="plankToday">0</span>s</span>
+                    <span>Best: <span id="plankBest">0</span>s</span>
+                    <span>Total: <span id="plankTotal">0</span>s</span>
+                </div>
+                <div class="plank-actions">
+                    <button class="btn-start" id="plankStart">Start Plank</button>
+                    <button class="btn-success" id="plankSuccess">👍</button>
+                    <button class="btn-fail" id="plankFail">👎</button>
+                </div>
+                <div class="countdown-display" id="countdownDisplay">5</div>
+                <div class="plank-timer" id="plankTimer">
+                    <div class="timer-display" id="timerDisplay">0:30</div>
+                    <div class="timer-status" id="timerStatus">Hold that plank!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-title">Daily Progress</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalAttempts">0</div>
+                    <div class="stat-label">Attempts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSuccess">0</div>
+                    <div class="stat-label">Success</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="successRate">0%</div>
+                    <div class="stat-label">Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-label">Streak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" id="historyBtn" title="View History">📊</button>
+        <button class="nav-btn" id="settingsBtn" title="Settings">⚙️</button>
+        <button class="nav-btn" id="exportBtn" title="Export Data">💾</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="close-modal" onclick="closeModal('settingsModal')">×</button>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Plank Countdown:</label>
+                <div class="countdown-options" id="countdownOptions">
+                    <button class="countdown-btn" data-value="0">Off</button>
+                    <button class="countdown-btn" data-value="3">3s</button>
+                    <button class="countdown-btn active" data-value="5">5s</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Active Challenges:</label>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enablePushup" checked style="transform: scale(1.2);">
+                        <span>💪 Push-ups</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enableSitup" checked style="transform: scale(1.2);">
+                        <span>🏃 Sit-ups</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enablePlank" checked style="transform: scale(1.2);">
+                        <span>🏋️ Plank</span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="importBtn">Import Progress</button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+            <button class="btn-primary" id="resetProgressBtn" style="background: #f72585; margin-top: 30px;">
+                Reset All Progress
+            </button>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Activity History</h2>
+                <button class="close-modal" onclick="closeModal('historyModal')">×</button>
+            </div>
+            <div class="log-section" id="logSection">
+                <p style="text-align: center; color: #888;">No activity yet today!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App state
+        let appState = {
+            challenges: {
+                pushup: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
+                situp: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
+                plank: { current: 30, todayCount: 0, todaySuccess: 0, bestEver: 0, totalTime: 0, enabled: true }
+            },
+            settings: {
+                countdownSeconds: 5
+            },
+            dailyStats: {},
+            dailyLog: [],
+            streak: 0,
+            lastActiveDate: null,
+            lastBackup: null
+        };
+
+        // Active challenge tracking
+        let activeChallenge = null;
+        let plankTimer = null;
+        let countdownTimer = null;
+        let plankStartTime = null;
+
+        // Audio context for sound effects
+        let audioContext = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            checkNewDay();
+            updateDisplay();
+            setupEventListeners();
+            initAudio();
+        });
+
+        function initAudio() {
+            // Initialize audio context on first user interaction
+            document.addEventListener('click', () => {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }, { once: true });
+        }
+
+        function playBeep(frequency = 800, duration = 200) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+        }
+
+        function playCompletionBell() {
+            if (!audioContext) return;
+            
+            // Create a bell-like sound with multiple frequencies
+            const frequencies = [800, 1200, 1600];
+            frequencies.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                }, index * 100);
+            });
+        }
+
+        function loadState() {
+            try {
+                let stored = null;
+
+                // Try localStorage first
+                if (typeof(Storage) !== "undefined") {
+                    stored = localStorage.getItem('challengeTrackerState');
+                    if (stored) {
+                        console.log('State loaded from localStorage');
+                    }
+                }
+
+                // Fallback to cookies
+                if (!stored) {
+                    stored = getCookie('challengeTrackerState');
+                    if (stored) {
+                        console.log('State loaded from cookies');
+                    }
+                }
+
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    // Merge with defaults to ensure all properties exist
+                    appState = { ...appState, ...parsed };
+                    
+                    // Ensure enabled property exists for all challenges
+                    Object.keys(appState.challenges).forEach(key => {
+                        if (appState.challenges[key].enabled === undefined) {
+                            appState.challenges[key].enabled = true;
+                        }
+                    });
+                } else {
+                    console.log('No saved state found, using defaults');
+                }
+            } catch (e) {
+                console.error('Failed to load state:', e);
+                // Try to load critical data
+                try {
+                    const critical = getCookie('challengeTrackerCritical');
+                    if (critical) {
+                        const parsed = JSON.parse(critical);
+                        appState.streak = parsed.streak || 0;
+                        Object.keys(parsed.challenges || {}).forEach(key => {
+                            if (appState.challenges[key]) {
+                                appState.challenges[key].current = parsed.challenges[key].current || appState.challenges[key].current;
+                            }
+                        });
+                    }
+                } catch (e2) {
+                    console.error('Critical load also failed:', e2);
+                }
+            }
+        }
+
+        function saveState() {
+            try {
+                // Clean up old data to save memory
+                cleanupOldData();
+
+                // Try localStorage first (more reliable)
+                if (typeof(Storage) !== "undefined") {
+                    localStorage.setItem('challengeTrackerState', JSON.stringify(appState));
+                    console.log('State saved to localStorage');
+                } else {
+                    // Fallback to cookies
+                    setCookie('challengeTrackerState', JSON.stringify(appState), 365);
+                    console.log('State saved to cookies');
+                }
+            } catch (e) {
+                console.error('Save state error:', e);
+                // Try to save critical data at least
+                try {
+                    const criticalData = {
+                        streak: appState.streak,
+                        challenges: {}
+                    };
+                    Object.keys(appState.challenges).forEach(key => {
+                        criticalData.challenges[key] = {
+                            current: appState.challenges[key].current,
+                            enabled: appState.challenges[key].enabled
+                        };
+                    });
+                    setCookie('challengeTrackerCritical', JSON.stringify(criticalData), 365);
+                } catch (e2) {
+                    console.error('Critical save also failed:', e2);
+                }
+            }
+        }
+
+        function cleanupOldData() {
+            // Keep only last 30 days of data
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 30);
+
+            Object.keys(appState.dailyStats).forEach(date => {
+                if (new Date(date) < cutoffDate) {
+                    delete appState.dailyStats[date];
+                }
+            });
+        }
+
+        function setCookie(name, value, days) {
+            try {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+                return true;
+            } catch (e) {
+                console.error('Cookie set error:', e);
+                return false;
+            }
+        }
+
+        function getCookie(name) {
+            try {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) {
+                    return decodeURIComponent(parts.pop().split(';').shift());
+                }
+                return null;
+            } catch (e) {
+                console.error('Cookie get error:', e);
+                return null;
+            }
+        }
+
+        function checkNewDay() {
+            const today = new Date().toDateString();
+            if (appState.lastActiveDate !== today) {
+                // Reset daily counters but keep progression
+                Object.keys(appState.challenges).forEach(key => {
+                    appState.challenges[key].todayCount = 0;
+                    appState.challenges[key].todaySuccess = 0;
+                });
+                appState.dailyLog = [];
+                appState.lastActiveDate = today;
+                saveState();
+            }
+        }
+
+        function updateDisplay() {
+            // Update challenge displays and visibility
+            Object.keys(appState.challenges).forEach(key => {
+                const challenge = appState.challenges[key];
+                const unit = key === 'plank' ? 's' : ' reps';
+                const card = document.getElementById(`${key}Card`);
+                
+                // Show/hide based on enabled status
+                if (challenge.enabled) {
+                    card.classList.remove('disabled');
+                    card.style.display = 'block';
+                } else {
+                    card.classList.add('disabled');
+                    card.style.display = 'none';
+                }
+                
+                document.getElementById(`${key}Target`).textContent = challenge.current + unit;
+                document.getElementById(`${key}Today`).textContent = key === 'plank' ? 
+                    challenge.todaySuccess : challenge.todaySuccess;
+                document.getElementById(`${key}Best`).textContent = challenge.bestEver;
+                document.getElementById(`${key}Total`).textContent = key === 'plank' ? 
+                    challenge.totalTime : challenge.totalReps;
+            });
+
+            // Update daily stats (only count enabled challenges)
+            const enabledChallenges = Object.values(appState.challenges).filter(c => c.enabled);
+            const totalAttempts = enabledChallenges.reduce((sum, c) => sum + c.todayCount, 0);
+            const totalSuccess = enabledChallenges.reduce((sum, c) => sum + c.todaySuccess, 0);
+            const successRate = totalAttempts > 0 ? Math.round((totalSuccess / totalAttempts) * 100) : 0;
+
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            document.getElementById('totalSuccess').textContent = totalSuccess;
+            document.getElementById('successRate').textContent = successRate + '%';
+            document.getElementById('currentStreak').textContent = appState.streak;
+
+            // Update streak badge
+            if (appState.streak > 0) {
+                const badge = document.getElementById('streakBadge');
+                badge.textContent = `🔥 ${appState.streak} days`;
+                badge.style.display = 'inline-block';
+            }
+
+            // Update settings UI
+            document.querySelectorAll('.countdown-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.value) === appState.settings.countdownSeconds) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update challenge enable checkboxes
+            document.getElementById('enablePushup').checked = appState.challenges.pushup.enabled;
+            document.getElementById('enableSitup').checked = appState.challenges.situp.enabled;
+            document.getElementById('enablePlank').checked = appState.challenges.plank.enabled;
+        }
+
+        function startChallenge(type) {
+            if (activeChallenge) return;
+            
+            activeChallenge = type;
+            
+            // Hide start button, show success/fail buttons
+            document.getElementById(`${type}Start`).style.display = 'none';
+            document.getElementById(`${type}Success`).style.display = 'block';
+            document.getElementById(`${type}Fail`).style.display = 'block';
+
+            if (type === 'plank') {
+                startPlankChallenge();
+            } else {
+                showNotification(`Do ${appState.challenges[type].current} ${type}s!`);
+            }
+        }
+
+        function startPlankChallenge() {
+            const countdownSeconds = appState.settings.countdownSeconds;
+            
+            if (countdownSeconds > 0) {
+                startCountdown(countdownSeconds);
+            } else {
+                startPlankTimer();
+            }
+        }
+
+        function startCountdown(seconds) {
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            countdownDisplay.style.display = 'block';
+            countdownDisplay.textContent = seconds;
+
+            let remaining = seconds;
+            countdownTimer = setInterval(() => {
+                remaining--;
+                if (remaining > 0) {
+                    countdownDisplay.textContent = remaining;
+                    playBeep(600, 150);
+                } else {
+                    countdownDisplay.textContent = 'GO!';
+                    playBeep(1000, 300);
+                    setTimeout(() => {
+                        countdownDisplay.style.display = 'none';
+                        startPlankTimer();
+                    }, 500);
+                    clearInterval(countdownTimer);
+                }
+            }, 1000);
+        }
+
+        function startPlankTimer() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            const plankTimerDiv = document.getElementById('plankTimer');
+            
+            plankTimerDiv.style.display = 'block';
+            plankStartTime = Date.now();
+            
+            let targetSeconds = appState.challenges.plank.current;
+            let elapsed = 0;
+
+            plankTimer = setInterval(() => {
+                elapsed = Math.floor((Date.now() - plankStartTime) / 1000);
+                const remaining = Math.max(0, targetSeconds - elapsed);
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                
+                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (remaining === 0) {
+                    clearInterval(plankTimer);
+                    playCompletionBell();
+                    document.getElementById('timerStatus').textContent = 'Time\'s up! Did you make it?';
+                }
+            }, 100);
+        }
+
+        function completeChallenge(type, success) {
+            // Don't allow completion if challenge is disabled
+            if (!appState.challenges[type].enabled) return;
+            
+            const challenge = appState.challenges[type];
+            challenge.todayCount++;
+
+            // Update daily stats
+            const today = new Date().toDateString();
+            if (!appState.dailyStats[today]) {
+                appState.dailyStats[today] = { attempts: 0, successes: 0 };
+            }
+            appState.dailyStats[today].attempts++;
+
+            // Log the attempt
+            const logEntry = {
+                type: type,
+                target: challenge.current,
+                success: success,
+                timestamp: new Date().toISOString()
+            };
+
+            if (type === 'plank' && plankTimer) {
+                clearInterval(plankTimer);
+                const actualTime = Math.floor((Date.now() - plankStartTime) / 1000);
+                logEntry.actualTime = actualTime;
+                
+                if (success) {
+                    challenge.totalTime += challenge.current;
+                    challenge.todaySuccess += challenge.current;
+                    appState.dailyStats[today].successes++;
+                    if (challenge.current > challenge.bestEver) {
+                        challenge.bestEver = challenge.current;
+                    }
+                }
+            } else if (success) {
+                if (type === 'pushup' || type === 'situp') {
+                    challenge.totalReps += challenge.current;
+                    challenge.todaySuccess += challenge.current;
+                    appState.dailyStats[today].successes++;
+                    if (challenge.current > challenge.bestEver) {
+                        challenge.bestEver = challenge.current;
+                    }
+                }
+            }
+
+            appState.dailyLog.push(logEntry);
+
+            // Adjust difficulty
+            if (success) {
+                challenge.current = Math.min(challenge.current + 1, 100); // Cap at 100
+                showNotification('Great job! Challenge increased! 💪');
+            } else {
+                challenge.current = Math.max(challenge.current - 1, 5); // Minimum 5
+                showNotification('No worries! Challenge adjusted. 🎯');
+            }
+
+            // Update streak
+            updateStreak();
+
+            // Reset UI
+            resetChallengeUI(type);
+            
+            // Save and update
+            saveState();
+            updateDisplay();
+            updateHistoryDisplay();
+        }
+
+        function resetChallengeUI(type) {
+            activeChallenge = null;
+            
+            // Reset buttons
+            document.getElementById(`${type}Start`).style.display = 'block';
+            document.getElementById(`${type}Success`).style.display = 'none';
+            document.getElementById(`${type}Fail`).style.display = 'none';
+
+            // Reset plank specific UI
+            if (type === 'plank') {
+                document.getElementById('plankTimer').style.display = 'none';
+                document.getElementById('countdownDisplay').style.display = 'none';
+                document.getElementById('timerStatus').textContent = 'Hold that plank!';
+                
+                if (plankTimer) {
+                    clearInterval(plankTimer);
+                    plankTimer = null;
+                }
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+            }
+        }
+
+        function updateStreak() {
+            // Simple streak logic - any successful challenge extends streak
+            const today = new Date().toDateString();
+            const hasSuccess = Object.values(appState.challenges).some(c => c.todaySuccess > 0);
+            
+            if (hasSuccess && appState.lastActiveDate === today) {
+                if (appState.streak === 0) {
+                    appState.streak = 1;
+                }
+                // Streak continues (already counted for today)
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const logSection = document.getElementById('logSection');
+            
+            if (appState.dailyLog.length === 0) {
+                logSection.innerHTML = '<p style="text-align: center; color: #888;">No activity yet today!</p>';
+                return;
+            }
+
+            logSection.innerHTML = '';
+            appState.dailyLog.slice().reverse().forEach(entry => {
+                const div = document.createElement('div');
+                div.className = `log-entry ${entry.success ? 'log-success' : 'log-fail'}`;
+                
+                const time = new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const result = entry.success ? '✅' : '❌';
+                const details = entry.type === 'plank' ? 
+                    `${entry.target}s ${entry.actualTime ? `(${entry.actualTime}s)` : ''}` : 
+                    `${entry.target} reps`;
+                
+                div.innerHTML = `
+                    <span><strong>${entry.type}</strong> - ${details}</span>
+                    <span>${result} ${time}</span>
+                `;
+                logSection.appendChild(div);
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(appState, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `challenge-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            appState.lastBackup = new Date().toISOString();
+            saveState();
+            showNotification('Progress exported! 📁');
+            console.log('Data exported successfully');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        // Validate imported data
+                        if (imported.challenges && typeof imported.challenges === 'object') {
+                            // Merge imported data with current structure
+                            appState = { ...appState, ...imported };
+                            
+                            // Ensure all required properties exist
+                            Object.keys(appState.challenges).forEach(key => {
+                                if (appState.challenges[key].enabled === undefined) {
+                                    appState.challenges[key].enabled = true;
+                                }
+                            });
+                            
+                            saveState();
+                            updateDisplay();
+                            updateHistoryDisplay();
+                            showNotification('Progress imported successfully! 📥');
+                            console.log('Data imported successfully');
+                        } else {
+                            throw new Error('Invalid data format');
+                        }
+                    } catch (error) {
+                        showNotification('Import failed! Check file format.');
+                        console.error('Import error:', error);
+                    }
+                };
+                reader.readAsText(file);
+            }
+            // Reset file input
+            event.target.value = '';
+        }
+
+        function setupEventListeners() {
+            // Challenge completion buttons (pushup/situp - direct completion)
+            document.getElementById('pushupSuccess').addEventListener('click', () => completeChallenge('pushup', true));
+            document.getElementById('pushupFail').addEventListener('click', () => completeChallenge('pushup', false));
+            document.getElementById('situpSuccess').addEventListener('click', () => completeChallenge('situp', true));
+            document.getElementById('situpFail').addEventListener('click', () => completeChallenge('situp', false));
+
+            // Plank - requires timer first
+            document.getElementById('plankStart').addEventListener('click', () => startChallenge('plank'));
+            document.getElementById('plankSuccess').addEventListener('click', () => completeChallenge('plank', true));
+            document.getElementById('plankFail').addEventListener('click', () => completeChallenge('plank', false));
+
+            // Navigation
+            document.getElementById('historyBtn').addEventListener('click', () => {
+                updateHistoryDisplay();
+                document.getElementById('historyModal').style.display = 'block';
+            });
+            
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                document.getElementById('settingsModal').style.display = 'block';
+            });
+            
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+
+            // Settings - countdown
+            document.querySelectorAll('.countdown-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.countdown-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    appState.settings.countdownSeconds = parseInt(this.dataset.value);
+                    saveState();
+                });
+            });
+
+            // Settings - challenge toggles
+            document.getElementById('enablePushup').addEventListener('change', function() {
+                appState.challenges.pushup.enabled = this.checked;
+                saveState();
+                updateDisplay();
+            });
+
+            document.getElementById('enableSitup').addEventListener('change', function() {
+                appState.challenges.situp.enabled = this.checked;
+                saveState();
+                updateDisplay();
+            });
+
+            document.getElementById('enablePlank').addEventListener('change', function() {
+                appState.challenges.plank.enabled = this.checked;
+                saveState();
+                updateDisplay();
+            });
+
+            // Import/Export
+            document.getElementById('importBtn').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+            document.getElementById('fileInput').addEventListener('change', importData);
+
+            // Reset progress
+            document.getElementById('resetProgressBtn').addEventListener('click', () => {
+                if (confirm('Reset all progress? This cannot be undone!')) {
+                    appState = {
+                        challenges: {
+                            pushup: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
+                            situp: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
+                            plank: { current: 30, todayCount: 0, todaySuccess: 0, bestEver: 0, totalTime: 0, enabled: true }
+                        },
+                        settings: { countdownSeconds: 5 },
+                        dailyStats: {},
+                        dailyLog: [],
+                        streak: 0,
+                        lastActiveDate: null,
+                        lastBackup: null
+                    };
+                    saveState();
+                    location.reload();
+                }
+            });
+
+            // Close modals on outside click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        }
+    </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+
+</html>

@@ -39,6 +39,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     description="Coach fitness simple dans le navigateur pour travailleurs de bureau. Recevez des rappels d’exercices, suivez vos progrès et restez actif."
     icon="feather.svg"
   %}
+  {% include link-object.html
+    title="Challenge Tracker"
+    url="/resources/tools/challenge-tracker/challenge_tracker.html"
+    description="Suivi simple pour pompes, abdos et planches avec progression intelligente et retour audio."
+    icon="feather.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {
