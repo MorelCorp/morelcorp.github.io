@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Challenge Tracker</title>
-    <link rel="manifest" href="manifest.json">
     <style>
         * {
             margin: 0;
@@ -163,10 +162,35 @@
             gap: 10px;
         }
 
-        .plank-actions .btn-success,
-        .plank-actions .btn-fail {
-            width: 50px;
-            display: none;
+        .max-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-add {
+            flex: 1;
+            background: linear-gradient(135deg, #06ffa5, #00cc82);
+            color: #0a0a0a;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add:hover {
+            background: linear-gradient(135deg, #00cc82, #00b377);
+            transform: translateY(-2px);
+        }
+
+        .btn-add.small {
+            flex: 0.8;
+        }
+
+        .btn-add.large {
+            flex: 1.2;
         }
 
         .plank-timer {
@@ -490,6 +514,40 @@
                     <div class="timer-status" id="timerStatus">Hold that plank!</div>
                 </div>
             </div>
+
+            <!-- MAX Pushup Challenge -->
+            <div class="challenge-card" id="maxPushupCard">
+                <div class="challenge-header">
+                    <div class="challenge-title">🎯 MAX Push-ups</div>
+                    <div class="challenge-target" id="maxPushupTarget">0 today</div>
+                </div>
+                <div class="challenge-stats">
+                    <span>Today: <span id="maxPushupToday">0</span></span>
+                    <span>Best Day: <span id="maxPushupBest">0</span></span>
+                    <span>All Time: <span id="maxPushupTotal">0</span></span>
+                </div>
+                <div class="max-actions">
+                    <button class="btn-add small" id="maxPushupAdd1">+1</button>
+                    <button class="btn-add large" id="maxPushupAdd5">+5</button>
+                </div>
+            </div>
+
+            <!-- MAX Situp Challenge -->
+            <div class="challenge-card" id="maxSitupCard">
+                <div class="challenge-header">
+                    <div class="challenge-title">🎯 MAX Sit-ups</div>
+                    <div class="challenge-target" id="maxSitupTarget">0 today</div>
+                </div>
+                <div class="challenge-stats">
+                    <span>Today: <span id="maxSitupToday">0</span></span>
+                    <span>Best Day: <span id="maxSitupBest">0</span></span>
+                    <span>All Time: <span id="maxSitupTotal">0</span></span>
+                </div>
+                <div class="max-actions">
+                    <button class="btn-add small" id="maxSitupAdd1">+1</button>
+                    <button class="btn-add large" id="maxSitupAdd5">+5</button>
+                </div>
+            </div>
         </div>
 
         <div class="stats-section">
@@ -553,6 +611,14 @@
                         <input type="checkbox" id="enablePlank" checked style="transform: scale(1.2);">
                         <span>🏋️ Plank</span>
                     </label>
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enableMaxPushup" checked style="transform: scale(1.2);">
+                        <span>🎯 MAX Push-ups</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enableMaxSitup" checked style="transform: scale(1.2);">
+                        <span>🎯 MAX Sit-ups</span>
+                    </label>
                 </div>
             </div>
 
@@ -584,7 +650,9 @@
             challenges: {
                 pushup: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
                 situp: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
-                plank: { current: 30, todayCount: 0, todaySuccess: 0, bestEver: 0, totalTime: 0, enabled: true }
+                plank: { current: 30, todayCount: 0, todaySuccess: 0, bestEver: 0, totalTime: 0, enabled: true },
+                maxPushup: { todayTotal: 0, bestDaily: 0, totalAllTime: 0, enabled: true },
+                maxSitup: { todayTotal: 0, bestDaily: 0, totalAllTime: 0, enabled: true }
             },
             settings: {
                 countdownSeconds: 5
@@ -698,6 +766,14 @@
                             appState.challenges[key].enabled = true;
                         }
                     });
+
+                    // Ensure MAX challenges exist with proper structure
+                    if (!appState.challenges.maxPushup) {
+                        appState.challenges.maxPushup = { todayTotal: 0, bestDaily: 0, totalAllTime: 0, enabled: true };
+                    }
+                    if (!appState.challenges.maxSitup) {
+                        appState.challenges.maxSitup = { todayTotal: 0, bestDaily: 0, totalAllTime: 0, enabled: true };
+                    }
                 } else {
                     console.log('No saved state found, using defaults');
                 }
@@ -797,10 +873,22 @@
         function checkNewDay() {
             const today = new Date().toDateString();
             if (appState.lastActiveDate !== today) {
+                // Save yesterday's MAX totals as best if they're higher
+                if (appState.challenges.maxPushup.todayTotal > appState.challenges.maxPushup.bestDaily) {
+                    appState.challenges.maxPushup.bestDaily = appState.challenges.maxPushup.todayTotal;
+                }
+                if (appState.challenges.maxSitup.todayTotal > appState.challenges.maxSitup.bestDaily) {
+                    appState.challenges.maxSitup.bestDaily = appState.challenges.maxSitup.todayTotal;
+                }
+
                 // Reset daily counters but keep progression
                 Object.keys(appState.challenges).forEach(key => {
-                    appState.challenges[key].todayCount = 0;
-                    appState.challenges[key].todaySuccess = 0;
+                    if (key === 'maxPushup' || key === 'maxSitup') {
+                        appState.challenges[key].todayTotal = 0;
+                    } else {
+                        appState.challenges[key].todayCount = 0;
+                        appState.challenges[key].todaySuccess = 0;
+                    }
                 });
                 appState.dailyLog = [];
                 appState.lastActiveDate = today;
@@ -812,8 +900,13 @@
             // Update challenge displays and visibility
             Object.keys(appState.challenges).forEach(key => {
                 const challenge = appState.challenges[key];
-                const unit = key === 'plank' ? 's' : ' reps';
                 const card = document.getElementById(`${key}Card`);
+                
+                // Skip if card doesn't exist (safety check)
+                if (!card) {
+                    console.warn(`Card not found for challenge: ${key}`);
+                    return;
+                }
                 
                 // Show/hide based on enabled status
                 if (challenge.enabled) {
@@ -824,28 +917,56 @@
                     card.style.display = 'none';
                 }
                 
-                document.getElementById(`${key}Target`).textContent = challenge.current + unit;
-                document.getElementById(`${key}Today`).textContent = key === 'plank' ? 
-                    challenge.todaySuccess : challenge.todaySuccess;
-                document.getElementById(`${key}Best`).textContent = challenge.bestEver;
-                document.getElementById(`${key}Total`).textContent = key === 'plank' ? 
-                    challenge.totalTime : challenge.totalReps;
+                if (key === 'maxPushup' || key === 'maxSitup') {
+                    // MAX mode displays
+                    const targetEl = document.getElementById(`${key}Target`);
+                    const todayEl = document.getElementById(`${key}Today`);
+                    const bestEl = document.getElementById(`${key}Best`);
+                    const totalEl = document.getElementById(`${key}Total`);
+                    
+                    if (targetEl) targetEl.textContent = `${challenge.todayTotal} today`;
+                    if (todayEl) todayEl.textContent = challenge.todayTotal;
+                    if (bestEl) bestEl.textContent = challenge.bestDaily;
+                    if (totalEl) totalEl.textContent = challenge.totalAllTime;
+                } else {
+                    // Regular challenge displays
+                    const unit = key === 'plank' ? 's' : ' reps';
+                    const targetEl = document.getElementById(`${key}Target`);
+                    const todayEl = document.getElementById(`${key}Today`);
+                    const bestEl = document.getElementById(`${key}Best`);
+                    const totalEl = document.getElementById(`${key}Total`);
+                    
+                    if (targetEl) targetEl.textContent = challenge.current + unit;
+                    if (todayEl) todayEl.textContent = key === 'plank' ? 
+                        challenge.todaySuccess : challenge.todaySuccess;
+                    if (bestEl) bestEl.textContent = challenge.bestEver;
+                    if (totalEl) totalEl.textContent = key === 'plank' ? 
+                        challenge.totalTime : challenge.totalReps;
+                }
             });
 
-            // Update daily stats (only count enabled challenges)
-            const enabledChallenges = Object.values(appState.challenges).filter(c => c.enabled);
-            const totalAttempts = enabledChallenges.reduce((sum, c) => sum + c.todayCount, 0);
-            const totalSuccess = enabledChallenges.reduce((sum, c) => sum + c.todaySuccess, 0);
+            // Update daily stats (only count enabled challenges, exclude MAX modes from attempts)
+            const regularChallenges = ['pushup', 'situp', 'plank']
+                .filter(key => appState.challenges[key] && appState.challenges[key].enabled)
+                .map(key => appState.challenges[key]);
+            
+            const totalAttempts = regularChallenges.reduce((sum, c) => sum + (c.todayCount || 0), 0);
+            const totalSuccess = regularChallenges.reduce((sum, c) => sum + (c.todaySuccess || 0), 0);
             const successRate = totalAttempts > 0 ? Math.round((totalSuccess / totalAttempts) * 100) : 0;
 
-            document.getElementById('totalAttempts').textContent = totalAttempts;
-            document.getElementById('totalSuccess').textContent = totalSuccess;
-            document.getElementById('successRate').textContent = successRate + '%';
-            document.getElementById('currentStreak').textContent = appState.streak;
+            const attemptsEl = document.getElementById('totalAttempts');
+            const successEl = document.getElementById('totalSuccess');
+            const rateEl = document.getElementById('successRate');
+            const streakEl = document.getElementById('currentStreak');
+
+            if (attemptsEl) attemptsEl.textContent = totalAttempts;
+            if (successEl) successEl.textContent = totalSuccess;
+            if (rateEl) rateEl.textContent = successRate + '%';
+            if (streakEl) streakEl.textContent = appState.streak;
 
             // Update streak badge
-            if (appState.streak > 0) {
-                const badge = document.getElementById('streakBadge');
+            const badge = document.getElementById('streakBadge');
+            if (badge && appState.streak > 0) {
                 badge.textContent = `🔥 ${appState.streak} days`;
                 badge.style.display = 'inline-block';
             }
@@ -858,10 +979,24 @@
                 }
             });
 
-            // Update challenge enable checkboxes
-            document.getElementById('enablePushup').checked = appState.challenges.pushup.enabled;
-            document.getElementById('enableSitup').checked = appState.challenges.situp.enabled;
-            document.getElementById('enablePlank').checked = appState.challenges.plank.enabled;
+            // Update challenge enable checkboxes (with safety checks)
+            const checkboxes = [
+                'enablePushup', 'enableSitup', 'enablePlank', 'enableMaxPushup', 'enableMaxSitup'
+            ];
+            
+            checkboxes.forEach(id => {
+                const checkbox = document.getElementById(id);
+                const challengeKey = id.replace('enable', '').toLowerCase();
+                const maxKey = id.includes('Max') ? challengeKey : null;
+                
+                if (checkbox) {
+                    if (maxKey) {
+                        checkbox.checked = appState.challenges[maxKey] ? appState.challenges[maxKey].enabled : true;
+                    } else {
+                        checkbox.checked = appState.challenges[challengeKey] ? appState.challenges[challengeKey].enabled : true;
+                    }
+                }
+            });
         }
 
         function startChallenge(type) {
@@ -942,7 +1077,7 @@
 
         function completeChallenge(type, success) {
             // Don't allow completion if challenge is disabled
-            if (!appState.challenges[type].enabled) return;
+            if (!appState.challenges[type] || !appState.challenges[type].enabled) return;
             
             const challenge = appState.challenges[type];
             challenge.todayCount++;
@@ -983,6 +1118,18 @@
                     if (challenge.current > challenge.bestEver) {
                         challenge.bestEver = challenge.current;
                     }
+
+                    // Add to MAX mode totals
+                    const maxType = type === 'pushup' ? 'maxPushup' : 'maxSitup';
+                    if (appState.challenges[maxType] && appState.challenges[maxType].enabled) {
+                        appState.challenges[maxType].todayTotal += challenge.current;
+                        appState.challenges[maxType].totalAllTime += challenge.current;
+                        
+                        // Update best daily if this is a new record
+                        if (appState.challenges[maxType].todayTotal > appState.challenges[maxType].bestDaily) {
+                            appState.challenges[maxType].bestDaily = appState.challenges[maxType].todayTotal;
+                        }
+                    }
                 }
             }
 
@@ -1009,19 +1156,50 @@
             updateHistoryDisplay();
         }
 
+        function addToMaxChallenge(type, amount) {
+            // Don't allow if challenge is disabled
+            if (!appState.challenges[type] || !appState.challenges[type].enabled) return;
+            
+            const challenge = appState.challenges[type];
+            challenge.todayTotal += amount;
+            challenge.totalAllTime += amount;
+
+            // Update best daily if this is a new record
+            if (challenge.todayTotal > challenge.bestDaily) {
+                challenge.bestDaily = challenge.todayTotal;
+            }
+
+            // Log the addition
+            const logEntry = {
+                type: type,
+                amount: amount,
+                success: true,
+                timestamp: new Date().toISOString()
+            };
+            appState.dailyLog.push(logEntry);
+
+            // Show feedback
+            const exerciseName = type.replace('max', '').replace('P', ' p').replace('S', ' s');
+            showNotification(`+${amount}${exerciseName}s! Keep going! 🔥`);
+
+            // Save and update
+            saveState();
+            updateDisplay();
+            updateHistoryDisplay();
+        }
+
         function resetChallengeUI(type) {
             activeChallenge = null;
             
-            // Reset buttons
-            document.getElementById(`${type}Start`).style.display = 'block';
-            document.getElementById(`${type}Success`).style.display = 'none';
-            document.getElementById(`${type}Fail`).style.display = 'none';
-
-            // Reset plank specific UI
+            // Only reset plank-specific UI for plank challenges
             if (type === 'plank') {
-                document.getElementById('plankTimer').style.display = 'none';
-                document.getElementById('countdownDisplay').style.display = 'none';
-                document.getElementById('timerStatus').textContent = 'Hold that plank!';
+                const plankTimerDiv = document.getElementById('plankTimer');
+                const countdownDisplay = document.getElementById('countdownDisplay');
+                const timerStatus = document.getElementById('timerStatus');
+                
+                if (plankTimerDiv) plankTimerDiv.style.display = 'none';
+                if (countdownDisplay) countdownDisplay.style.display = 'none';
+                if (timerStatus) timerStatus.textContent = 'Hold that plank!';
                 
                 if (plankTimer) {
                     clearInterval(plankTimer);
@@ -1032,6 +1210,8 @@
                     countdownTimer = null;
                 }
             }
+            
+            // For pushup/situp challenges, no UI reset needed since they're direct completion
         }
 
         function updateStreak() {
@@ -1062,12 +1242,19 @@
                 
                 const time = new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const result = entry.success ? '✅' : '❌';
-                const details = entry.type === 'plank' ? 
-                    `${entry.target}s ${entry.actualTime ? `(${entry.actualTime}s)` : ''}` : 
-                    `${entry.target} reps`;
+                
+                let details;
+                if (entry.type === 'plank') {
+                    details = `${entry.target}s ${entry.actualTime ? `(${entry.actualTime}s)` : ''}`;
+                } else if (entry.type === 'maxPushup' || entry.type === 'maxSitup') {
+                    const exerciseName = entry.type.replace('max', '').replace('P', ' p').replace('S', ' s');
+                    details = `+${entry.amount}${exerciseName}s`;
+                } else {
+                    details = `${entry.target} reps`;
+                }
                 
                 div.innerHTML = `
-                    <span><strong>${entry.type}</strong> - ${details}</span>
+                    <span><strong>${entry.type.replace('max', 'MAX ')}</strong> - ${details}</span>
                     <span>${result} ${time}</span>
                 `;
                 logSection.appendChild(div);
@@ -1145,27 +1332,33 @@
 
         function setupEventListeners() {
             // Challenge completion buttons (pushup/situp - direct completion)
-            document.getElementById('pushupSuccess').addEventListener('click', () => completeChallenge('pushup', true));
-            document.getElementById('pushupFail').addEventListener('click', () => completeChallenge('pushup', false));
-            document.getElementById('situpSuccess').addEventListener('click', () => completeChallenge('situp', true));
-            document.getElementById('situpFail').addEventListener('click', () => completeChallenge('situp', false));
+            document.getElementById('pushupSuccess')?.addEventListener('click', () => completeChallenge('pushup', true));
+            document.getElementById('pushupFail')?.addEventListener('click', () => completeChallenge('pushup', false));
+            document.getElementById('situpSuccess')?.addEventListener('click', () => completeChallenge('situp', true));
+            document.getElementById('situpFail')?.addEventListener('click', () => completeChallenge('situp', false));
 
             // Plank - requires timer first
-            document.getElementById('plankStart').addEventListener('click', () => startChallenge('plank'));
-            document.getElementById('plankSuccess').addEventListener('click', () => completeChallenge('plank', true));
-            document.getElementById('plankFail').addEventListener('click', () => completeChallenge('plank', false));
+            document.getElementById('plankStart')?.addEventListener('click', () => startChallenge('plank'));
+            document.getElementById('plankSuccess')?.addEventListener('click', () => completeChallenge('plank', true));
+            document.getElementById('plankFail')?.addEventListener('click', () => completeChallenge('plank', false));
+
+            // MAX challenge buttons
+            document.getElementById('maxPushupAdd1')?.addEventListener('click', () => addToMaxChallenge('maxPushup', 1));
+            document.getElementById('maxPushupAdd5')?.addEventListener('click', () => addToMaxChallenge('maxPushup', 5));
+            document.getElementById('maxSitupAdd1')?.addEventListener('click', () => addToMaxChallenge('maxSitup', 1));
+            document.getElementById('maxSitupAdd5')?.addEventListener('click', () => addToMaxChallenge('maxSitup', 5));
 
             // Navigation
-            document.getElementById('historyBtn').addEventListener('click', () => {
+            document.getElementById('historyBtn')?.addEventListener('click', () => {
                 updateHistoryDisplay();
                 document.getElementById('historyModal').style.display = 'block';
             });
             
-            document.getElementById('settingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsBtn')?.addEventListener('click', () => {
                 document.getElementById('settingsModal').style.display = 'block';
             });
             
-            document.getElementById('exportBtn').addEventListener('click', exportData);
+            document.getElementById('exportBtn')?.addEventListener('click', exportData);
 
             // Settings - countdown
             document.querySelectorAll('.countdown-btn').forEach(btn => {
@@ -1177,39 +1370,57 @@
                 });
             });
 
-            // Settings - challenge toggles
-            document.getElementById('enablePushup').addEventListener('change', function() {
+            // Settings - challenge toggles (with safety checks)
+            document.getElementById('enablePushup')?.addEventListener('change', function() {
                 appState.challenges.pushup.enabled = this.checked;
                 saveState();
                 updateDisplay();
             });
 
-            document.getElementById('enableSitup').addEventListener('change', function() {
+            document.getElementById('enableSitup')?.addEventListener('change', function() {
                 appState.challenges.situp.enabled = this.checked;
                 saveState();
                 updateDisplay();
             });
 
-            document.getElementById('enablePlank').addEventListener('change', function() {
+            document.getElementById('enablePlank')?.addEventListener('change', function() {
                 appState.challenges.plank.enabled = this.checked;
                 saveState();
                 updateDisplay();
             });
 
-            // Import/Export
-            document.getElementById('importBtn').addEventListener('click', () => {
-                document.getElementById('fileInput').click();
+            document.getElementById('enableMaxPushup')?.addEventListener('change', function() {
+                if (appState.challenges.maxPushup) {
+                    appState.challenges.maxPushup.enabled = this.checked;
+                    saveState();
+                    updateDisplay();
+                }
             });
-            document.getElementById('fileInput').addEventListener('change', importData);
+
+            document.getElementById('enableMaxSitup')?.addEventListener('change', function() {
+                if (appState.challenges.maxSitup) {
+                    appState.challenges.maxSitup.enabled = this.checked;
+                    saveState();
+                    updateDisplay();
+                }
+            });
+
+            // Import/Export
+            document.getElementById('importBtn')?.addEventListener('click', () => {
+                document.getElementById('fileInput')?.click();
+            });
+            document.getElementById('fileInput')?.addEventListener('change', importData);
 
             // Reset progress
-            document.getElementById('resetProgressBtn').addEventListener('click', () => {
+            document.getElementById('resetProgressBtn')?.addEventListener('click', () => {
                 if (confirm('Reset all progress? This cannot be undone!')) {
                     appState = {
                         challenges: {
                             pushup: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
                             situp: { current: 10, todayCount: 0, todaySuccess: 0, bestEver: 0, totalReps: 0, enabled: true },
-                            plank: { current: 30, todayCount: 0, todaySuccess: 0, bestEver: 0, totalTime: 0, enabled: true }
+                            plank: { current: 30, todayCount: 0, todaySuccess: 0, bestEver: 0, totalTime: 0, enabled: true },
+                            maxPushup: { todayTotal: 0, bestDaily: 0, totalAllTime: 0, enabled: true },
+                            maxSitup: { todayTotal: 0, bestDaily: 0, totalAllTime: 0, enabled: true }
                         },
                         settings: { countdownSeconds: 5 },
                         dailyStats: {},
@@ -1233,11 +1444,6 @@
             });
         }
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
 </body>
 
 </html>
