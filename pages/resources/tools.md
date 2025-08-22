@@ -45,6 +45,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     description="Suivi simple pour pompes, abdos et planches avec progression intelligente et retour audio."
     icon="feather.svg"
   %}
+  {% include link-object.html
+    title="NihonSupermemo"
+    url="/resources/tools/NihonSupermemo.html"
+    description="Application interactive d'apprentissage du japonais pour les kana et kanji avec répétition espacée et modes d'étude multiples."
+    icon="feather.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {

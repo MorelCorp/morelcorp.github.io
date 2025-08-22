@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>にほんスーパーメモ (Nihon Supermemo)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 12px 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 18px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .title-japanese {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .title-english {
+            font-size: 11px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        /* Language Setup Modal */
+        .language-setup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+
+        .language-setup.hidden {
+            display: none !important;
+        }
+
+        .language-setup-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .language-setup h2 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .language-setup p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .language-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .language-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        .language-option:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .language-option:active {
+            transform: scale(0.98);
+        }
+
+        .language-option .flag {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .language-option .lang-name {
+            font-weight: 600;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 3px;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        .hamburger:active {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .hamburger span {
+            display: block;
+            height: 2px;
+            background: #667eea;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translateY(5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translateY(-5px);
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            min-width: 250px;
+            max-width: 90vw;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .menu-section {
+            padding: 8px 0;
+        }
+
+        .menu-section-title {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .menu-item:active, .menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .menu-item.mode-item {
+            justify-content: space-between;
+        }
+
+        .mode-indicator {
+            color: #48bb78;
+            font-weight: bold;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-item.language-item {
+            justify-content: space-between;
+        }
+
+        .language-indicator {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .menu-stats {
+            padding: 0 16px;
+        }
+
+        .menu-stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+        }
+
+        .menu-stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 4px 0;
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Mode Selector */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 6px 14px;
+            border: 2px solid white;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 13px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Card Container */
+        .card-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .question-card {
+            text-align: center;
+        }
+
+        .character {
+            font-size: min(25vw, 80px);
+            margin: 15px 0;
+            color: #333;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .question-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .choice-btn {
+            padding: 10px 8px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-height: 44px;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .choice-btn.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .choice-btn.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #f56565;
+        }
+
+        .choice-btn.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .feedback.correct {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .feedback.incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .next-btn {
+            display: block;
+            margin: 15px auto 0;
+            padding: 10px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            min-height: 44px;
+        }
+
+        .next-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Stats Bar (Bottom) */
+        .stats-bar {
+            background: rgba(255,255,255,0.98);
+            padding: 8px 4px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+            padding: 4px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* Welcome Screen */
+        .welcome {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .welcome h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .welcome p {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:active {
+            color: #333;
+        }
+
+        .kana-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .kana-cell {
+            position: relative;
+            aspect-ratio: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .kana-cell:active {
+            transform: scale(0.95);
+        }
+
+        .kana-main {
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .kana-sub {
+            font-size: 8px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .status-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .status-overlay.mastered {
+            background: rgba(72, 187, 120, 0.9);
+            color: white;
+        }
+
+        .status-overlay.learning {
+            background: rgba(237, 137, 54, 0.9);
+            color: white;
+        }
+
+        .status-overlay.struggling {
+            background: rgba(245, 101, 101, 0.9);
+            color: white;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legend-box.mastered {
+            background: rgba(72, 187, 120, 0.9);
+        }
+
+        .legend-box.learning {
+            background: rgba(237, 137, 54, 0.9);
+        }
+
+        .legend-box.struggling {
+            background: rgba(245, 101, 101, 0.9);
+        }
+
+        .legend-box.unseen {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Section headers in modal */
+        h3 {
+            font-size: 16px;
+            color: #333;
+            margin: 16px 0 8px 0;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        h3:first-of-type {
+            border-top: none;
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 360px) {
+            .mode-btn {
+                font-size: 12px;
+                padding: 5px 12px;
+            }
+            
+            .character {
+                font-size: min(30vw, 70px);
+            }
+            
+            .choices {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .kana-grid {
+                grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            }
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+
+            .title-japanese {
+                font-size: 24px;
+            }
+
+            .title-english {
+                font-size: 12px;
+            }
+            
+            .main-container {
+                padding: 20px;
+            }
+            
+            .card-container {
+                padding: 30px;
+            }
+            
+            .character {
+                font-size: 90px;
+            }
+            
+            .question-text {
+                font-size: 16px;
+            }
+            
+            .choices {
+                gap: 12px;
+            }
+            
+            .choice-btn {
+                padding: 12px;
+                font-size: 16px;
+            }
+            
+            .stats-bar {
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+            
+            .stat-label {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Setup Modal -->
+    <div class="language-setup" id="languageSetup">
+        <div class="language-setup-content">
+            <h2>Choose your language / Choisissez votre langue</h2>
+            <p>Select your preferred language for the app interface and kanji meanings.</p>
+            <p>Sélectionnez votre langue préférée pour l'interface et les significations des kanji.</p>
+            <div class="language-options">
+                <button class="language-option" id="langBtnEn">
+                    <div class="flag">🇬🇧</div>
+                    <div class="lang-name">English</div>
+                </button>
+                <button class="language-option" id="langBtnFr">
+                    <div class="flag">🇫🇷</div>
+                    <div class="lang-name">Français</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header hidden" id="appHeader">
+        <div class="header-content">
+            <h1>
+                <span class="title-japanese">にほんスーパーメモ</span>
+                <span class="title-english">(Nihon Supermemo)</span>
+            </h1>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <!-- Mode Selection -->
+                <div class="menu-section">
+                    <div class="menu-section-title" id="menuModeTitle">📚 Mode</div>
+                    <button class="menu-item mode-item" data-mode="mixed" onclick="setMode('mixed')">
+                        <span id="menuModeMixed">Mixed</span>
+                        <span class="mode-indicator" id="modeMixed">✓</span>
+                    </button>
+                    <button class="menu-item mode-item" data-mode="hiragana" onclick="setMode('hiragana')">
+                        <span id="menuModeHiragana">Hiragana</span>
+                        <span class="mode-indicator" id="modeHiragana"></span>
+                    </button>
+                    <button class="menu-item mode-item" data-mode="katakana" onclick="setMode('katakana')">
+                        <span id="menuModeKatakana">Katakana</span>
+                        <span class="mode-indicator" id="modeKatakana"></span>
+                    </button>
+                    <button class="menu-item mode-item" data-mode="kanji" onclick="setMode('kanji')">
+                        <span id="menuModeKanji">Kanji</span>
+                        <span class="mode-indicator" id="modeKanji"></span>
+                    </button>
+                </div>
+                <div class="menu-divider"></div>
+                
+                <!-- Stats Section -->
+                <div class="menu-section">
+                    <div class="menu-section-title" id="menuStatsTitle">📈 Stats</div>
+                    <div class="menu-stats">
+                        <div class="menu-stat-item">
+                            <span id="menuStatSeen">Seen</span>
+                            <span class="menu-stat-value" id="menuTotalSeen">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatMastered">Mastered</span>
+                            <span class="menu-stat-value" id="menuMasteredCount">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatLearning">Learning</span>
+                            <span class="menu-stat-value" id="menuLearningCount">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatStruggling">Struggling</span>
+                            <span class="menu-stat-value" id="menuStrugglingCount">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatStreak">Streak</span>
+                            <span class="menu-stat-value" id="menuStreakCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+                
+                <!-- Original Menu Items -->
+                <button class="menu-item" onclick="showProgress()">
+                    <span id="menuProgress">📊 Detailed Progress</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button class="menu-item language-item" onclick="toggleLanguage()">
+                    <span id="menuLanguage">🌐 Language</span>
+                    <span class="language-indicator" id="currentLang">EN</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button class="menu-item" onclick="exportData()">
+                    <span id="menuExport">💾 Export Data</span>
+                </button>
+                <button class="menu-item" onclick="document.getElementById('importFile').click()">
+                    <span id="menuImport">📁 Import Data</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button class="menu-item" onclick="resetData()">
+                    <span id="menuReset">🔄 Reset All</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container hidden" id="mainContainer">
+        <div class="card-container" id="cardContainer">
+            <div class="welcome">
+                <h2 id="welcomeTitle">Welcome! 👋</h2>
+                <p id="welcomeText1">Select a mode above to start learning Japanese characters.</p>
+                <p id="welcomeText2">The app uses spaced repetition for optimal retention.</p>
+                <button class="next-btn" onclick="startLearning()" id="startBtn">Start Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Removed stats bar since it's now in the menu -->
+    <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+
+    <!-- Progress Modal -->
+    <div class="modal" id="progressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="progressTitle">Progress</h2>
+                <button class="close-btn" onclick="closeProgress()">&times;</button>
+            </div>
+            <div id="progressContent"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box mastered"></div>
+                    <span id="legendMastered">Mastered</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box learning"></div>
+                    <span id="legendLearning">Learning</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box struggling"></div>
+                    <span id="legendStruggling">Struggling</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box unseen"></div>
+                    <span id="legendUnseen">Not Seen</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script>
+        console.log('Script starting...');
+        
+        // Global variables
+        let app;
+        let currentLanguage = 'en';
+        
+        // Translations
+        const translations = {
+            en: {
+                menu: {
+                    progress: '📊 Detailed Progress',
+                    language: '🌐 Language',
+                    export: '💾 Export Data',
+                    import: '📁 Import Data',
+                    reset: '🔄 Reset All',
+                    modeTitle: '📚 Mode',
+                    modeMixed: 'Mixed',
+                    modeHiragana: 'Hiragana',
+                    modeKatakana: 'Katakana',
+                    modeKanji: 'Kanji',
+                    statsTitle: '📈 Stats'
+                },
+                stats: {
+                    seen: 'Seen',
+                    mastered: 'Mastered',
+                    learning: 'Learning',
+                    struggling: 'Struggling',
+                    streak: 'Streak'
+                },
+                welcome: {
+                    title: 'Welcome! 👋',
+                    text1: 'Open the menu to select a learning mode.',
+                    text2: 'The app uses spaced repetition for optimal retention.',
+                    start: 'Start Learning'
+                },
+                progress: {
+                    title: 'Progress',
+                    mastered: 'Mastered',
+                    learning: 'Learning',
+                    struggling: 'Struggling',
+                    unseen: 'Not Seen'
+                },
+                question: {
+                    whatReading: 'What is the reading of this',
+                    whichRepresents: 'Which',
+                    represents: 'represents'
+                },
+                feedback: {
+                    correct: 'Correct! Well done!',
+                    incorrect: 'Incorrect. The answer was',
+                    next: 'Next'
+                },
+                complete: {
+                    title: '🎉 All reviewed!',
+                    text1: 'Great job! You\'ve reviewed all available items.',
+                    text2: 'Items will become available based on the spaced repetition schedule.',
+                    check: 'Check Again'
+                },
+                alerts: {
+                    exportSuccess: 'Data exported successfully!',
+                    importSuccess: 'Data imported successfully!',
+                    importError: 'Error importing file',
+                    invalidFormat: 'Invalid file format',
+                    resetConfirm: 'Are you sure you want to reset all progress? This cannot be undone!'
+                }
+            },
+            fr: {
+                menu: {
+                    progress: '📊 Progrès détaillé',
+                    language: '🌐 Langue',
+                    export: '💾 Exporter',
+                    import: '📁 Importer',
+                    reset: '🔄 Réinitialiser',
+                    modeTitle: '📚 Mode',
+                    modeMixed: 'Mixte',
+                    modeHiragana: 'Hiragana',
+                    modeKatakana: 'Katakana',
+                    modeKanji: 'Kanji',
+                    statsTitle: '📈 Statistiques'
+                },
+                stats: {
+                    seen: 'Vus',
+                    mastered: 'Maîtrisés',
+                    learning: 'En cours',
+                    struggling: 'Difficiles',
+                    streak: 'Série'
+                },
+                welcome: {
+                    title: 'Bienvenue! 👋',
+                    text1: 'Ouvrez le menu pour sélectionner un mode d\'apprentissage.',
+                    text2: 'L\'application utilise la répétition espacée pour une rétention optimale.',
+                    start: 'Commencer'
+                },
+                progress: {
+                    title: 'Progrès',
+                    mastered: 'Maîtrisé',
+                    learning: 'En cours',
+                    struggling: 'Difficile',
+                    unseen: 'Non vu'
+                },
+                question: {
+                    whatReading: 'Quelle est la lecture de ce',
+                    whichRepresents: 'Quel',
+                    represents: 'représente'
+                },
+                feedback: {
+                    correct: 'Correct! Bien joué!',
+                    incorrect: 'Incorrect. La réponse était',
+                    next: 'Suivant'
+                },
+                complete: {
+                    title: '🎉 Tout révisé!',
+                    text1: 'Excellent! Vous avez révisé tous les éléments disponibles.',
+                    text2: 'Les éléments deviendront disponibles selon le calendrier de répétition espacée.',
+                    check: 'Vérifier à nouveau'
+                },
+                alerts: {
+                    exportSuccess: 'Données exportées avec succès!',
+                    importSuccess: 'Données importées avec succès!',
+                    importError: 'Erreur lors de l\'importation',
+                    invalidFormat: 'Format de fichier invalide',
+                    resetConfirm: 'Êtes-vous sûr de vouloir réinitialiser tous les progrès? Cette action est irréversible!'
+                }
+            }
+        };
+
+        // Data structures - just a sample for testing
+        const katakana = {
+            'ア': 'a', 'カ': 'ka', 'サ': 'sa', 'タ': 'ta', 'ナ': 'na',
+            'イ': 'i', 'キ': 'ki', 'シ': 'shi', 'チ': 'chi', 'ニ': 'ni',
+            'ウ': 'u', 'ク': 'ku', 'ス': 'su', 'ツ': 'tsu', 'ヌ': 'nu',
+            'エ': 'e', 'ケ': 'ke', 'セ': 'se', 'テ': 'te', 'ネ': 'ne',
+            'オ': 'o', 'コ': 'ko', 'ソ': 'so', 'ト': 'to', 'ノ': 'no'
+        };
+
+        const hiragana = {
+            'あ': 'a', 'か': 'ka', 'さ': 'sa', 'た': 'ta', 'な': 'na',
+            'い': 'i', 'き': 'ki', 'し': 'shi', 'ち': 'chi', 'に': 'ni',
+            'う': 'u', 'く': 'ku', 'す': 'su', 'つ': 'tsu', 'ぬ': 'nu',
+            'え': 'e', 'け': 'ke', 'せ': 'se', 'て': 'te', 'ね': 'ne',
+            'お': 'o', 'こ': 'ko', 'そ': 'so', 'と': 'to', 'の': 'no'
+        };
+
+        const kanjiMeanings = {
+            '一': { en: 'one', fr: 'un' },
+            '二': { en: 'two', fr: 'deux' },
+            '三': { en: 'three', fr: 'trois' },
+            '日': { en: 'day/sun', fr: 'jour/soleil' },
+            '月': { en: 'month/moon', fr: 'mois/lune' },
+            '水': { en: 'water', fr: 'eau' },
+            '火': { en: 'fire', fr: 'feu' },
+            '木': { en: 'tree', fr: 'arbre' },
+            '金': { en: 'gold', fr: 'or' },
+            '土': { en: 'earth', fr: 'terre' }
+        };
+
+        // SuperMemo 2 Algorithm
+        class SM2 {
+            constructor() {
+                this.defaultEasiness = 2.5;
+                this.minEasiness = 1.3;
+            }
+
+            calculate(quality, repetitions, easiness, interval) {
+                if (quality < 3) {
+                    repetitions = 0;
+                    interval = 1;
+                } else {
+                    if (repetitions === 0) {
+                        interval = 1;
+                    } else if (repetitions === 1) {
+                        interval = 6;
+                    } else {
+                        interval = Math.round(interval * easiness);
+                    }
+                    repetitions += 1;
+                }
+
+                easiness = easiness + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+                if (easiness < this.minEasiness) {
+                    easiness = this.minEasiness;
+                }
+
+                return { repetitions, easiness, interval };
+            }
+        }
+
+        // Main App Class
+        class JapaneseSRSApp {
+            constructor() {
+                console.log('Creating JapaneseSRSApp instance');
+                this.sm2 = new SM2();
+                this.currentMode = 'mixed';
+                this.currentItem = null;
+                this.currentChoices = [];
+                this.currentStreak = 0;
+                this.isAnswered = false;
+                this.loadData();
+                this.bindEvents();
+                this.updateStats();
+                this.updateUILanguage();
+            }
+
+            loadData() {
+                const saved = localStorage.getItem('japaneseSRSData');
+                if (saved) {
+                    try {
+                        this.data = JSON.parse(saved);
+                        if (this.data.settings && this.data.settings.language) {
+                            currentLanguage = this.data.settings.language;
+                        }
+                    } catch (e) {
+                        console.error('Error loading saved data:', e);
+                        this.initializeData();
+                    }
+                } else {
+                    this.initializeData();
+                }
+            }
+
+            initializeData() {
+                console.log('Initializing data...');
+                this.data = {
+                    items: {},
+                    lastReview: new Date().toISOString(),
+                    totalReviews: 0,
+                    settings: {
+                        mode: 'mixed',
+                        language: currentLanguage
+                    }
+                };
+
+                // Initialize all items
+                Object.entries(katakana).forEach(([char, romaji]) => {
+                    this.data.items[`kata_${char}`] = {
+                        type: 'katakana',
+                        character: char,
+                        romaji: romaji,
+                        repetitions: 0,
+                        easiness: 2.5,
+                        interval: 0,
+                        nextReview: new Date().toISOString(),
+                        lastReview: null,
+                        consecutiveCorrect: 0,
+                        consecutiveWrong: 0,
+                        totalSeen: 0
+                    };
+                });
+
+                Object.entries(hiragana).forEach(([char, romaji]) => {
+                    this.data.items[`hira_${char}`] = {
+                        type: 'hiragana',
+                        character: char,
+                        romaji: romaji,
+                        repetitions: 0,
+                        easiness: 2.5,
+                        interval: 0,
+                        nextReview: new Date().toISOString(),
+                        lastReview: null,
+                        consecutiveCorrect: 0,
+                        consecutiveWrong: 0,
+                        totalSeen: 0
+                    };
+                });
+
+                Object.entries(kanjiMeanings).forEach(([char, meanings]) => {
+                    this.data.items[`kanji_${char}`] = {
+                        type: 'kanji',
+                        character: char,
+                        romaji: meanings.en,
+                        romajiEn: meanings.en,
+                        romajiFr: meanings.fr,
+                        repetitions: 0,
+                        easiness: 2.5,
+                        interval: 0,
+                        nextReview: new Date().toISOString(),
+                        lastReview: null,
+                        consecutiveCorrect: 0,
+                        consecutiveWrong: 0,
+                        totalSeen: 0
+                    };
+                });
+
+                this.saveData();
+            }
+
+            saveData() {
+                this.data.settings.language = currentLanguage;
+                localStorage.setItem('japaneseSRSData', JSON.stringify(this.data));
+            }
+
+            updateUILanguage() {
+                const t = translations[currentLanguage];
+                
+                // Update menu items
+                document.getElementById('menuProgress').textContent = t.menu.progress;
+                document.getElementById('menuLanguage').textContent = t.menu.language;
+                document.getElementById('menuExport').textContent = t.menu.export;
+                document.getElementById('menuImport').textContent = t.menu.import;
+                document.getElementById('menuReset').textContent = t.menu.reset;
+                
+                // Update mode section
+                document.getElementById('menuModeTitle').textContent = t.menu.modeTitle;
+                document.getElementById('menuModeMixed').textContent = t.menu.modeMixed;
+                document.getElementById('menuModeHiragana').textContent = t.menu.modeHiragana;
+                document.getElementById('menuModeKatakana').textContent = t.menu.modeKatakana;
+                document.getElementById('menuModeKanji').textContent = t.menu.modeKanji;
+                
+                // Update stats section
+                document.getElementById('menuStatsTitle').textContent = t.menu.statsTitle;
+                document.getElementById('menuStatSeen').textContent = t.stats.seen;
+                document.getElementById('menuStatMastered').textContent = t.stats.mastered;
+                document.getElementById('menuStatLearning').textContent = t.stats.learning;
+                document.getElementById('menuStatStruggling').textContent = t.stats.struggling;
+                document.getElementById('menuStatStreak').textContent = t.stats.streak;
+                
+                // Update welcome screen
+                document.getElementById('welcomeTitle').textContent = t.welcome.title;
+                document.getElementById('welcomeText1').textContent = t.welcome.text1;
+                document.getElementById('welcomeText2').textContent = t.welcome.text2;
+                document.getElementById('startBtn').textContent = t.welcome.start;
+                
+                // Update progress modal
+                document.getElementById('progressTitle').textContent = t.progress.title;
+                document.getElementById('legendMastered').textContent = t.progress.mastered;
+                document.getElementById('legendLearning').textContent = t.progress.learning;
+                document.getElementById('legendStruggling').textContent = t.progress.struggling;
+                document.getElementById('legendUnseen').textContent = t.progress.unseen;
+                
+                // Update language indicator
+                document.getElementById('currentLang').textContent = currentLanguage.toUpperCase();
+                
+                // Update kanji meanings in data
+                Object.entries(this.data.items).forEach(([id, item]) => {
+                    if (item.type === 'kanji') {
+                        const char = item.character;
+                        if (kanjiMeanings[char]) {
+                            item.romaji = kanjiMeanings[char][currentLanguage];
+                        }
+                    }
+                });
+            }
+
+            bindEvents() {
+                // Hamburger menu
+                const hamburger = document.getElementById('hamburger');
+                const dropdownMenu = document.getElementById('dropdownMenu');
+                
+                hamburger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    hamburger.classList.toggle('active');
+                    dropdownMenu.classList.toggle('active');
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!hamburger.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        hamburger.classList.remove('active');
+                        dropdownMenu.classList.remove('active');
+                    }
+                });
+            }
+
+            updateStats() {
+                let totalSeen = 0;
+                let mastered = 0;
+                let learning = 0;
+                let struggling = 0;
+                
+                Object.values(this.data.items).forEach(item => {
+                    if (item.totalSeen > 0) {
+                        totalSeen++;
+                        
+                        if (item.interval >= 30) {
+                            mastered++;
+                        } else if (item.consecutiveWrong >= 2) {
+                            struggling++;
+                        } else if (item.totalSeen > 0) {
+                            learning++;
+                        }
+                    }
+                });
+                
+                // Update stats in menu
+                document.getElementById('menuTotalSeen').textContent = totalSeen;
+                document.getElementById('menuMasteredCount').textContent = mastered;
+                document.getElementById('menuLearningCount').textContent = learning;
+                document.getElementById('menuStrugglingCount').textContent = struggling;
+                document.getElementById('menuStreakCount').textContent = this.currentStreak;
+            }
+
+            startLearning() {
+                console.log('Starting learning...');
+                this.generateQuestion();
+            }
+
+            generateQuestion() {
+                console.log('Generating question...');
+                const nextItem = this.getNextItem();
+                if (!nextItem) {
+                    this.showComplete();
+                    return;
+                }
+
+                this.currentItem = nextItem;
+                const { item } = nextItem;
+                
+                const showCharacter = Math.random() < 0.5;
+                
+                if (showCharacter) {
+                    this.showCharacterQuestion(item);
+                } else {
+                    this.showRomajiQuestion(item);
+                }
+                
+                this.isAnswered = false;
+            }
+
+            getNextItem() {
+                const now = new Date();
+                let candidates = [];
+
+                Object.entries(this.data.items).forEach(([id, item]) => {
+                    if (this.currentMode !== 'mixed' && item.type !== this.currentMode) {
+                        return;
+                    }
+
+                    const nextReview = new Date(item.nextReview);
+                    if (nextReview <= now || item.totalSeen === 0) {
+                        candidates.push({ id, item, priority: this.calculatePriority(item, now) });
+                    }
+                });
+
+                if (candidates.length === 0) {
+                    return null;
+                }
+
+                candidates.sort((a, b) => b.priority - a.priority);
+                return candidates[0];
+            }
+
+            calculatePriority(item, now) {
+                let priority = 0;
+                
+                if (item.totalSeen === 0) return 1000;
+                if (item.consecutiveWrong >= 2) priority += 500;
+                
+                const overdue = (now - new Date(item.nextReview)) / (1000 * 60 * 60 * 24);
+                priority += overdue * 10;
+                priority += (3 - item.easiness) * 50;
+                
+                return priority;
+            }
+
+            showCharacterQuestion(item) {
+                const container = document.getElementById('cardContainer');
+                const t = translations[currentLanguage];
+                
+                const correctAnswer = item.romaji;
+                const allAnswers = this.getAnswerPool(item.type).map(i => i.romaji);
+                const wrongAnswers = allAnswers.filter(a => a !== correctAnswer);
+                
+                const shuffled = wrongAnswers.sort(() => Math.random() - 0.5);
+                const choices = [correctAnswer, ...shuffled.slice(0, Math.min(3, shuffled.length))];
+                this.currentChoices = choices.sort(() => Math.random() - 0.5);
+                
+                container.innerHTML = `
+                    <div class="question-card">
+                        <div class="character">${item.character}</div>
+                        <div class="question-text">${t.question.whatReading} ${item.type}?</div>
+                        <div class="choices">
+                            ${this.currentChoices.map((choice, index) => 
+                                `<button class="choice-btn" data-answer="${choice}" onclick="app.checkAnswer('${choice}')">${choice}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            showRomajiQuestion(item) {
+                const container = document.getElementById('cardContainer');
+                const t = translations[currentLanguage];
+                
+                const correctAnswer = item.character;
+                const allAnswers = this.getAnswerPool(item.type).map(i => i.character);
+                const wrongAnswers = allAnswers.filter(a => a !== correctAnswer);
+                
+                const shuffled = wrongAnswers.sort(() => Math.random() - 0.5);
+                const choices = [correctAnswer, ...shuffled.slice(0, Math.min(3, shuffled.length))];
+                this.currentChoices = choices.sort(() => Math.random() - 0.5);
+                
+                container.innerHTML = `
+                    <div class="question-card">
+                        <div class="question-text">${t.question.whichRepresents} ${item.type} ${t.question.represents}:</div>
+                        <div class="character" style="font-size: min(15vw, 48px);">"${item.romaji}"</div>
+                        <div class="choices">
+                            ${this.currentChoices.map((choice, index) => 
+                                `<button class="choice-btn" data-answer="${choice}" onclick="app.checkAnswer('${choice}')">${choice}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            getAnswerPool(type) {
+                return Object.values(this.data.items).filter(item => item.type === type);
+            }
+
+            checkAnswer(answer) {
+                if (this.isAnswered) return;
+                this.isAnswered = true;
+                
+                const { item } = this.currentItem;
+                const isCorrect = answer === item.romaji || answer === item.character;
+                const t = translations[currentLanguage];
+                
+                const buttons = document.querySelectorAll('.choice-btn');
+                buttons.forEach(btn => {
+                    btn.classList.add('disabled');
+                    if (btn.dataset.answer === answer) {
+                        btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    }
+                    if ((btn.dataset.answer === item.romaji || btn.dataset.answer === item.character) && !isCorrect) {
+                        btn.classList.add('correct');
+                    }
+                });
+                
+                item.totalSeen++;
+                item.lastReview = new Date().toISOString();
+                
+                let quality;
+                if (isCorrect) {
+                    item.consecutiveCorrect++;
+                    item.consecutiveWrong = 0;
+                    this.currentStreak++;
+                    quality = Math.min(5, 3 + item.consecutiveCorrect);
+                } else {
+                    item.consecutiveCorrect = 0;
+                    item.consecutiveWrong++;
+                    this.currentStreak = 0;
+                    quality = item.consecutiveWrong >= 2 ? 0 : 2;
+                }
+                
+                const { repetitions, easiness, interval } = this.sm2.calculate(
+                    quality,
+                    item.repetitions,
+                    item.easiness,
+                    item.interval
+                );
+                
+                item.repetitions = repetitions;
+                item.easiness = easiness;
+                item.interval = interval;
+                
+                const nextReview = new Date();
+                nextReview.setDate(nextReview.getDate() + interval);
+                item.nextReview = nextReview.toISOString();
+                
+                this.data.totalReviews++;
+                this.saveData();
+                this.updateStats();
+                
+                const container = document.getElementById('cardContainer');
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+                feedbackDiv.textContent = isCorrect ? t.feedback.correct : `${t.feedback.incorrect} "${item.romaji}"`;
+                container.appendChild(feedbackDiv);
+                
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'next-btn';
+                nextBtn.textContent = t.feedback.next;
+                nextBtn.onclick = () => this.generateQuestion();
+                container.appendChild(nextBtn);
+            }
+
+            showComplete() {
+                const container = document.getElementById('cardContainer');
+                const t = translations[currentLanguage];
+                container.innerHTML = `
+                    <div class="welcome">
+                        <h2>${t.complete.title}</h2>
+                        <p>${t.complete.text1}</p>
+                        <p>${t.complete.text2}</p>
+                        <button class="next-btn" onclick="app.generateQuestion()">${t.complete.check}</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Global functions
+        function selectLanguage(lang) {
+            console.log('Selecting language:', lang);
+            currentLanguage = lang;
+            localStorage.setItem('languagePreference', lang);
+            
+            // Hide language setup
+            document.getElementById('languageSetup').classList.add('hidden');
+            
+            // Show main app
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('mainContainer').classList.remove('hidden');
+            
+            // Initialize app and make it globally accessible
+            app = new JapaneseSRSApp();
+            window.app = app;  // Make app accessible for onclick handlers
+            
+            // Set initial mode indicator
+            updateModeIndicators('mixed');
+        }
+
+        function setMode(mode) {
+            console.log('Setting mode:', mode);
+            if (app) {
+                app.currentMode = mode;
+                app.saveData();
+                updateModeIndicators(mode);
+                // Close the menu after selection
+                setTimeout(() => {
+                    document.getElementById('hamburger').classList.remove('active');
+                    document.getElementById('dropdownMenu').classList.remove('active');
+                }, 100);
+            }
+        }
+
+        function updateModeIndicators(activeMode) {
+            // Clear all indicators
+            document.getElementById('modeMixed').textContent = '';
+            document.getElementById('modeHiragana').textContent = '';
+            document.getElementById('modeKatakana').textContent = '';
+            document.getElementById('modeKanji').textContent = '';
+            
+            // Set active indicator
+            if (activeMode === 'mixed') document.getElementById('modeMixed').textContent = '✓';
+            else if (activeMode === 'hiragana') document.getElementById('modeHiragana').textContent = '✓';
+            else if (activeMode === 'katakana') document.getElementById('modeKatakana').textContent = '✓';
+            else if (activeMode === 'kanji') document.getElementById('modeKanji').textContent = '✓';
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'fr' : 'en';
+            if (app) {
+                app.updateUILanguage();
+                app.saveData();
+            }
+        }
+        
+        function startLearning() {
+            if (!app) {
+                app = new JapaneseSRSApp();
+            }
+            app.startLearning();
+        }
+        
+        function showProgress() {
+            console.log('Showing progress...');
+            const modal = document.getElementById('progressModal');
+            modal.classList.add('active');
+        }
+
+        function closeProgress() {
+            document.getElementById('progressModal').classList.remove('active');
+        }
+
+        function exportData() {
+            if (!app) {
+                app = new JapaneseSRSApp();
+            }
+            
+            const dataStr = JSON.stringify(app.data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `nihon-supermemo-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const t = translations[currentLanguage];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.items && imported.lastReview) {
+                        if (!app) {
+                            app = new JapaneseSRSApp();
+                        }
+                        app.data = imported;
+                        app.saveData();
+                        app.updateStats();
+                        alert(t.alerts.importSuccess);
+                        location.reload();
+                    } else {
+                        alert(t.alerts.invalidFormat);
+                    }
+                } catch (error) {
+                    alert(t.alerts.importError + ': ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetData() {
+            const t = translations[currentLanguage];
+            if (confirm(t.alerts.resetConfirm)) {
+                localStorage.removeItem('japaneseSRSData');
+                localStorage.removeItem('languagePreference');
+                location.reload();
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            
+            // Check for saved language preference
+            const savedLang = localStorage.getItem('languagePreference');
+            
+            if (savedLang) {
+                console.log('Found saved language:', savedLang);
+                currentLanguage = savedLang;
+                selectLanguage(savedLang);
+            } else {
+                console.log('No saved language, showing selection modal');
+                // Add event listeners to language buttons
+                document.getElementById('langBtnEn').addEventListener('click', function() {
+                    console.log('English button clicked');
+                    selectLanguage('en');
+                });
+                
+                document.getElementById('langBtnFr').addEventListener('click', function() {
+                    console.log('French button clicked');
+                    selectLanguage('fr');
+                });
+            }
+        });
+        
+        // Make app accessible globally for onclick handlers
+        window.app = app;
+        
+        console.log('Script loaded successfully');
+    </script>
+</body>
+</html>
