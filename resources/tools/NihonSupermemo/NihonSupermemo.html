@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>にほんスーパーメモ (Nihon Supermemo)</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#764ba2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NihonSupermemo">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Language Setup Modal -->
+    <div class="language-setup" id="languageSetup">
+        <div class="language-setup-content">
+            <h2>Choose your language / Choisissez votre langue</h2>
+            <p>Select your preferred language for the app interface and kanji meanings.</p>
+            <p>Sélectionnez votre langue préférée pour l'interface et les significations des kanji.</p>
+            <div class="language-options">
+                <button class="language-option" id="langBtnEn">
+                    <div class="flag">🇬🇧</div>
+                    <div class="lang-name">English</div>
+                </button>
+                <button class="language-option" id="langBtnFr">
+                    <div class="flag">🇫🇷</div>
+                    <div class="lang-name">Français</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header hidden" id="appHeader">
+        <div class="header-content">
+            <h1>
+                <span class="title-japanese">にほんスーパーメモ</span>
+                <span class="title-english">(Nihon Supermemo)</span>
+            </h1>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <!-- Mode Selection -->
+                <div class="menu-section">
+                    <div class="menu-section-title" id="menuModeTitle">📚 Mode</div>
+                    <button class="menu-item mode-item" data-mode="mixed" onclick="setMode('mixed')">
+                        <span id="menuModeMixed">Mixed</span>
+                        <span class="mode-indicator" id="modeMixed">✓</span>
+                    </button>
+                    <button class="menu-item mode-item" data-mode="hiragana" onclick="setMode('hiragana')">
+                        <span id="menuModeHiragana">Hiragana</span>
+                        <span class="mode-indicator" id="modeHiragana"></span>
+                    </button>
+                    <button class="menu-item mode-item" data-mode="katakana" onclick="setMode('katakana')">
+                        <span id="menuModeKatakana">Katakana</span>
+                        <span class="mode-indicator" id="modeKatakana"></span>
+                    </button>
+                    <button class="menu-item mode-item" data-mode="kanji" onclick="setMode('kanji')">
+                        <span id="menuModeKanji">Kanji</span>
+                        <span class="mode-indicator" id="modeKanji"></span>
+                    </button>
+                </div>
+                <div class="menu-divider"></div>
+                
+                <!-- Stats Section -->
+                <div class="menu-section">
+                    <div class="menu-section-title" id="menuStatsTitle">📈 Stats</div>
+                    <div class="menu-stats">
+                        <div class="menu-stat-item">
+                            <span id="menuStatSeen">Seen</span>
+                            <span class="menu-stat-value" id="menuTotalSeen">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatMastered">Mastered</span>
+                            <span class="menu-stat-value" id="menuMasteredCount">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatLearning">Learning</span>
+                            <span class="menu-stat-value" id="menuLearningCount">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatStruggling">Struggling</span>
+                            <span class="menu-stat-value" id="menuStrugglingCount">0</span>
+                        </div>
+                        <div class="menu-stat-item">
+                            <span id="menuStatStreak">Streak</span>
+                            <span class="menu-stat-value" id="menuStreakCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+                
+                <!-- Original Menu Items -->
+                <div class="menu-divider"></div>
+                <button class="menu-item language-item" onclick="toggleLanguage()">
+                    <span id="menuLanguage">🌍 Language</span>
+                    <span class="language-indicator" id="currentLang">EN</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button class="menu-item" onclick="exportData()">
+                    <span id="menuExport">💾 Export Data</span>
+                </button>
+                <button class="menu-item" onclick="document.getElementById('importFile').click()">
+                    <span id="menuImport">📁 Import Data</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button class="menu-item" onclick="resetData()">
+                    <span id="menuReset">🔄 Reset All</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container hidden" id="mainContainer">
+        <div class="card-container" id="cardContainer">
+            <div class="welcome">
+                <h2 id="welcomeTitle">Welcome! 👋</h2>
+                <p id="welcomeText1">Open the menu to select a learning mode.</p>
+                <p id="welcomeText2">The app uses spaced repetition for optimal retention.</p>
+                <button class="next-btn" onclick="startLearning()" id="startBtn">Start Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File input for importing data -->
+    <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+
+    <!-- External JavaScript -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

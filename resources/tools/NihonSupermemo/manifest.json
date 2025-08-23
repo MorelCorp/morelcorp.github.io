@@ -1,0 +1,23 @@
+{
+    "name": "NihonSupermemo - Japanese Learning App",
+    "short_name": "NihonSupermemo",
+    "start_url": "./NihonSupermemo.html",
+    "display": "standalone",
+    "background_color": "#667eea",
+    "theme_color": "#764ba2",
+    "description": "Interactive Japanese learning app for kana and kanji with spaced repetition and multiple study modes",
+    "icons": [
+      {
+        "src": "icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ]
+  }

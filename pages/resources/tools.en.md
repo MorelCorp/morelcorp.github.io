@@ -48,7 +48,7 @@ Here are several tools that are currently useful for developing the current site
   %}
   {% include link-object.html
     title="NihonSupermemo"
-    url="/resources/tools/NihonSupermemo.html"
+    url="/resources/tools/NihonSupermemo/NihonSupermemo.html"
     description="Interactive Japanese learning app for kana and kanji with spaced repetition and multiple study modes."
     icon="feather.svg"
   %}
