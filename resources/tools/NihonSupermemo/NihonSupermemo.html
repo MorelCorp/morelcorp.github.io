@@ -100,15 +100,15 @@
 
                 <!-- Queue Settings Section -->
                 <div class="menu-section">
-                    <div class="menu-section-title">⚙️ Queue Settings</div>
+                    <div class="menu-section-title" id="menuQueueTitle">⚙️ Queue Settings</div>
                     <div class="menu-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>Active Cards</span>
+                        <span id="menuActiveCards">Active Cards</span>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span id="menuQueueStatus" style="font-weight: bold; color: #667eea;">0/30</span>
                         </div>
                     </div>
                     <div class="menu-item" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>Queue Limit</span>
+                        <span id="menuQueueLimit">Queue Limit</span>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <button onclick="adjustQueueLimit(-5)" style="width: 30px; height: 30px; border: 1px solid #667eea; background: white; border-radius: 5px; color: #667eea; font-weight: bold;">-</button>
                             <span id="queueLimitValue" style="min-width: 30px; text-align: center; font-weight: bold;">30</span>
