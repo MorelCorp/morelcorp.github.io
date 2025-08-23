@@ -17,7 +17,10 @@
                     modeHiragana: 'Hiragana',
                     modeKatakana: 'Katakana',
                     modeKanji: 'Kanji',
-                    statsTitle: '📈 Stats'
+                    statsTitle: '📈 Stats',
+                	queueTitle: '⚙️ Queue Settings',  // ADD THIS
+            		activeCards: 'Active Cards',       // ADD THIS
+            		queueLimit: 'Queue Limit'          // ADD THIS
                 },
                 stats: {
                     seen: 'Seen',
@@ -81,7 +84,10 @@
                     modeHiragana: 'Hiragana',
                     modeKatakana: 'Katakana',
                     modeKanji: 'Kanji',
-                    statsTitle: '📈 Statistiques'
+                    statsTitle: '📈 Statistiques',
+					queueTitle: '⚙️ Paramètres de file',  // ADD THIS
+            		activeCards: 'Cartes actives',         // ADD THIS
+            		queueLimit: 'Limite de file'           // ADD THIS
                 },
                 stats: {
                     seen: 'Vus',
@@ -337,7 +343,12 @@
                 updateElement('menuStatLearning', t.stats.learning);
                 updateElement('menuStatStruggling', t.stats.struggling);
                 updateElement('menuStatStreak', t.stats.streak);
-                
+
+				// Update queue section
+			    updateElement('menuQueueTitle', t.menu.queueTitle);
+			    updateElement('menuActiveCards', t.menu.activeCards);
+			    updateElement('menuQueueLimit', t.menu.queueLimit);
+				
                 // Update welcome screen
                 updateElement('welcomeTitle', t.welcome.title);
                 updateElement('welcomeText1', t.welcome.text1);
