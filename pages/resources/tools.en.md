@@ -52,6 +52,12 @@ Here are several tools that are currently useful for developing the current site
     description="Interactive Japanese learning app for kana and kanji with spaced repetition and multiple study modes."
     icon="feather.svg"
   %}
+  {% include link-object.html
+    title="PDF to TXT Converter"
+    url="/resources/tools/pdf-to-txt-converter.html"
+    description="Convert PDF files to plain text format with drag-and-drop interface and progress tracking."
+    icon="export.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {

@@ -51,6 +51,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     description="Application interactive d'apprentissage du japonais pour les kana et kanji avec répétition espacée et modes d'étude multiples."
     icon="feather.svg"
   %}
+  {% include link-object.html
+    title="Convertisseur PDF vers TXT"
+    url="/resources/tools/pdf-to-txt-converter.html"
+    description="Convertit les fichiers PDF en format texte brut avec interface glisser-déposer et suivi des progrès."
+    icon="export.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {
