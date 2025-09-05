@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF to TXT Converter</title>
+    <title>Bulk PDF to TXT Converter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,9 +17,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
@@ -29,12 +27,8 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
             width: 100%;
-            max-width: 600px;
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-5px);
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         h1 {
@@ -93,16 +87,44 @@
             display: none;
         }
 
-        .file-info {
+        .bulk-controls {
+            display: none;
+            margin: 20px 0;
+            padding: 15px;
             background: rgba(102, 126, 234, 0.1);
             border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            display: none;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .file-info.active {
-            display: block;
+        .bulk-controls.active {
+            display: flex;
+        }
+
+        .file-count {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .bulk-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .files-list {
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
             animation: slideIn 0.3s ease;
         }
 
@@ -117,18 +139,48 @@
             }
         }
 
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
         .file-name {
             color: #333;
             font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .file-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-complete {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .progress-bar {
             background: #e0e0e0;
             border-radius: 10px;
-            height: 8px;
+            height: 6px;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin: 10px 0;
         }
 
         .progress-fill {
@@ -138,28 +190,51 @@
             transition: width 0.3s ease;
         }
 
-        .status {
-            color: #666;
-            font-size: 14px;
+        .preview {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            display: none;
         }
 
-        .buttons {
-            display: flex;
+        .preview.active {
+            display: block;
+        }
+
+        .file-actions {
+            display: none;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 10px;
+        }
+
+        .file-actions.active {
+            display: flex;
         }
 
         .btn {
-            flex: 1;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             text-align: center;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
         }
 
         .btn-primary {
@@ -188,62 +263,70 @@
             transform: translateY(-2px);
         }
 
-        .hidden {
-            display: none;
+        .btn-danger {
+            background: #ef4444;
+            color: white;
         }
 
-        .error {
-            background: rgba(239, 68, 68, 0.1);
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
             color: #dc2626;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 14px;
+            font-size: 13px;
+            margin-top: 5px;
         }
 
-        .preview {
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
+        .processing-info {
+            color: #666;
             font-size: 12px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            margin-top: 5px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📄 PDF to TXT Converter</h1>
-        <p class="subtitle">Convert your PDF files to plain text format</p>
+        <h1>📄 Bulk PDF to TXT Converter</h1>
+        <p class="subtitle">Convert multiple PDF files to plain text format at once</p>
         
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📁</div>
-            <p class="upload-text">Click to select or drag & drop your PDF file</p>
-            <p class="upload-hint">Only PDF files are supported</p>
+            <p class="upload-text">Click to select or drag & drop your PDF files</p>
+            <p class="upload-hint">You can select/drop multiple PDF files</p>
         </div>
         
-        <input type="file" id="fileInput" accept=".pdf">
+        <input type="file" id="fileInput" accept=".pdf" multiple>
         
-        <div class="file-info" id="fileInfo">
-            <div class="file-name" id="fileName"></div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+        <div class="bulk-controls" id="bulkControls">
+            <div class="file-count" id="fileCount">0 files processed</div>
+            <div class="bulk-buttons">
+                <button class="btn btn-secondary btn-sm" id="clearAllBtn">Clear All</button>
+                <button class="btn btn-primary btn-sm" id="bulkDownloadBtn" disabled>Download All TXT Files</button>
             </div>
-            <div class="status" id="status">Ready to convert</div>
         </div>
         
-        <div class="preview hidden" id="preview"></div>
-        
-        <div class="buttons hidden" id="actionButtons">
-            <button class="btn btn-secondary" id="resetBtn">New File</button>
-            <a class="btn btn-primary" id="downloadBtn" download="converted.txt">Download TXT</a>
-        </div>
+        <div class="files-list" id="filesList"></div>
     </div>
 
     <script>
@@ -252,16 +335,15 @@
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const progressFill = document.getElementById('progressFill');
-        const status = document.getElementById('status');
-        const preview = document.getElementById('preview');
-        const actionButtons = document.getElementById('actionButtons');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const resetBtn = document.getElementById('resetBtn');
+        const bulkControls = document.getElementById('bulkControls');
+        const fileCount = document.getElementById('fileCount');
+        const filesList = document.getElementById('filesList');
+        const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
 
-        let extractedText = '';
+        let processedFiles = [];
+        let totalFiles = 0;
+        let completedFiles = 0;
 
         // Click to upload
         uploadArea.addEventListener('click', () => {
@@ -270,11 +352,9 @@
 
         // File input change
         fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                processPDF(file);
-            } else if (file) {
-                showError('Please select a valid PDF file');
+            const files = Array.from(e.target.files).filter(file => file.type === 'application/pdf');
+            if (files.length > 0) {
+                processMultiplePDFs(files);
             }
         });
 
@@ -292,28 +372,80 @@
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === 'application/pdf') {
-                processPDF(file);
-            } else if (file) {
-                showError('Please select a valid PDF file');
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type === 'application/pdf');
+            if (files.length > 0) {
+                processMultiplePDFs(files);
             }
         });
 
-        // Process PDF
+        // Process multiple PDFs
+        function processMultiplePDFs(files) {
+            bulkControls.classList.add('active');
+            totalFiles += files.length;
+            updateFileCount();
+            
+            files.forEach(file => {
+                createFileItem(file);
+                processPDF(file);
+            });
+        }
+
+        // Create file item UI
+        function createFileItem(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.id = `file-${file.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            
+            fileItem.innerHTML = `
+                <div class="file-header">
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-status status-processing">Processing...</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="processing-info"></div>
+                <div class="preview"></div>
+                <div class="file-actions">
+                    <a class="btn btn-primary btn-sm download-btn" download="${file.name.replace('.pdf', '.txt')}">Download TXT</a>
+                    <button class="btn btn-danger btn-sm remove-btn">Remove</button>
+                </div>
+            `;
+            
+            filesList.appendChild(fileItem);
+            
+            // Add remove functionality
+            const removeBtn = fileItem.querySelector('.remove-btn');
+            removeBtn.addEventListener('click', () => {
+                fileItem.remove();
+                processedFiles = processedFiles.filter(f => f.fileName !== file.name);
+                totalFiles--;
+                if (processedFiles.some(f => f.fileName === file.name && f.text)) {
+                    completedFiles--;
+                }
+                updateFileCount();
+                if (totalFiles === 0) {
+                    bulkControls.classList.remove('active');
+                }
+            });
+        }
+
+        // Process individual PDF
         async function processPDF(file) {
-            fileName.textContent = file.name;
-            fileInfo.classList.add('active');
-            status.textContent = 'Processing PDF...';
-            progressFill.style.width = '0%';
-            preview.classList.add('hidden');
-            actionButtons.classList.add('hidden');
+            const fileId = `file-${file.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            const fileItem = document.getElementById(fileId);
+            const progressFill = fileItem.querySelector('.progress-fill');
+            const status = fileItem.querySelector('.file-status');
+            const processingInfo = fileItem.querySelector('.processing-info');
+            const preview = fileItem.querySelector('.preview');
+            const fileActions = fileItem.querySelector('.file-actions');
+            const downloadBtn = fileItem.querySelector('.download-btn');
             
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 const numPages = pdf.numPages;
-                extractedText = '';
+                let extractedText = '';
                 
                 for (let i = 1; i <= numPages; i++) {
                     const page = await pdf.getPage(i);
@@ -324,52 +456,170 @@
                     // Update progress
                     const progress = (i / numPages) * 100;
                     progressFill.style.width = progress + '%';
-                    status.textContent = `Processing page ${i} of ${numPages}...`;
+                    processingInfo.textContent = `Processing page ${i} of ${numPages}...`;
                 }
                 
                 // Clean up text
                 extractedText = extractedText.replace(/\s+/g, ' ').replace(/\n\s*\n/g, '\n\n').trim();
                 
+                // Store processed file
+                processedFiles.push({
+                    fileName: file.name,
+                    text: extractedText
+                });
+                
+                // Update UI
+                status.className = 'file-status status-complete';
+                status.textContent = 'Complete';
+                processingInfo.textContent = `Successfully extracted ${numPages} pages`;
+                
                 // Show preview
-                preview.textContent = extractedText.substring(0, 500) + (extractedText.length > 500 ? '...' : '');
-                preview.classList.remove('hidden');
+                preview.textContent = extractedText.substring(0, 300) + (extractedText.length > 300 ? '...' : '');
+                preview.classList.add('active');
                 
                 // Create download link
                 const blob = new Blob([extractedText], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 downloadBtn.href = url;
                 
-                // Update file name for download
-                const txtFileName = file.name.replace('.pdf', '.txt');
-                downloadBtn.download = txtFileName;
+                // Show actions
+                fileActions.classList.add('active');
                 
-                status.textContent = 'Conversion complete!';
-                actionButtons.classList.remove('hidden');
+                completedFiles++;
+                updateFileCount();
                 
             } catch (error) {
-                showError('Error processing PDF: ' + error.message);
+                status.className = 'file-status status-error';
+                status.textContent = 'Error';
+                processingInfo.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
                 progressFill.style.width = '0%';
             }
         }
 
-        // Reset
-        resetBtn.addEventListener('click', () => {
-            fileInput.value = '';
-            fileInfo.classList.remove('active');
-            preview.classList.add('hidden');
-            actionButtons.classList.add('hidden');
-            extractedText = '';
-            progressFill.style.width = '0%';
+        // Update file count
+        function updateFileCount() {
+            fileCount.textContent = `${completedFiles} of ${totalFiles} files processed`;
+            bulkDownloadBtn.disabled = completedFiles === 0;
+        }
+
+        // Check if File System Access API is supported
+        const supportsFileSystemAccess = 'showDirectoryPicker' in window;
+        
+        // Update button text based on capability
+        if (supportsFileSystemAccess) {
+            bulkDownloadBtn.textContent = 'Save to Folder';
+        } else {
+            bulkDownloadBtn.textContent = 'Download as ZIP';
+        }
+
+        // Bulk download
+        bulkDownloadBtn.addEventListener('click', async () => {
+            if (processedFiles.length === 0) return;
+            
+            const validFiles = processedFiles.filter(f => f.text);
+            if (validFiles.length === 0) return;
+            
+            if (supportsFileSystemAccess) {
+                await downloadToFolder(validFiles);
+            } else {
+                await downloadAsZip(validFiles);
+            }
         });
 
-        // Show error
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            fileInfo.parentNode.insertBefore(errorDiv, fileInfo.nextSibling);
-            setTimeout(() => errorDiv.remove(), 5000);
+        // Download to user-selected folder using File System Access API
+        async function downloadToFolder(files) {
+            try {
+                // Show folder picker
+                const directoryHandle = await window.showDirectoryPicker();
+                
+                // Track used filenames to handle collisions
+                const usedNames = {};
+                
+                for (const file of files) {
+                    let baseName = file.fileName.replace('.pdf', '');
+                    let fileName = baseName + '.txt';
+                    let counter = 1;
+                    
+                    // Handle name collisions
+                    while (usedNames[fileName]) {
+                        fileName = `${baseName} (${counter}).txt`;
+                        counter++;
+                    }
+                    usedNames[fileName] = true;
+                    
+                    // Create file in selected directory
+                    const fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(file.text);
+                    await writable.close();
+                }
+                
+                // Show success message
+                const tempStatus = document.createElement('div');
+                tempStatus.style.cssText = 'position:fixed;top:20px;right:20px;background:#22c55e;color:white;padding:15px 20px;border-radius:10px;z-index:1000;font-weight:600;';
+                tempStatus.textContent = `✅ Successfully saved ${files.length} files to selected folder`;
+                document.body.appendChild(tempStatus);
+                setTimeout(() => tempStatus.remove(), 4000);
+                
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error saving to folder:', error);
+                    // Fall back to ZIP download
+                    await downloadAsZip(files);
+                }
+            }
         }
+
+        // Download as ZIP file (fallback method)
+        async function downloadAsZip(files) {
+            try {
+                const zip = new JSZip();
+                
+                // Track used filenames to handle collisions
+                const usedNames = {};
+                
+                files.forEach(file => {
+                    let baseName = file.fileName.replace('.pdf', '');
+                    let fileName = baseName + '.txt';
+                    let counter = 1;
+                    
+                    // Handle name collisions
+                    while (usedNames[fileName]) {
+                        fileName = `${baseName} (${counter}).txt`;
+                        counter++;
+                    }
+                    usedNames[fileName] = true;
+                    
+                    // Add file to ZIP
+                    zip.file(fileName, file.text);
+                });
+                
+                // Generate ZIP and download
+                const content = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'converted-pdfs.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                console.error('Error creating ZIP:', error);
+                alert('Error creating download file. Please try downloading files individually.');
+            }
+        }
+
+        // Clear all
+        clearAllBtn.addEventListener('click', () => {
+            filesList.innerHTML = '';
+            processedFiles = [];
+            totalFiles = 0;
+            completedFiles = 0;
+            bulkControls.classList.remove('active');
+            fileInput.value = '';
+        });
     </script>
 </body>
 </html>
