@@ -17,7 +17,10 @@
                     modeHiragana: 'Hiragana',
                     modeKatakana: 'Katakana',
                     modeKanji: 'Kanji',
-                    statsTitle: '📈 Stats'
+                    statsTitle: '📈 Stats',
+                	queueTitle: '⚙️ Queue Settings',  // ADD THIS
+            		activeCards: 'Active Cards',       // ADD THIS
+            		queueLimit: 'Queue Limit'          // ADD THIS
                 },
                 stats: {
                     seen: 'Seen',
@@ -81,7 +84,10 @@
                     modeHiragana: 'Hiragana',
                     modeKatakana: 'Katakana',
                     modeKanji: 'Kanji',
-                    statsTitle: '📈 Statistiques'
+                    statsTitle: '📈 Statistiques',
+					queueTitle: '⚙️ Paramètres de file',  // ADD THIS
+            		activeCards: 'Cartes actives',         // ADD THIS
+            		queueLimit: 'Limite de file'           // ADD THIS
                 },
                 stats: {
                     seen: 'Vus',
@@ -175,6 +181,7 @@
                 console.log('Creating JapaneseSRSApp instance');
                 this.sm2 = new SM2();
                 this.currentMode = 'mixed';
+                this.queueLimit = 25;
                 this.currentItem = null;
                 this.currentChoices = [];
                 this.currentStreak = 0;
@@ -206,6 +213,9 @@
                         console.log('loadData: parsed data settings:', this.data.settings);
                         if (this.data.settings && this.data.settings.language) {
                             currentLanguage = this.data.settings.language;
+                        }
+                        if (this.data.settings && this.data.settings.queueLimit) {
+                            this.queueLimit = this.data.settings.queueLimit;
                         }
                         if (this.data.settings && this.data.settings.mode) {
                             this.currentMode = this.data.settings.mode;
@@ -300,7 +310,7 @@
             saveData() {
                 this.data.settings.language = currentLanguage;
                 this.data.settings.mode = this.currentMode;
-                console.log('Saving mode to localStorage:', this.currentMode);
+                this.data.settings.queueLimit = this.queueLimit;
                 localStorage.setItem('japaneseSRSData', JSON.stringify(this.data));
             }
 
@@ -333,7 +343,12 @@
                 updateElement('menuStatLearning', t.stats.learning);
                 updateElement('menuStatStruggling', t.stats.struggling);
                 updateElement('menuStatStreak', t.stats.streak);
-                
+
+				// Update queue section
+			    updateElement('menuQueueTitle', t.menu.queueTitle);
+			    updateElement('menuActiveCards', t.menu.activeCards);
+			    updateElement('menuQueueLimit', t.menu.queueLimit);
+				
                 // Update welcome screen
                 updateElement('welcomeTitle', t.welcome.title);
                 updateElement('welcomeText1', t.welcome.text1);
@@ -379,6 +394,7 @@
                 let mastered = 0;
                 let learning = 0;
                 let struggling = 0;
+                let activeNonMastered = 0;
                 
                 Object.values(this.data.items).forEach(item => {
                     if (item.totalSeen > 0) {
@@ -386,10 +402,13 @@
                         
                         if (item.interval >= 30) {
                             mastered++;
-                        } else if (item.consecutiveWrong >= 2) {
-                            struggling++;
-                        } else if (item.totalSeen > 0) {
-                            learning++;
+                        } else {
+                            activeNonMastered++; // ADD THIS
+                            if (item.consecutiveWrong >= 2) {
+                                struggling++;
+                            } else {
+                                learning++;
+                            }
                         }
                     }
                 });
@@ -400,8 +419,20 @@
                 document.getElementById('menuLearningCount').textContent = learning;
                 document.getElementById('menuStrugglingCount').textContent = struggling;
                 document.getElementById('menuStreakCount').textContent = this.currentStreak;
+                
+                // ADD THIS - Update queue status
+                const queueStatus = document.getElementById('menuQueueStatus');
+                if (queueStatus) {
+                    queueStatus.textContent = `${activeNonMastered}/${this.queueLimit}`;
+                }
             }
-
+            
+            updateQueueLimit(newLimit) {
+                this.queueLimit = newLimit;
+                this.saveData();
+                this.updateStats();
+            }
+                
             startLearning() {
                 console.log('Starting learning...');
                 this.generateQuestion();
@@ -444,27 +475,46 @@
             }
 
             getNextItem() {
-                const now = new Date();
-                let candidates = [];
-
-                Object.entries(this.data.items).forEach(([id, item]) => {
-                    if (this.currentMode !== 'mixed' && item.type !== this.currentMode) {
-                        return;
+                    const now = new Date();
+                    let candidates = [];
+                    let activeNonMastered = 0;
+                
+                    // First, count how many non-mastered items are already active
+                    Object.entries(this.data.items).forEach(([id, item]) => {
+                        if (this.currentMode !== 'mixed' && item.type !== this.currentMode) {
+                            return;
+                        }
+                        if (item.totalSeen > 0 && item.interval < 30) {
+                            activeNonMastered++;
+                        }
+                    });
+                
+                    // Now build candidates list
+                    Object.entries(this.data.items).forEach(([id, item]) => {
+                        if (this.currentMode !== 'mixed' && item.type !== this.currentMode) {
+                            return;
+                        }
+                
+                        const nextReview = new Date(item.nextReview);
+                        
+                        // Include items that are due for review
+                        if (item.totalSeen > 0 && nextReview <= now) {
+                            candidates.push({ id, item, priority: this.calculatePriority(item, now) });
+                        }
+                        // Include new items only if we haven't hit the queue limit
+                        else if (item.totalSeen === 0 && activeNonMastered < this.queueLimit) {
+                            candidates.push({ id, item, priority: 1000 }); // High priority for new items
+                            activeNonMastered++; // Count this as it will be added
+                        }
+                    });
+                
+                    if (candidates.length === 0) {
+                        return null;
                     }
-
-                    const nextReview = new Date(item.nextReview);
-                    if (nextReview <= now || item.totalSeen === 0) {
-                        candidates.push({ id, item, priority: this.calculatePriority(item, now) });
-                    }
-                });
-
-                if (candidates.length === 0) {
-                    return null;
+                
+                    candidates.sort((a, b) => b.priority - a.priority);
+                    return candidates[0];
                 }
-
-                candidates.sort((a, b) => b.priority - a.priority);
-                return candidates[0];
-            }
 
             calculatePriority(item, now) {
                 let priority = 0;
@@ -882,6 +932,11 @@
             // Initialize app and make it globally accessible
             app = new JapaneseSRSApp();
             window.app = app;  // Make app accessible for onclick handlers
+
+            const queueLimitValue = document.getElementById('queueLimitValue');
+            if (queueLimitValue) {
+                queueLimitValue.textContent = app.queueLimit;
+            }
             
             // Set mode indicator to the app's current mode (could be restored from localStorage)
             updateModeIndicators(app.currentMode);
@@ -1022,4 +1077,12 @@
                     .then(registration => console.log('Service Worker registered:', registration))
                     .catch(error => console.log('Service Worker registration failed:', error));
             });
+        }
+
+        function adjustQueueLimit(change) {
+            if (app) {
+                const newLimit = Math.max(10, Math.min(100, app.queueLimit + change));
+                app.updateQueueLimit(newLimit);
+                document.getElementById('queueLimitValue').textContent = newLimit;
+            }
         }
