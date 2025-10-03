@@ -34,6 +34,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     icon="calendar.svg"
   %}
   {% include link-object.html
+    title="Gestionnaire 1-2-4-All"
+    url="/resources/tools/124all-session-manager.html"
+    description="Organisez une activité 1-2-4-All : importez des participants, générez des groupes aléatoires et lancez un minuteur local."
+    icon="calendar.svg"
+  %}
+  {% include link-object.html
     title="Coach Fitness de Bureau"
     url="/resources/tools/fitness-coach/fitness-coach-tracker.html"
     description="Coach fitness simple dans le navigateur pour travailleurs de bureau. Recevez des rappels d’exercices, suivez vos progrès et restez actif."
