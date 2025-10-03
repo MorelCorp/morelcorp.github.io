@@ -35,6 +35,12 @@ Here are several tools that are currently useful for developing the current site
     icon="calendar.svg"
   %}
   {% include link-object.html
+    title="1-2-4-All Session Manager"
+    url="/resources/tools/124all-session-manager.html"
+    description="Run a 1-2-4-All workshop: import attendees, randomize groups, and keep time with a built-in countdown."
+    icon="calendar.svg"
+  %}
+  {% include link-object.html
     title="WorkDay Fitness Coach"
     url="/resources/tools/fitness-coach/fitness-coach-tracker.html"
     description="Simple browser-based fitness coach for office workers. Get exercise reminders, track your progress, and stay active during your workday."

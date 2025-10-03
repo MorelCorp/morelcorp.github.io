@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1-2-4-All Session Manager</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --text: #1f2933;
+            --muted: #52606d;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --border: #d9e2ec;
+            --shadow: rgba(15, 23, 42, 0.08);
+            --danger: #b91c1c;
+            --success: #047857;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--card);
+            padding: 2.5rem 1.5rem 1.5rem;
+            box-shadow: 0 2px 16px var(--shadow);
+        }
+
+        header h1 {
+            margin: 0 0 0.5rem;
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            margin: 0;
+            max-width: 760px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        section {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 1.75rem;
+            margin-bottom: 1.75rem;
+            box-shadow: 0 12px 32px var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.35rem;
+        }
+
+        h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.05rem;
+            color: var(--muted);
+        }
+
+        .grid-two {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 900px) {
+            .grid-two {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        textarea,
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.55rem 0.65rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            appearance: none;
+            border: none;
+            border-radius: 999px;
+            padding: 0.55rem 1.25rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(37, 99, 235, 0.24);
+        }
+
+        button:disabled {
+            background: #cbd5f5;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-secondary {
+            background: #e2e8f0;
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        .button-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 0.65rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        th {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        tbody tr:hover {
+            background: rgba(226, 232, 240, 0.35);
+        }
+
+        .presence-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-remote {
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary);
+        }
+
+        .badge-inperson {
+            background: rgba(4, 120, 87, 0.12);
+            color: var(--success);
+        }
+
+        .empty-state {
+            padding: 1.2rem;
+            text-align: center;
+            color: var(--muted);
+            background: rgba(148, 163, 184, 0.12);
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .groups-grid {
+            display: grid;
+            gap: 1.1rem;
+        }
+
+        @media (min-width: 900px) {
+            .groups-grid {
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            }
+        }
+
+        .group-card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.85));
+            box-shadow: 0 16px 28px rgba(15, 23, 42, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .group-card h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .group-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .group-card li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.6rem;
+            border-radius: 10px;
+            background: rgba(226, 232, 240, 0.35);
+            font-size: 0.95rem;
+        }
+
+        .group-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .status-bar {
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-info {
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary);
+        }
+
+        .status-success {
+            background: rgba(4, 120, 87, 0.12);
+            color: var(--success);
+        }
+
+        .status-error {
+            background: rgba(185, 28, 28, 0.12);
+            color: var(--danger);
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            margin: 1.2rem 0;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+        }
+
+        .timer-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .timer-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .timer-inputs label {
+            font-weight: 500;
+        }
+
+        .timer-inputs input[type="number"] {
+            width: 5rem;
+            text-align: center;
+            font-size: 1.15rem;
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 500;
+        }
+
+        .small-text {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .toolbar > * {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>1-2-4-All Session Manager</h1>
+        <p>
+            Keep track of your participant list, form random breakout groups, and run simple countdown timers while you facilitate
+            a 1-2-4-All activity. The tool works entirely in your browser and saves your roster locally so you can refresh without
+            losing progress.
+        </p>
+    </header>
+    <main>
+        <section aria-labelledby="participants-heading">
+            <h2 id="participants-heading">Participants</h2>
+            <div class="grid-two">
+                <div>
+                    <h3>Bulk import</h3>
+                    <label for="bulk-input">Names (one per line or comma separated)</label>
+                    <textarea id="bulk-input" placeholder="Ada Lovelace\nGrace Hopper\nNiklaus Wirth (remote)"></textarea>
+                    <div class="toolbar">
+                        <label class="checkbox-label" for="bulk-infer-mode">
+                            <input type="checkbox" id="bulk-infer-mode" checked />
+                            Detect “(remote)” or “(in-person)” in each line
+                        </label>
+                        <label for="bulk-mode" class="checkbox-label">
+                            Default mode
+                            <select id="bulk-mode">
+                                <option value="in-person">In-person</option>
+                                <option value="remote">Remote</option>
+                            </select>
+                        </label>
+                        <button id="bulk-add-btn" type="button">Import names</button>
+                    </div>
+                    <p class="small-text">Duplicates are ignored. You can include “(remote)” or “(in-person)” at the end of a name to set the location.</p>
+                </div>
+                <div>
+                    <h3>Quick add</h3>
+                    <label for="single-name">Full name</label>
+                    <input type="text" id="single-name" placeholder="New participant" />
+                    <label for="single-mode">Location</label>
+                    <select id="single-mode">
+                        <option value="in-person">In-person</option>
+                        <option value="remote">Remote</option>
+                    </select>
+                    <div class="actions">
+                        <button id="single-add-btn" type="button">Add participant</button>
+                        <button id="clear-all-btn" type="button" class="button-secondary">Clear list</button>
+                    </div>
+                </div>
+            </div>
+            <div class="status-bar" id="status-bar" role="status" aria-live="polite"></div>
+            <div id="participant-table-container"></div>
+        </section>
+
+        <section aria-labelledby="groups-heading">
+            <h2 id="groups-heading">Randomize groups</h2>
+            <p class="small-text">Only participants marked as present are included. Shuffle again anytime without altering the roster.</p>
+            <form id="group-form">
+                <div class="toolbar">
+                    <span>Group size:</span>
+                    <label class="checkbox-label">
+                        <input type="radio" name="group-size" value="2" />
+                        2
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="group-size" value="4" checked />
+                        4
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="group-size" value="custom" />
+                        Custom
+                    </label>
+                    <input type="number" id="custom-group-size" min="2" max="12" value="5" disabled />
+                    <button type="submit">Randomize</button>
+                </div>
+            </form>
+            <div id="group-summary" class="small-text" style="margin-top: 0.75rem;"></div>
+            <div id="groups-container" class="groups-grid" aria-live="polite"></div>
+        </section>
+
+        <section aria-labelledby="timer-heading">
+            <h2 id="timer-heading">Countdown timer</h2>
+            <div class="timer-inputs">
+                <label for="timer-minutes">Minutes
+                    <input type="number" id="timer-minutes" min="0" value="2" />
+                </label>
+                <label for="timer-seconds">Seconds
+                    <input type="number" id="timer-seconds" min="0" max="59" value="0" />
+                </label>
+            </div>
+            <div id="timer-display" class="timer-display" role="timer" aria-live="polite">02:00</div>
+            <div class="timer-controls">
+                <button id="timer-start-pause" type="button">Start</button>
+                <button id="timer-reset" type="button" class="button-secondary">Reset</button>
+            </div>
+            <p class="small-text" style="text-align: center; margin-top: 1rem;">
+                The timer runs locally in this tab. A short chime plays when it finishes.
+            </p>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            const storageKey = "ls-124all-participants";
+            let participants = [];
+            let nextId = 1;
+
+            const bulkInput = document.getElementById("bulk-input");
+            const bulkMode = document.getElementById("bulk-mode");
+            const bulkInferMode = document.getElementById("bulk-infer-mode");
+            const bulkAddBtn = document.getElementById("bulk-add-btn");
+
+            const singleName = document.getElementById("single-name");
+            const singleMode = document.getElementById("single-mode");
+            const singleAddBtn = document.getElementById("single-add-btn");
+            const clearAllBtn = document.getElementById("clear-all-btn");
+
+            const statusBar = document.getElementById("status-bar");
+            const tableContainer = document.getElementById("participant-table-container");
+
+            const groupForm = document.getElementById("group-form");
+            const customGroupSizeInput = document.getElementById("custom-group-size");
+            const groupSummary = document.getElementById("group-summary");
+            const groupsContainer = document.getElementById("groups-container");
+
+            const timerMinutes = document.getElementById("timer-minutes");
+            const timerSeconds = document.getElementById("timer-seconds");
+            const timerDisplay = document.getElementById("timer-display");
+            const timerStartPause = document.getElementById("timer-start-pause");
+            const timerReset = document.getElementById("timer-reset");
+
+            let timerInterval = null;
+            let remainingMs = 0;
+
+            function showStatus(message, type = "info") {
+                statusBar.textContent = message;
+                statusBar.className = `status-bar status-${type}`;
+                statusBar.style.display = "block";
+                clearTimeout(showStatus._timeout);
+                showStatus._timeout = setTimeout(() => {
+                    statusBar.style.display = "none";
+                }, 4000);
+            }
+
+            function saveState() {
+                try {
+                    const payload = { participants, nextId };
+                    localStorage.setItem(storageKey, JSON.stringify(payload));
+                } catch (error) {
+                    console.warn("Unable to persist participants", error);
+                }
+            }
+
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem(storageKey);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed.participants)) {
+                            participants = parsed.participants;
+                            nextId = parsed.nextId || participants.length + 1;
+                        }
+                    }
+                } catch (error) {
+                    console.warn("Unable to load saved participants", error);
+                }
+            }
+
+            function normalizeName(name) {
+                return name.trim().replace(/\s+/g, " ");
+            }
+
+            function participantExists(name) {
+                return participants.some((p) => p.name.toLowerCase() === name.toLowerCase());
+            }
+
+            function addParticipant(name, mode) {
+                const cleaned = normalizeName(name);
+                if (!cleaned) {
+                    showStatus("Please provide a name.", "error");
+                    return false;
+                }
+                if (participantExists(cleaned)) {
+                    showStatus(`${cleaned} is already on the list.`, "info");
+                    return false;
+                }
+                participants.push({ id: nextId++, name: cleaned, mode, present: true });
+                saveState();
+                renderParticipants();
+                return true;
+            }
+
+            function updateParticipantMode(id, mode) {
+                const record = participants.find((p) => p.id === id);
+                if (record) {
+                    record.mode = mode;
+                    saveState();
+                    renderParticipants();
+                }
+            }
+
+            function updatePresence(id, present) {
+                const record = participants.find((p) => p.id === id);
+                if (record) {
+                    record.present = present;
+                    saveState();
+                    renderParticipants(false);
+                }
+            }
+
+            function removeParticipant(id) {
+                participants = participants.filter((p) => p.id !== id);
+                saveState();
+                renderParticipants();
+            }
+
+            function clearParticipants() {
+                if (participants.length === 0) {
+                    showStatus("The list is already empty.", "info");
+                    return;
+                }
+                if (confirm("Clear all participants?")) {
+                    participants = [];
+                    nextId = 1;
+                    saveState();
+                    renderParticipants();
+                    showStatus("Participant list cleared.", "success");
+                }
+            }
+
+            function inferModeFromName(name) {
+                const remoteMatch = /(\(|\[)(remote|distance)(\)|\])/i;
+                const inPersonMatch = /(\(|\[)(in-?person|presentiel)(\)|\])/i;
+                if (remoteMatch.test(name)) {
+                    return "remote";
+                }
+                if (inPersonMatch.test(name)) {
+                    return "in-person";
+                }
+                return null;
+            }
+
+            function sanitizeNameForMode(name) {
+                return name.replace(/(\(|\[)(remote|distance|in-?person|presentiel)(\)|\])/gi, "").trim();
+            }
+
+            function renderParticipants(showMessage = true) {
+                if (participants.length === 0) {
+                    tableContainer.innerHTML = '<div class="empty-state">Add participants to get started.</div>';
+                    if (showMessage) {
+                        showStatus("Participant list updated.", "info");
+                    }
+                    return;
+                }
+
+                const rows = participants
+                    .map((participant) => {
+                        const presenceId = `presence-${participant.id}`;
+                        const modeSelectId = `mode-${participant.id}`;
+                        return `
+                            <tr>
+                                <td>${participant.name}</td>
+                                <td>
+                                    <select id="${modeSelectId}" data-participant="${participant.id}">
+                                        <option value="in-person" ${participant.mode === "in-person" ? "selected" : ""}>In-person</option>
+                                        <option value="remote" ${participant.mode === "remote" ? "selected" : ""}>Remote</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <label class="presence-toggle" for="${presenceId}">
+                                        <input type="checkbox" id="${presenceId}" data-participant="${participant.id}" ${participant.present ? "checked" : ""} />
+                                        Present
+                                    </label>
+                                </td>
+                                <td>
+                                    <button type="button" class="button-secondary" data-remove="${participant.id}">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    })
+                    .join("");
+
+                tableContainer.innerHTML = `
+                    <div class="small-text">${participants.length} participant${participants.length > 1 ? "s" : ""} stored locally.</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Mode</th>
+                                    <th>Present</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+
+                tableContainer.querySelectorAll("select[data-participant]").forEach((select) => {
+                    select.addEventListener("change", (event) => {
+                        const id = Number(event.target.getAttribute("data-participant"));
+                        updateParticipantMode(id, event.target.value);
+                    });
+                });
+
+                tableContainer.querySelectorAll("input[data-participant]").forEach((input) => {
+                    input.addEventListener("change", (event) => {
+                        const id = Number(event.target.getAttribute("data-participant"));
+                        updatePresence(id, event.target.checked);
+                    });
+                });
+
+                tableContainer.querySelectorAll("button[data-remove]").forEach((button) => {
+                    button.addEventListener("click", (event) => {
+                        const id = Number(event.target.getAttribute("data-remove"));
+                        removeParticipant(id);
+                        showStatus("Participant removed.", "info");
+                    });
+                });
+
+                if (showMessage) {
+                    showStatus("Participant list updated.", "success");
+                }
+            }
+
+            function splitIntoGroups(people, size) {
+                if (people.length === 0) {
+                    return [];
+                }
+
+                const shuffled = [...people];
+                for (let i = shuffled.length - 1; i > 0; i -= 1) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+
+                const groups = [];
+                for (let index = 0; index < shuffled.length; index += size) {
+                    groups.push(shuffled.slice(index, index + size));
+                }
+
+                if (groups.length > 1) {
+                    const lastGroup = groups[groups.length - 1];
+                    if (lastGroup.length === 1) {
+                        groups.pop();
+                        groups[groups.length - 1].push(lastGroup[0]);
+                    }
+                }
+
+                return groups;
+            }
+
+            function renderGroups(groups) {
+                if (!groups || groups.length === 0) {
+                    groupsContainer.innerHTML = '<div class="empty-state">No groups yet. Add participants and randomize to see room assignments.</div>';
+                    groupSummary.textContent = "";
+                    return;
+                }
+
+                const totalParticipants = groups.reduce((acc, group) => acc + group.length, 0);
+                groupSummary.textContent = `${groups.length} room${groups.length > 1 ? "s" : ""} · ${totalParticipants} participant${totalParticipants > 1 ? "s" : ""}`;
+
+                groupsContainer.innerHTML = groups
+                    .map((group, index) => {
+                        const inPersonCount = group.filter((person) => person.mode === "in-person").length;
+                        const remoteCount = group.length - inPersonCount;
+                        const memberList = group
+                            .map(
+                                (person) => `
+                                <li>
+                                    <span>${person.name}</span>
+                                    <span class="badge ${person.mode === "remote" ? "badge-remote" : "badge-inperson"}">${
+                                        person.mode === "remote" ? "Remote" : "In-person"
+                                    }</span>
+                                </li>
+                            `
+                            )
+                            .join("");
+                        return `
+                            <article class="group-card">
+                                <h4>Room ${index + 1}<span class="group-meta">${group.length} people</span></h4>
+                                <div class="group-meta">${inPersonCount} in-person · ${remoteCount} remote</div>
+                                <ul>${memberList}</ul>
+                            </article>
+                        `;
+                    })
+                    .join("");
+            }
+
+            function getSelectedGroupSize() {
+                const selected = groupForm.querySelector('input[name="group-size"]:checked');
+                if (!selected) {
+                    return 4;
+                }
+                if (selected.value === "custom") {
+                    const customSize = Number(customGroupSizeInput.value);
+                    return Number.isFinite(customSize) && customSize >= 2 ? customSize : 4;
+                }
+                return Number(selected.value);
+            }
+
+            function handleGroupForm(event) {
+                event.preventDefault();
+                const activeParticipants = participants.filter((participant) => participant.present);
+                if (activeParticipants.length === 0) {
+                    showStatus("No present participants to group.", "error");
+                    renderGroups([]);
+                    return;
+                }
+                const size = getSelectedGroupSize();
+                const groups = splitIntoGroups(activeParticipants, size);
+                renderGroups(groups);
+                showStatus("New groups generated.", "success");
+            }
+
+            function syncTimerDisplay() {
+                if (remainingMs > 0) {
+                    timerDisplay.textContent = formatTime(remainingMs);
+                } else {
+                    const minutes = Number(timerMinutes.value) || 0;
+                    const seconds = Number(timerSeconds.value) || 0;
+                    const ms = (minutes * 60 + seconds) * 1000;
+                    timerDisplay.textContent = formatTime(ms);
+                }
+            }
+
+            function formatTime(ms) {
+                const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+                const minutes = Math.floor(totalSeconds / 60)
+                    .toString()
+                    .padStart(2, "0");
+                const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+                return `${minutes}:${seconds}`;
+            }
+
+            function calculateDurationMs() {
+                const minutes = Math.max(0, Number(timerMinutes.value) || 0);
+                const seconds = Math.max(0, Number(timerSeconds.value) || 0);
+                return (minutes * 60 + seconds) * 1000;
+            }
+
+            function playChime() {
+                try {
+                    const context = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = context.createOscillator();
+                    const gainNode = context.createGain();
+                    oscillator.type = "sine";
+                    oscillator.frequency.setValueAtTime(880, context.currentTime);
+                    gainNode.gain.setValueAtTime(0.001, context.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.2, context.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1.2);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(context.destination);
+                    oscillator.start();
+                    oscillator.stop(context.currentTime + 1.2);
+                    setTimeout(() => context.close(), 1500);
+                } catch (error) {
+                    console.warn("Unable to play timer chime", error);
+                }
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timerStartPause.textContent = "Start";
+            }
+
+            function tickTimer() {
+                remainingMs -= 1000;
+                if (remainingMs <= 0) {
+                    remainingMs = 0;
+                    stopTimer();
+                    syncTimerDisplay();
+                    playChime();
+                    showStatus("Timer finished.", "success");
+                    return;
+                }
+                syncTimerDisplay();
+            }
+
+            function handleTimerStartPause() {
+                if (timerInterval) {
+                    stopTimer();
+                    showStatus("Timer paused.", "info");
+                    return;
+                }
+                if (remainingMs <= 0) {
+                    remainingMs = calculateDurationMs();
+                }
+                if (remainingMs <= 0) {
+                    showStatus("Set a duration longer than zero to start the timer.", "error");
+                    return;
+                }
+                timerStartPause.textContent = "Pause";
+                syncTimerDisplay();
+                timerInterval = setInterval(tickTimer, 1000);
+                showStatus("Timer started.", "info");
+            }
+
+            function handleTimerReset() {
+                stopTimer();
+                remainingMs = 0;
+                syncTimerDisplay();
+                showStatus("Timer reset.", "info");
+            }
+
+            timerMinutes.addEventListener("input", () => {
+                if (!timerInterval) {
+                    remainingMs = 0;
+                    syncTimerDisplay();
+                }
+            });
+            timerSeconds.addEventListener("input", () => {
+                if (!timerInterval) {
+                    remainingMs = 0;
+                    syncTimerDisplay();
+                }
+            });
+
+            timerStartPause.addEventListener("click", handleTimerStartPause);
+            timerReset.addEventListener("click", handleTimerReset);
+
+            bulkAddBtn.addEventListener("click", () => {
+                const raw = bulkInput.value;
+                if (!raw.trim()) {
+                    showStatus("Add some names before importing.", "error");
+                    return;
+                }
+                const defaultMode = bulkMode.value;
+                const infer = bulkInferMode.checked;
+                const separators = /[\n,;]/;
+                const names = raw
+                    .split(separators)
+                    .map((entry) => entry.trim())
+                    .filter(Boolean);
+                let added = 0;
+                names.forEach((entry) => {
+                    let mode = defaultMode;
+                    let cleaned = entry;
+                    if (infer) {
+                        const inferred = inferModeFromName(entry);
+                        if (inferred) {
+                            mode = inferred;
+                            cleaned = sanitizeNameForMode(entry);
+                        }
+                    }
+                    if (addParticipant(cleaned, mode)) {
+                        added += 1;
+                    }
+                });
+                if (added > 0) {
+                    showStatus(`${added} participant${added > 1 ? "s" : ""} added.`, "success");
+                    bulkInput.value = "";
+                }
+            });
+
+            singleAddBtn.addEventListener("click", () => {
+                if (addParticipant(singleName.value, singleMode.value)) {
+                    singleName.value = "";
+                    singleName.focus();
+                    showStatus("Participant added.", "success");
+                }
+            });
+
+            clearAllBtn.addEventListener("click", clearParticipants);
+
+            groupForm.addEventListener("change", (event) => {
+                if (event.target.name === "group-size") {
+                    customGroupSizeInput.disabled = event.target.value !== "custom";
+                    if (!customGroupSizeInput.disabled) {
+                        customGroupSizeInput.focus();
+                    }
+                }
+            });
+
+            customGroupSizeInput.addEventListener("input", () => {
+                const radio = groupForm.querySelector('input[name="group-size"][value="custom"]');
+                if (radio && !radio.checked) {
+                    radio.checked = true;
+                    customGroupSizeInput.disabled = false;
+                }
+            });
+
+            groupForm.addEventListener("submit", handleGroupForm);
+
+            loadState();
+            renderParticipants(false);
+            renderGroups([]);
+            syncTimerDisplay();
+        })();
+    </script>
+</body>
+</html>
