@@ -1,0 +1,101 @@
+Acronym,Full name,Explanation
+API,Application Programming Interface,Contract that defines how software components communicate
+IDE,Integrated Development Environment,Software suite that combines tools for coding debugging and building
+OOP,Object Oriented Programming,Paradigm that organizes code into objects with data and behavior
+TDD,Test Driven Development,Practice of writing tests before implementing code to guide design
+CI,Continuous Integration,Automation that merges and tests code changes frequently
+CD,Continuous Delivery,Practice of keeping software releasable through automated deployment pipelines
+UI,User Interface,Visual layer that users interact with in an application
+UX,User Experience,Overall quality of interactions a user has with a product
+HTTP,Hypertext Transfer Protocol,Application layer protocol for transmitting resources on the web
+HTTPS,Hypertext Transfer Protocol Secure,HTTP encrypted with TLS for secure communication
+REST,Representational State Transfer,Architectural style that uses stateless resources with standard verbs
+CRUD,Create Read Update Delete,Basic operations performed on persistent data
+SQL,Structured Query Language,Language for querying and manipulating relational databases
+NoSQL,Not Only SQL,Category of databases that relax relational models for scalability or flexibility
+JSON,JavaScript Object Notation,Lightweight text format for structured data interchange
+XML,Extensible Markup Language,Markup language for describing structured documents and data
+YAML,YAML Aint Markup Language,Human friendly data serialization language used in configuration
+MVC,Model View Controller,Pattern that separates data presentation and input handling concerns
+MVVM,Model View ViewModel,Pattern that binds view state to view model logic for UI separation
+SPA,Single Page Application,Web app that dynamically updates content without full page reloads
+PWA,Progressive Web App,Web application enhanced with offline caching and installation features
+CDN,Content Delivery Network,Distributed servers that cache content closer to users
+DNS,Domain Name System,System that translates human readable domains into IP addresses
+SSL,Secure Sockets Layer,Legacy protocol for encrypting network connections
+TLS,Transport Layer Security,Cryptographic protocol providing secure communication over networks
+JWT,JSON Web Token,Compact token format for securely transmitting claims between parties
+RBAC,Role Based Access Control,Authorization model that grants permissions through assigned roles
+ACL,Access Control List,Permissions table that specifies allowed operations per subject or object
+CSP,Content Security Policy,Browser policy that restricts sources for loaded resources
+XSS,Cross Site Scripting,Attack where malicious scripts run in a trusted web page
+CSRF,Cross Site Request Forgery,Attack that tricks a user into submitting unwanted requests
+SSRF,Server Side Request Forgery,Attack that coerces a server into making unintended network calls
+SQLI,SQL Injection,Injection attack that manipulates SQL queries via untrusted input
+ORM,Object Relational Mapping,Technique that maps database tables to program objects
+SDK,Software Development Kit,Bundle of tools libraries and docs for building on a platform
+CLI,Command Line Interface,Text based interface for executing program commands
+GUI,Graphical User Interface,Visual interface with windows icons and controls
+KPI,Key Performance Indicator,Metric that tracks progress toward business or technical goals
+SLA,Service Level Agreement,Contract that defines required service performance targets
+SLO,Service Level Objective,Measurable reliability goal derived from an SLA
+SLI,Service Level Indicator,Quantitative measure of a systems performance or reliability
+LTS,Long Term Support,Software release maintained with fixes for an extended period
+LRU,Least Recently Used,Cache eviction policy that removes the entry not accessed for the longest time
+FIFO,First In First Out,Queue discipline that removes the oldest enqueued item first
+LIFO,Last In First Out,Stack discipline that removes the most recent item first
+CPU,Central Processing Unit,Hardware that executes instructions and controls a computer
+GPU,Graphics Processing Unit,Processor optimized for parallel graphical or compute workloads
+RAM,Random Access Memory,Volatile memory used for fast data access by programs
+I/O,Input Output,Exchange of data between a computer system and the outside world
+IPC,Inter Process Communication,Mechanisms that enable processes to exchange data and signals
+RPC,Remote Procedure Call,Protocol that invokes a procedure on a remote system as a local call
+DOM,Document Object Model,Tree representation of structured documents in browsers
+CSS,Cascading Style Sheets,Style sheet language for describing presentation of HTML
+HTML,HyperText Markup Language,Standard markup language for creating web pages
+SASS,Syntactically Awesome Style Sheets,Preprocessor that extends CSS with variables and nesting
+BEM,Block Element Modifier,Naming convention for structuring CSS classes
+OKR,Objectives and Key Results,Goal setting framework that links measurable outcomes to objectives
+ETL,Extract Transform Load,Data pipeline that collects converts and loads data into storage
+ELT,Extract Load Transform,Pipeline that loads raw data before transforming in the destination system
+DAG,Directed Acyclic Graph,Graph structure without cycles often used to model workflows
+BFS,Breadth First Search,Graph traversal strategy that explores neighbors level by level
+DFS,Depth First Search,Graph traversal strategy that explores along a branch before backtracking
+RDBMS,Relational Database Management System,Database system that stores data in related tables with schemas
+ACID,Atomicity Consistency Isolation Durability,Set of properties that guarantee reliable database transactions
+BASE,Basically Available Soft state Eventual consistency,Consistency model that favors availability and eventual convergence
+CAP,Consistency Availability Partition tolerance,Theorem describing trade offs in distributed systems
+CQRS,Command Query Responsibility Segregation,Pattern that separates read and write models for data
+DDD,Domain Driven Design,Approach that models software around the business domain
+BDD,Behavior Driven Development,Development practice that describes features in executable scenarios
+FDD,Feature Driven Development,Iterative process focused on delivering client valued features
+KISS,Keep It Simple Stupid,Principle that encourages simple solutions over complex ones
+YAGNI,You Arent Gonna Need It,Principle warning against building features before they are needed
+DRY,Dont Repeat Yourself,Principle that emphasizes reducing duplication in code and process
+SOLID,SOLID Principles,Set of five object oriented design principles for maintainability
+GRASP,General Responsibility Assignment Software Patterns,Guidelines for assigning responsibilities in object oriented design
+SRP,Single Responsibility Principle,Concept that a module should have one reason to change
+OCP,Open Closed Principle,Design rule to extend behavior without modifying existing code
+LSP,Liskov Substitution Principle,Principle that subtypes must be substitutable for their base types
+ISP,Interface Segregation Principle,Guidance to keep interfaces focused on specific client needs
+DIP,Dependency Inversion Principle,Recommendation to depend on abstractions rather than concretions
+AOP,Aspect Oriented Programming,Paradigm that separates cross cutting concerns into aspects
+SOA,Service Oriented Architecture,Architecture that composes applications from loosely coupled services
+MSA,Microservices Architecture,Style of structuring applications as independently deployable services
+IaC,Infrastructure as Code,Managing infrastructure resources through versioned code definitions
+DevOps,Development and Operations,Culture and practices that integrate software development and IT operations
+SRE,Site Reliability Engineering,Discipline that applies software engineering to operations and reliability
+BFF,Backend for Frontend,Pattern that creates a dedicated backend tailored to a specific frontend
+HATEOAS,Hypermedia As The Engine Of Application State,REST constraint where responses include links for navigation
+CSR,Client Side Rendering,Technique where the browser renders views using client side JavaScript
+SSR,Server Side Rendering,Technique where the server generates HTML for each request
+VCS,Version Control System,Tooling that tracks changes to source code over time
+DVCS,Distributed Version Control System,Version control that allows each clone to contain the full repository history
+SCM,Source Control Management,Processes and tools for tracking and merging code changes
+PR,Pull Request,Proposal to merge code changes into a repository branch
+UAT,User Acceptance Testing,Validation performed by end users to ensure requirements are met
+QA,Quality Assurance,Activities that ensure software meets agreed quality standards
+SDET,Software Development Engineer in Test,Role combining programming skills with testing expertise
+PoC,Proof of Concept,Prototype that validates feasibility of an idea or technology
+MVP,Minimum Viable Product,Smallest product that delivers value and enables feedback
+RFC,Request for Comments,Document that describes standards and protocols for the internet

@@ -50,6 +50,7 @@ const elements = {
   configButton: document.getElementById('configButton'),
   applySettingsButton: document.getElementById('applySettingsButton'),
   resetButton: document.getElementById('resetButton'),
+  closeConfigButton: document.getElementById('closeConfigButton'),
   actionButtonContainer: document.getElementById('actionButtons'),
   revealButton: document.getElementById('showAnswerButton')
 };
@@ -480,6 +481,9 @@ function attachEventListeners() {
     if (confirmed) {
       resetProgress();
     }
+  });
+  elements.closeConfigButton.addEventListener('click', () => {
+    elements.configDialog.close();
   });
 }
 
