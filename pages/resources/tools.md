@@ -63,6 +63,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     description="Convertit les fichiers PDF en format texte brut avec interface glisser-déposer et suivi des progrès."
     icon="export.svg"
   %}
+  {% include link-object.html
+    title="Entraîneur SuperMemo2"
+    url="/resources/tools/supermemo2-trainer/"
+    description="Application web progressive pour mémoriser acronymes et concepts via imports CSV, SuperMemo2 et stockage local."
+    icon="feather.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {

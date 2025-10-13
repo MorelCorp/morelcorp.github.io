@@ -64,6 +64,12 @@ Here are several tools that are currently useful for developing the current site
     description="Convert PDF files to plain text format with drag-and-drop interface and progress tracking."
     icon="export.svg"
   %}
+  {% include link-object.html
+    title="SuperMemo2 Concept Trainer"
+    url="/resources/tools/supermemo2-trainer/"
+    description="Progressive web app to learn acronyms and concepts with CSV imports, SuperMemo2 scheduling, and offline support."
+    icon="feather.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {
