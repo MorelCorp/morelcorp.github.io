@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuperMemo2 Concept Trainer</title>
+  <meta name="description" content="Progressive web app for learning acronyms and concepts with SuperMemo2 spaced repetition." />
+  <meta name="theme-color" content="#1e293b" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png" />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --fg: #0f172a;
+      --muted: #475569;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --card-bg: #ffffff;
+      --border: #cbd5f5;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1.2rem clamp(1rem, 4vw, 2.5rem);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(79, 70, 229, 0.95));
+      color: white;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+    header h1 {
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.8;
+      max-width: 32rem;
+      line-height: 1.35;
+      font-size: 0.95rem;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+    button {
+      padding: 0.65rem 1rem;
+      border-radius: 0.75rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    button.primary {
+      background: white;
+      color: #1d4ed8;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+    }
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+    }
+    button.secondary {
+      background: rgba(255, 255, 255, 0.16);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    main {
+      flex: 1 1 auto;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      display: grid;
+      gap: clamp(1.5rem, 2vw, 2.5rem);
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+    @media (max-width: 1050px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 1.25rem;
+      padding: clamp(1.5rem, 2vw, 2.5rem);
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      position: relative;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(37, 99, 235, 0.12);
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+    .prompt-area {
+      margin: 1.25rem 0;
+      padding: 1.25rem;
+      border-radius: 1rem;
+      background: rgba(241, 245, 249, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      min-height: 6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    .answer-area {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      border-radius: 1rem;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #14532d;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      line-height: 1.45;
+      display: none;
+      white-space: pre-wrap;
+    }
+    .answer-area.visible {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 1.5rem;
+    }
+    .actions button {
+      flex: 1 1 9rem;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      border-radius: 0.85rem;
+      background: #e2e8f0;
+      color: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+    .actions button:hover {
+      background: #cbd5f5;
+    }
+    .actions button.strong {
+      background: rgba(37, 99, 235, 0.18);
+      color: #1d4ed8;
+      border: 1px solid rgba(37, 99, 235, 0.35);
+    }
+    .actions button.positive {
+      background: rgba(22, 163, 74, 0.18);
+      color: #0f5132;
+      border: 1px solid rgba(21, 128, 61, 0.35);
+    }
+    .actions button.positive:hover {
+      background: rgba(22, 163, 74, 0.28);
+    }
+    .actions button.weak {
+      background: rgba(239, 68, 68, 0.12);
+      color: #991b1b;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+    }
+    .stats-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      margin-top: 1.5rem;
+    }
+    .stat-card {
+      padding: 1rem 1.25rem;
+      background: rgba(241, 245, 249, 0.9);
+      border-radius: 0.9rem;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .stat-card span.value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1d4ed8;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-radius: 1rem;
+      background: rgba(241, 245, 249, 0.7);
+      border: 1px dashed rgba(148, 163, 184, 0.5);
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .empty-state button {
+      margin-top: 0.75rem;
+    }
+    .history-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .history-list li {
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      background: rgba(15, 23, 42, 0.04);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .history-list li span.label {
+      color: var(--muted);
+    }
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.55);
+    }
+    dialog {
+      border: none;
+      border-radius: 1.2rem;
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      max-width: 540px;
+      width: min(95vw, 540px);
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.1rem;
+    }
+    .form-group label {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .form-group input {
+      padding: 0.65rem 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(248, 250, 252, 0.85);
+    }
+    .form-inline {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+    .form-inline input[type="number"] {
+      max-width: 7rem;
+    }
+    .config-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .link-button {
+      background: none;
+      border: none;
+      color: #2563eb;
+      cursor: pointer;
+      padding: 0;
+      font: inherit;
+      font-weight: 600;
+    }
+    .status-banner {
+      background: rgba(15, 23, 42, 0.85);
+      color: white;
+      padding: 0.75rem 1rem;
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35);
+      display: none;
+      z-index: 10;
+    }
+    .status-banner.visible {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SuperMemo2 Concept Trainer</h1>
+      <p>Import a CSV file of acronyms and concepts, then practice both directions with adaptive spaced repetition.</p>
+    </div>
+    <div class="header-actions">
+      <button class="secondary" id="syncButton" type="button">⟳ Sync latest CSV</button>
+      <button class="primary" id="configButton" type="button">⚙️ Configure</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card" id="studyPanel">
+      <div id="cardContent">
+        <h2>Today's session <span class="pill" id="cardType"></span></h2>
+        <div class="prompt-area" id="promptText">Select a source CSV to get started.</div>
+        <div class="answer-area" id="answerText"></div>
+        <div class="actions" id="actionButtons" style="display:none;">
+          <button class="weak" data-grade="0">Again</button>
+          <button data-grade="3">Hard</button>
+          <button class="strong" data-grade="4">Good</button>
+          <button class="positive" data-grade="5">Easy</button>
+        </div>
+        <div class="actions" id="revealButtonWrapper">
+          <button class="primary" id="showAnswerButton" type="button">Show answer</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Session overview</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="label">Active (unmastered)</span>
+          <span class="value" id="activeCount">0</span>
+          <small id="activeLimitNote">Max 20</small>
+        </div>
+        <div class="stat-card">
+          <span class="label">Due now</span>
+          <span class="value" id="dueCount">0</span>
+          <small id="nextDueNote">Next card ready now</small>
+        </div>
+        <div class="stat-card">
+          <span class="label">Mastered</span>
+          <span class="value" id="masteredCount">0</span>
+          <small>Total variations secured</small>
+        </div>
+        <div class="stat-card">
+          <span class="label">Total variations</span>
+          <span class="value" id="totalCount">0</span>
+          <small id="sourceMeta">No source loaded</small>
+        </div>
+      </div>
+      <h3 style="margin-top:1.75rem;">Recent answers</h3>
+      <ul class="history-list" id="historyList"></ul>
+    </section>
+  </main>
+
+  <dialog id="configDialog">
+    <form id="configForm" method="dialog">
+      <h2 style="margin-top:0;">Configuration</h2>
+      <p style="color:var(--muted); font-size:0.95rem;">Update your CSV source, adjust the maximum number of non-mastered cards in rotation, or reset your progress.</p>
+      <div class="form-group">
+        <label for="sourceInput">CSV source URL</label>
+        <input type="url" id="sourceInput" name="source" placeholder="https://example.com/acronyms.csv" required />
+        <small id="syncNote" style="color:var(--muted);"></small>
+      </div>
+      <div class="form-group form-inline">
+        <div>
+          <label for="maxActiveInput">Max active cards</label>
+          <input type="number" id="maxActiveInput" name="maxActive" min="1" max="200" step="1" />
+        </div>
+        <button class="secondary" id="applySettingsButton" type="button">Save &amp; sync</button>
+      </div>
+      <div class="form-group">
+        <button class="link-button" id="resetButton" type="button">Reset all progress</button>
+      </div>
+      <div class="config-actions">
+        <button class="secondary" id="closeConfigButton" type="button">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="status-banner" id="statusBanner"></div>
+
+  <script type="module" src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.error('Service worker registration failed', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
