@@ -1,0 +1,25 @@
+<aside class="menu principles-sidebar-menu">
+  <p class="menu-label">Principles</p>
+  <ul class="menu-list">
+    <li>
+      <a href="/principles/"
+         {% if page.url == '/principles/' %}class="is-active"{% endif %}>
+        All Principles
+      </a>
+    </li>
+  </ul>
+  {% assign sorted_principles = site.principles | sort: "title" %}
+  {% if sorted_principles.size > 0 %}
+  <p class="menu-label">Individual Principles</p>
+  <ul class="menu-list">
+    {% for principle in sorted_principles %}
+    <li>
+      <a href="{{ principle.url }}"
+         {% if page.url == principle.url %}class="is-active"{% endif %}>
+        {{ principle.title }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</aside>

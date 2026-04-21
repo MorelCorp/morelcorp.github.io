@@ -68,6 +68,12 @@ plugins:
 # paginate_path: "blog/page:num"   # Pagination path › Important for blog page in /blog/ to work
 
 
+# Collections
+collections:
+  principles:
+    output: true
+    permalink: /principles/:name/
+
 # Theme works best with Kramdown (using the table of contents function)
 markdown           : kramdown
 permalink          : /:categories/:title/
@@ -135,6 +141,13 @@ defaults:
       type: "posts"
     values:
       permalink: "/post/:slug/"
+  -
+    scope:
+      path: ""
+      type: "principles"
+    values:
+      layout: principles
+      lang: en
 
 
 
