@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }} | Principles — MorelCorp</title>
+  <meta name="description" content="{{ page.teaser }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="/assets/css/principles-custom.css">
+  {% include _head.html %}
+  <style>
+    #footer, .footer, .site-footer { display: none !important; }
+  </style>
+</head>
+<body>
+  <nav class="navbar" role="navigation" aria-label="main navigation"
+       style="background:#FDF6EC; border-bottom:2px solid #EFC94C; position:relative;">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/principles/" style="gap:1rem; align-items:center;">
+        <span class="principles-navbar-title">Principles</span>
+      </a>
+      <a role="button" class="navbar-burger principles-burger"
+         aria-label="menu" aria-expanded="false"
+         data-target="principles-sidebar" tabindex="0"
+         style="margin-left:1rem; display:none;">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <a class="button is-light"
+           href="/" title="Back to MorelCorp"
+           style="display:flex; align-items:center; gap:0.2rem; padding:0.2rem 0.7rem;">
+          <img src="/assets/img/morel.svg" alt="MorelCorp Logo" class="principles-back-logo">
+          <span class="principles-back-text">Back to MorelCorp</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="columns is-gapless" style="min-height:100vh;">
+    <aside id="principles-sidebar"
+           class="column is-2 is-narrow principles-sidebar"
+           style="border-right:1px solid #e8d5b0; min-width:220px; background:#FEF9F0;">
+      {% include principles_sidebar.html %}
+    </aside>
+    <main class="column is-10 p-5 principles-main-content">
+      <section class="container">
+        {{ content }}
+      </section>
+    </main>
+  </div>
+
+  <footer class="has-text-centered p-4"
+          style="background:#08104b; color:#fff; border-top:2px solid #EFC94C; font-size:0.95rem;">
+    <span>&copy; {{ 'now' | date: '%Y' }} MorelCorp &mdash;
+      <a href="/" style="color:#EFC94C; text-decoration:underline;">morelcorp.ca</a>
+    </span>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var burger = document.querySelector('.principles-burger');
+      var sidebar = document.getElementById('principles-sidebar');
+      if (burger && sidebar) {
+        burger.addEventListener('click', function() {
+          sidebar.classList.toggle('is-active');
+        });
+        document.addEventListener('click', function(e) {
+          if (sidebar.classList.contains('is-active') &&
+              !sidebar.contains(e.target) && !burger.contains(e.target)) {
+            sidebar.classList.remove('is-active');
+          }
+        });
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') sidebar.classList.remove('is-active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

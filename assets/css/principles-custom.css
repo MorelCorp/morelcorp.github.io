@@ -1,0 +1,169 @@
+/* Principles Section */
+
+body {
+  background: #FDF6EC !important;
+}
+
+.principles-navbar-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #08104b;
+  letter-spacing: 0.01em;
+}
+
+.principles-back-logo {
+  height: 2.2rem;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 0.3rem;
+}
+
+.principles-back-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Sidebar */
+.principles-sidebar-menu {
+  padding: 2rem 1rem 1rem 1rem;
+}
+
+.principles-sidebar-menu .menu-label {
+  color: #E27A3F;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+.principles-sidebar-menu .menu-list a.is-active,
+.principles-sidebar-menu .menu-list a:hover {
+  background: #E27A3F;
+  color: #fff;
+  border-radius: 4px;
+}
+
+/* Cards on index page */
+.principles-card {
+  background: #fff;
+  border-left: 4px solid #EFC94C;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(8,16,75,0.07);
+}
+
+.principles-card h2 {
+  font-size: 1.4rem;
+  color: #08104b;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.principles-card h2 a {
+  color: #08104b;
+  text-decoration: none;
+}
+
+.principles-card h2 a:hover {
+  color: #E27A3F;
+}
+
+.principles-teaser {
+  color: #555;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Main content typography */
+.principles-main-content {
+  background: #FDF6EC !important;
+  padding: 2rem;
+}
+
+.principles-main-content h1 {
+  color: #08104b;
+  border-bottom: 2px solid #EFC94C;
+  padding-bottom: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.principles-main-content h2 {
+  color: #E27A3F;
+  margin-top: 2rem;
+}
+
+.principles-main-content h3 {
+  color: #08104b;
+  margin-top: 1.5rem;
+}
+
+.principles-main-content blockquote {
+  border-left: 4px solid #45B29D;
+  background: #f0f9f7;
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  color: #333;
+  font-style: italic;
+}
+
+.principles-main-content blockquote p {
+  margin: 0;
+}
+
+.principles-main-content ul,
+.principles-main-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.principles-main-content li {
+  margin-bottom: 0.3rem;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .columns.is-gapless {
+    flex-direction: column;
+  }
+
+  .principles-sidebar {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 80vw;
+    max-width: 320px;
+    background: #FEF9F0;
+    box-shadow: 2px 0 12px rgba(8,16,75,0.12);
+    z-index: 2000;
+    overflow-y: auto;
+    padding-top: 4rem;
+  }
+
+  .principles-sidebar.is-active {
+    display: block !important;
+  }
+
+  .principles-burger {
+    display: inline-block !important;
+    cursor: pointer;
+  }
+
+  .principles-main-content {
+    padding: 1rem;
+  }
+
+  .principles-back-logo {
+    height: 1.5rem;
+    margin-right: 0.2rem;
+  }
+
+  .principles-back-text {
+    font-size: 0.8rem;
+  }
+
+  .principles-navbar-title {
+    font-size: 1.3rem !important;
+  }
+}
