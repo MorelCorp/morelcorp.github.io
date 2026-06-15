@@ -70,6 +70,12 @@ Here are several tools that are currently useful for developing the current site
     description="Progressive web app to learn acronyms and concepts with CSV imports, SuperMemo2 scheduling, and offline support."
     icon="feather.svg"
   %}
+  {% include link-object.html
+    title="Gym In A Box"
+    url="/resources/tools/gym-in-a-box.html"
+    description="Guided workout app with two sessions (A and B), rest timer, set tracking, and detailed exercise instructions. No gym required."
+    icon="feather.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {

@@ -69,6 +69,12 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
     description="Application web progressive pour mémoriser acronymes et concepts via imports CSV, SuperMemo2 et stockage local."
     icon="feather.svg"
   %}
+  {% include link-object.html
+    title="Gym In A Box"
+    url="/resources/tools/gym-in-a-box.html"
+    description="Programme d'entraînement guidé en deux sessions (A et B) avec minuteur de repos, suivi des séries et exercices détaillés. Aucun équipement de gym requis."
+    icon="feather.svg"
+  %}
 </div>
 <style>
 @media (min-width: 700px) {
