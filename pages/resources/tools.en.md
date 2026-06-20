@@ -72,8 +72,8 @@ Here are several tools that are currently useful for developing the current site
   %}
   {% include link-object.html
     title="Gym In A Box"
-    url="/resources/tools/gym-in-a-box.html"
-    description="Guided workout app with two sessions (A and B), rest timer, set tracking, and detailed exercise instructions. No gym required."
+    url="/resources/tools/gym-in-a-box/gym-in-a-box.html"
+    description="Phone-first home workout PWA styled as a pixel-art fantasy RPG. Generated quests, ranks and XP, rest timers, an equipment inventory, and a calendar chronicle. Installable and fully offline."
     icon="feather.svg"
   %}
 </div>
