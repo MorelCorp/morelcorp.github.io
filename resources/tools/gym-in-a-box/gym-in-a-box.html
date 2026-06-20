@@ -398,15 +398,19 @@ const EQUIP_LABEL = {
 function mkEx(o){
   const ranks = o.ranks || RANK_IDS;
   const timed = !!o.timed;
-  const sets  = o.sets || DEFAULT_SETS;
-  const reps  = o.reps || (timed ? DEFAULT_TIMED : DEFAULT_REPS);
+  // Merge any partial overrides over the defaults so a future entry that only
+  // tweaks one rank can never leave a rank without a sets/reps value.
+  const sets  = Object.assign({...DEFAULT_SETS}, o.sets||{});
+  const reps  = Object.assign({}, timed ? DEFAULT_TIMED : DEFAULT_REPS, o.reps||{});
+  const equipment = o.equipment || ['bodyweight'];
   const primary = o.primary ||
-    o.equipment.find(e => e!=='bodyweight' && e!=='step' && e!=='bench') ||
+    equipment.find(e => e!=='bodyweight' && e!=='step' && e!=='bench') ||
     'bodyweight';
   const weight = W[primary] || W.bodyweight;
-  return { id:o.id, name:o.name, category:o.category, ranks, equipment:o.equipment,
-           sets, reps, timed, unit:o.unit||'', weight, instructions:o.instructions,
-           note:o.note || o.instructions[0] };
+  const instructions = o.instructions || [];
+  return { id:o.id, name:o.name, category:o.category, ranks, equipment,
+           sets, reps, timed, unit:o.unit||'', weight, instructions,
+           note:o.note || instructions[0] || '' };
 }
 
 const EXERCISES = [
@@ -437,6 +441,16 @@ const EXERCISES = [
     instructions:['Lie back, grip just wider than shoulders, bar over chest.','Lower to mid-chest, elbows ~45°.','Press up to lockout. Use a spotter when heavy.']}),
   mkEx({id:'bb_ohp',name:'Barbell Overhead Press',category:'push',equipment:['barbell_light'],
     instructions:['Bar on front shoulders, hands just outside shoulders.','Brace, press overhead, move head back then through.','Lower to shoulders with control.']}),
+  mkEx({id:'decline_pushup',name:'Decline Pushups',category:'push',equipment:['step'],ranks:['adventurer','champion','legend'],
+    instructions:['Feet up on a step or low bench, hands on the floor, body straight.','Lower your chest toward the floor, elbows at 45°.','Press back up. The higher the feet, the more shoulder and upper chest.']}),
+  mkEx({id:'db_arnold_press',name:'DB Arnold Press',category:'push',equipment:['dumbbell_light'],
+    instructions:['Sit or stand tall, dumbbells at your chest, palms facing you.','Press up while rotating your palms to face forward at the top.','Reverse the rotation as you lower. Smooth and controlled.']}),
+  mkEx({id:'db_chest_fly',name:'DB Chest Fly',category:'push',equipment:['bench','dumbbell_light'],
+    instructions:['Lie on the bench, dumbbells over your chest, a slight elbow bend.','Open your arms wide in an arc until you feel a chest stretch.','Hug them back together over your chest. Keep the bend fixed.']}),
+  mkEx({id:'db_lateral_raise',name:'DB Lateral Raise',category:'push',equipment:['dumbbell_light'],
+    instructions:['Stand tall, light dumbbells at your sides, a slight elbow bend.','Raise your arms out to the sides up to shoulder height.','Lower slowly. Lead with the elbows, not the hands.']}),
+  mkEx({id:'db_overhead_tricep',name:'DB Overhead Triceps',category:'push',equipment:['dumbbell_light'],
+    instructions:['Hold one dumbbell overhead with both hands, elbows pointing up.','Lower it behind your head by bending only at the elbows.','Press back to the top. Keep your upper arms still.']}),
 
   /* ---------------- PULL ---------------- */
   mkEx({id:'one_arm_row',name:'One-Arm DB Row',category:'pull',equipment:['dumbbell_light'],unit:'/side',
@@ -459,6 +473,18 @@ const EXERCISES = [
     instructions:['Hinge ~45°, back flat, grip just outside knees.','Row the bar to your lower ribs, elbows back.','Lower with control. Keep the spine neutral.']}),
   mkEx({id:'db_high_pull',name:'DB High Pull',category:'pull',equipment:['dumbbell_light'],
     instructions:['Stand with dumbbells in front of your thighs.','Pull them up to chest height, elbows leading high.','Lower with control. Trains traps and rear delts.']}),
+  mkEx({id:'table_row',name:'Table Rows',category:'pull',equipment:['bodyweight'],
+    instructions:['Lie under a sturdy table and grip the edge with both hands.','Keep your body straight and pull your chest toward the edge.','Lower with control. Bend your knees to make it easier.']}),
+  mkEx({id:'prone_y_raise',name:'Prone Y-Raise',category:'pull',equipment:['bodyweight'],
+    instructions:['Lie face-down, arms extended overhead in a Y, thumbs up.','Lift your arms off the floor, squeezing the lower traps.','Lower slowly. Keep your forehead down and neck relaxed.']}),
+  mkEx({id:'db_bicep_curl',name:'DB Bicep Curl',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Stand tall, dumbbells at your sides, palms facing forward.','Curl the weights to your shoulders, elbows pinned to your ribs.','Lower slowly all the way down. No swinging.']}),
+  mkEx({id:'db_hammer_curl',name:'DB Hammer Curl',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Stand with dumbbells at your sides, palms facing in.','Curl up, keeping your palms facing each other the whole way.','Lower with control. Targets the forearms and biceps.']}),
+  mkEx({id:'db_shrug',name:'DB Shrug',category:'pull',equipment:['dumbbell_medium'],
+    instructions:['Stand tall with a dumbbell in each hand at your sides.','Lift your shoulders straight up toward your ears.','Pause at the top, then lower slowly. Do not roll the shoulders.']}),
+  mkEx({id:'bb_curl',name:'Barbell Curl',category:'pull',equipment:['barbell_light'],
+    instructions:['Stand holding the bar at your thighs, palms forward.','Curl to your chest, keeping the elbows pinned at your sides.','Lower under control. Keep the torso still.']}),
 
   /* ---------------- HINGE ---------------- */
   mkEx({id:'romanian_deadlift',name:'Romanian Deadlift',category:'hinge',equipment:['dumbbell_light'],
@@ -477,6 +503,20 @@ const EXERCISES = [
     instructions:['Hold the bar at your thighs, soft knees.','Push hips back, bar sliding down your legs.','Stand tall, squeezing glutes. Keep the back flat.']}),
   mkEx({id:'bb_deadlift',name:'Barbell Deadlift',category:'hinge',equipment:['barbell_heavy'],ranks:['champion','legend'],
     instructions:['Mid-foot under the bar, grip outside the knees.','Brace, push the floor away, bar close to the body.','Lock out tall, then hinge to lower. Reset each rep.']}),
+  mkEx({id:'frog_pump',name:'Frog Pump',category:'hinge',equipment:['bodyweight'],
+    instructions:['On your back, soles of the feet together, knees falling out wide.','Drive through the outer edges of your feet to lift the hips.','Squeeze the glutes hard at the top, then lower slowly.']}),
+  mkEx({id:'single_leg_glute_bridge',name:'Single-Leg Glute Bridge',category:'hinge',equipment:['bodyweight'],unit:'/side',
+    instructions:['Lie on your back, one foot flat, the other leg extended.','Drive through the planted heel to lift the hips level.','Squeeze the glute, lower with control. Do all reps, then switch.']}),
+  mkEx({id:'db_swing',name:'DB Swing',category:'hinge',equipment:['dumbbell_medium'],
+    instructions:['Hold one dumbbell with both hands, hinge and hike it back.','Snap your hips forward to swing it up to chest height.','Let it fall and hinge again. Power comes from the hips, not the arms.']}),
+  mkEx({id:'bb_hip_thrust',name:'Barbell Hip Thrust',category:'hinge',equipment:['bench','barbell_light'],
+    instructions:['Upper back on a bench, bar padded across your hips.','Drive through your heels until your torso is parallel to the floor.','Squeeze the glutes at the top, then lower with control.']}),
+  mkEx({id:'reverse_hyper',name:'Reverse Hyperextension',category:'hinge',equipment:['bench'],
+    instructions:['Lie face-down on a bench, hips at the edge, legs hanging.','Raise both legs until they are level with your body.','Squeeze the glutes, lower slowly. Do not over-arch the back.']}),
+  mkEx({id:'nordic_curl',name:'Nordic Curl Negative',category:'hinge',equipment:['bodyweight'],ranks:['champion','legend'],
+    instructions:['Kneel with your ankles anchored under something heavy.','Lower your torso forward as slowly as you can, hips straight.','Catch with your hands and push back up. Resist on the way down.']}),
+  mkEx({id:'db_sumo_deadlift',name:'DB Sumo Deadlift',category:'hinge',equipment:['dumbbell_heavy'],
+    instructions:['Wide stance, toes out, one heavy dumbbell between your feet.','Hinge and grip it, back flat and chest up.','Drive through your heels to stand tall, then lower with control.']}),
 
   /* ---------------- SQUAT ---------------- */
   mkEx({id:'bodyweight_squat',name:'Bodyweight Squat',category:'squat',equipment:['bodyweight'],
@@ -501,6 +541,18 @@ const EXERCISES = [
     instructions:['Drop into a quarter squat.','Explode up into a jump, arms driving.','Land softly through the whole foot and reset.']}),
   mkEx({id:'pistol_box_squat',name:'Box Pistol Squat',category:'squat',equipment:['bench'],unit:'/side',ranks:['champion','legend'],
     instructions:['Stand on one leg in front of a bench, other leg forward.','Sit back to lightly touch the bench, then drive up.','Keep the heel down. Switch sides.']}),
+  mkEx({id:'sumo_squat',name:'Sumo Squat',category:'squat',equipment:['bodyweight'],
+    instructions:['Take a wide stance with your toes turned out about 45°.','Sit straight down, knees tracking over your toes, chest tall.','Drive up through your heels, squeezing the glutes at the top.']}),
+  mkEx({id:'cossack_squat',name:'Cossack Squat',category:'squat',equipment:['bodyweight'],unit:'/side',
+    instructions:['Wide stance. Shift onto one leg, bending it deeply.','Keep the other leg straight, toes up, chest tall.','Push back to center, then shift to the other side.']}),
+  mkEx({id:'curtsy_lunge',name:'Curtsy Lunge',category:'squat',equipment:['bodyweight'],unit:'/side',
+    instructions:['Stand tall, then step one foot back and across behind you.','Lower into a lunge, both knees bending.','Drive back to standing. Do all reps, then switch sides.']}),
+  mkEx({id:'lateral_lunge',name:'Lateral Lunge',category:'squat',equipment:['bodyweight'],unit:'/side',
+    instructions:['Step wide to one side, pushing your hips back.','Bend the stepping leg, keeping the other straight, chest up.','Push back to center. Do all reps, then switch sides.']}),
+  mkEx({id:'db_step_up',name:'DB Step-Ups',category:'squat',equipment:['step','dumbbell_light'],unit:'/side',
+    instructions:['Hold dumbbells at your sides, plant one full foot on a step.','Drive through that heel to stand tall on top.','Lower with control. Do all reps, then switch.']}),
+  mkEx({id:'db_walking_lunge',name:'DB Walking Lunge',category:'squat',equipment:['dumbbell_medium'],unit:'/side',
+    instructions:['Hold dumbbells at your sides and step forward into a lunge.','Lower until the back knee nears the floor.','Drive up and step through into the next lunge. Count each side.']}),
 
   /* ---------------- CORE ---------------- */
   mkEx({id:'plank',name:'Plank',category:'core',equipment:['bodyweight'],timed:true,
@@ -531,6 +583,18 @@ const EXERCISES = [
     instructions:['Hold one dumbbell at your side, stand tall.','Walk without letting your torso tip toward the weight.','Brace the opposite side hard. Switch hands after the hold.']}),
   mkEx({id:'v_up',name:'V-Ups',category:'core',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
     instructions:['Lie flat, arms overhead.','Lift legs and torso together, reaching for your toes.','Lower with control into the next rep.']}),
+  mkEx({id:'flutter_kick',name:'Flutter Kicks',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['On your back, hands under your hips, legs straight and low.','Press the lower back flat and lift your heels a few inches.','Kick the legs up and down in small, quick scissors. Breathe.']}),
+  mkEx({id:'toe_touch_crunch',name:'Toe-Touch Crunch',category:'core',equipment:['bodyweight'],
+    instructions:['On your back, legs straight up toward the ceiling.','Reach your hands toward your toes, lifting the shoulders.','Lower with control. Keep the legs still.']}),
+  mkEx({id:'heel_taps',name:'Heel Taps',category:'core',equipment:['bodyweight'],
+    instructions:['On your back, knees bent, shoulders slightly lifted.','Reach to one side to tap your heel, crunching the oblique.','Return and tap the other side. Alternate each rep.']}),
+  mkEx({id:'weighted_situp',name:'Weighted Sit-Up',category:'core',equipment:['dumbbell_light'],
+    instructions:['On your back, knees bent, holding a dumbbell at your chest.','Sit all the way up, curling the ribs toward the hips.','Lower slowly under control. Do not yank with the arms.']}),
+  mkEx({id:'copenhagen_plank',name:'Copenhagen Plank',category:'core',equipment:['bench'],timed:true,unit:'/side',ranks:['champion','legend'],
+    instructions:['Side plank with your top foot resting on a bench.','Lift your hips and your bottom leg off the floor.','Hold, squeezing the inner thigh. Switch sides after the hold.']}),
+  mkEx({id:'windshield_wiper',name:'Windshield Wipers',category:'core',equipment:['bodyweight'],ranks:['champion','legend'],
+    instructions:['On your back, arms out wide, legs up toward the ceiling.','Lower both legs to one side under control, shoulders down.','Bring them back up and over to the other side. Alternate.']}),
 
   /* ---------------- FULL BODY ---------------- */
   mkEx({id:'burpee',name:'Burpees',category:'fullbody',equipment:['bodyweight'],
@@ -546,35 +610,172 @@ const EXERCISES = [
   mkEx({id:'devil_press',name:'DB Devil Press',category:'fullbody',equipment:['dumbbell_medium'],ranks:['champion','legend'],
     instructions:['Burpee onto two dumbbells on the floor.','As you stand, swing them overhead in one arc.','Lower to the floor and repeat. Powerful and brutal.']}),
   mkEx({id:'turkish_getup',name:'Turkish Get-Up',category:'fullbody',equipment:['dumbbell_medium'],unit:'/side',ranks:['champion','legend'],
-    instructions:['Lie down, press one dumbbell straight up over your shoulder.','Stand up step by step, keeping the arm locked overhead.','Reverse the steps back to the floor. Switch sides.']})
+    instructions:['Lie down, press one dumbbell straight up over your shoulder.','Stand up step by step, keeping the arm locked overhead.','Reverse the steps back to the floor. Switch sides.']}),
+  mkEx({id:'jumping_jack',name:'Jumping Jacks',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Stand tall, arms at your sides, feet together.','Jump your feet wide while raising your arms overhead.','Jump back to the start. Keep a steady, springy rhythm.']}),
+  mkEx({id:'high_knees',name:'High Knees',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Jog in place, driving each knee up to hip height.','Stay light on the balls of your feet, arms pumping.','Keep your core tall and the pace quick for the time shown.']}),
+  mkEx({id:'skater_jumps',name:'Skater Jumps',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Bound sideways onto one leg, sweeping the other behind you.','Land soft and balanced, then bound to the other side.','Use your arms for momentum. Keep it light and controlled.']}),
+  mkEx({id:'plank_jacks',name:'Plank Jacks',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Start in a forearm plank, body straight and braced.','Jump both feet wide, then back together, like a jumping jack.','Keep the hips low and steady. Do not let them bounce.']}),
+  mkEx({id:'squat_thrust',name:'Squat Thrust',category:'fullbody',equipment:['bodyweight'],
+    instructions:['From standing, squat down and plant your hands on the floor.','Kick both feet back to a plank, then jump them back in.','Stand tall. Like a burpee without the jump or push-up.']}),
+  mkEx({id:'db_man_maker',name:'DB Man Maker',category:'fullbody',equipment:['dumbbell_medium'],ranks:['champion','legend'],
+    instructions:['Holding dumbbells in a plank, row one then the other.','Jump the feet in and clean the dumbbells to your shoulders.','Stand and press them overhead. Lower and flow into the next.']}),
+  mkEx({id:'db_snatch',name:'DB Snatch',category:'fullbody',equipment:['dumbbell_medium'],unit:'/side',ranks:['champion','legend'],
+    instructions:['One dumbbell between your feet, hinge and grip it.','Explode through the hips, pulling it overhead in one motion.','Lock out overhead, then lower with control. Switch sides.']})
 ];
 
 /* ============================================================
-   STATE & STORAGE
+   EXERCISE REGISTRY INTEGRITY
+   ------------------------------------------------------------
+   Adding new mkEx({...}) entries must never silently corrupt
+   quest generation. buildPool() validates the authored array
+   once at boot: malformed entries are dropped and duplicate IDs
+   are ignored (first wins), each with a console warning. A bad
+   future addition therefore degrades gracefully instead of
+   breaking the app. The generator runs off POOL, not EXERCISES.
    ============================================================ */
+const CATEGORIES = ['push','pull','hinge','squat','core','fullbody'];
+const EQUIP_KEYS = ['bodyweight','step','bench',
+  'dumbbell_light','dumbbell_medium','dumbbell_heavy','dumbbell_veryheavy',
+  'barbell_light','barbell_medium','barbell_heavy'];
+
+function validateExercise(e){
+  const errs=[];
+  if(!e || typeof e!=='object') return ['not an object'];
+  if(!e.id) errs.push('missing id');
+  if(!e.name) errs.push('missing name');
+  if(!CATEGORIES.includes(e.category)) errs.push('bad category: '+e.category);
+  if(!Array.isArray(e.equipment) || !e.equipment.length) errs.push('no equipment');
+  else e.equipment.forEach(k=>{ if(!EQUIP_KEYS.includes(k)) errs.push('unknown equipment: '+k); });
+  if(!Array.isArray(e.ranks) || !e.ranks.length || !e.ranks.every(r=>RANK_IDS.includes(r))) errs.push('bad ranks');
+  if(!Array.isArray(e.instructions) || !e.instructions.length) errs.push('no instructions');
+  RANK_IDS.forEach(r=>{ if(e.sets&&e.sets[r]==null) errs.push('missing sets for '+r);
+                        if(e.reps&&e.reps[r]==null) errs.push('missing reps for '+r); });
+  return errs;
+}
+
+function buildPool(list){
+  const seen=new Set(), out=[];
+  for(const e of (list||[])){
+    const errs=validateExercise(e);
+    if(errs.length){ console.warn('[gym] skipping exercise', e&&e.id, '—', errs.join('; ')); continue; }
+    if(seen.has(e.id)){ console.warn('[gym] duplicate exercise id ignored:', e.id); continue; }
+    seen.add(e.id); out.push(e);
+  }
+  return out;
+}
+const POOL = buildPool(EXERCISES);
+
+/* ============================================================
+   STATE & STORAGE  (versioned + forward-compatible)
+   ------------------------------------------------------------
+   FORWARD-COMPATIBILITY CONTRACT — read before changing this.
+
+   All persisted data lives in ONE localStorage key (STORE_KEY)
+   as a single JSON document carrying a schemaVersion. Backups
+   (export/restore) use the exact same document. Reading runs the
+   document through:
+     1. readDoc()   — find the data (new blob, or legacy v1/v2
+                      per-key storage, or a backup file).
+     2. migrate()   — apply sequential MIGRATIONS up to the
+                      current SCHEMA_VERSION.
+     3. normalize() — fill any missing fields from defaults AND
+                      preserve every unknown field untouched.
+
+   Because normalize() never drops keys it doesn't recognise,
+   data written by a FUTURE build survives a round-trip through an
+   OLDER build, and data from an OLDER build always loads in a
+   NEWER one. To evolve the format safely:
+     • bump SCHEMA_VERSION,
+     • add a MIGRATIONS[n] function (transforms a doc at version
+       n into version n+1),
+     • NEVER rename or delete an existing field in place — migrate
+       it, and keep additions additive.
+   ============================================================ */
+const SCHEMA_VERSION = 3;
+const STORE_KEY = 'gib';
+const LEGACY_KEYS = ['gib_rank','gib_xp','gib_inventory','gib_history','gib_settings'];
+
 const DEFAULT_INV = { step:false, bench:false,
   dumbbell_light:true, dumbbell_medium:false, dumbbell_heavy:false, dumbbell_veryheavy:false,
   barbell_light:false, barbell_medium:false, barbell_heavy:false };
 const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30 };
 
-let state = { rank:'apprentice', xp:0, inventory:{...DEFAULT_INV}, history:[], settings:{...DEFAULT_SETTINGS} };
+function freshDoc(){
+  return { schemaVersion:SCHEMA_VERSION, rank:'apprentice', xp:0,
+    inventory:{...DEFAULT_INV}, history:[], settings:{...DEFAULT_SETTINGS} };
+}
+function safeParse(s, fb){ try{ const v=JSON.parse(s); return v==null?fb:v; }catch(e){ return fb; } }
 
+let state = freshDoc();
+
+/* Sequential migrations. MIGRATIONS[n] upgrades a doc FROM version n TO n+1.
+   Docs predating schemaVersion are treated as version 2. */
+const MIGRATIONS = {
+  // 2 -> 3 : earlier builds wrote the session type under either
+  //          settings.lastMode or settings.lastSessionType. Unify on
+  //          lastMode without losing the value.
+  2(d){
+    const s = (d.settings && typeof d.settings==='object') ? d.settings : {};
+    if(s.lastSessionType && !s.lastMode) s.lastMode = s.lastSessionType;
+    d.settings = s;
+    return d;
+  }
+};
+
+function migrate(doc){
+  if(!doc || typeof doc!=='object') return freshDoc();
+  let v = parseInt(doc.schemaVersion,10); if(!isFinite(v)) v = 2;
+  while(v < SCHEMA_VERSION && MIGRATIONS[v]){ doc = MIGRATIONS[v](doc) || doc; v++; }
+  // Record the highest version we understand, but don't downgrade a doc that
+  // came from a newer build (its extra fields are preserved by normalize).
+  doc.schemaVersion = Math.max(v, parseInt(doc.schemaVersion,10)||0);
+  return doc;
+}
+
+/* Merge known defaults over the doc WITHOUT discarding unknown keys, and
+   coerce known fields to valid values so a corrupt file can never crash. */
+function normalize(doc){
+  doc = (doc && typeof doc==='object') ? doc : {};
+  doc.rank = RANK_IDS.includes(doc.rank) ? doc.rank : 'apprentice';
+  let xp = parseInt(doc.xp,10); doc.xp = (isFinite(xp) && xp>=0) ? xp : 0;
+  doc.inventory = Object.assign({...DEFAULT_INV},
+    (doc.inventory && typeof doc.inventory==='object') ? doc.inventory : {});
+  if(!Array.isArray(doc.history)) doc.history = [];
+  doc.settings = Object.assign({...DEFAULT_SETTINGS},
+    (doc.settings && typeof doc.settings==='object') ? doc.settings : {});
+  if(!['balanced','targeted'].includes(doc.settings.lastMode)) doc.settings.lastMode='balanced';
+  if(!['upper','legs','core'].includes(doc.settings.lastFocus)) doc.settings.lastFocus='upper';
+  if(![30,45,60].includes(doc.settings.lastDuration)) doc.settings.lastDuration=30;
+  doc.settings.sound = doc.settings.sound!==false;
+  if((parseInt(doc.schemaVersion,10)||0) < SCHEMA_VERSION) doc.schemaVersion = SCHEMA_VERSION;
+  return doc;
+}
+
+/* Locate the freshest data: unified blob, then legacy per-key storage. */
+function readLegacy(){
+  return { schemaVersion:2,
+    rank: localStorage.getItem('gib_rank') || 'apprentice',
+    xp: parseInt(localStorage.getItem('gib_xp')||'0',10)||0,
+    inventory: safeParse(localStorage.getItem('gib_inventory'), {}),
+    history: safeParse(localStorage.getItem('gib_history'), []),
+    settings: safeParse(localStorage.getItem('gib_settings'), {}) };
+}
 function load(){
-  try {
-    state.rank = localStorage.getItem('gib_rank') || 'apprentice';
-    if(!RANK_IDS.includes(state.rank)) state.rank='apprentice';
-    state.xp = parseInt(localStorage.getItem('gib_xp')||'0',10) || 0;
-    state.inventory = Object.assign({...DEFAULT_INV}, JSON.parse(localStorage.getItem('gib_inventory')||'{}'));
-    state.history = JSON.parse(localStorage.getItem('gib_history')||'[]') || [];
-    state.settings = Object.assign({...DEFAULT_SETTINGS}, JSON.parse(localStorage.getItem('gib_settings')||'{}'));
-  } catch(e){ /* keep defaults */ }
+  let fromLegacy = false;
+  try{
+    const blob = localStorage.getItem(STORE_KEY);
+    let raw = blob!=null ? safeParse(blob, null) : null;
+    if(!raw && LEGACY_KEYS.some(k=>localStorage.getItem(k)!=null)){ raw = readLegacy(); fromLegacy = true; }
+    state = raw ? normalize(migrate(raw)) : freshDoc();
+  }catch(e){ state = freshDoc(); }
+  if(fromLegacy){ save(); LEGACY_KEYS.forEach(k=>localStorage.removeItem(k)); }
 }
 function save(){
-  localStorage.setItem('gib_rank', state.rank);
-  localStorage.setItem('gib_xp', String(state.xp));
-  localStorage.setItem('gib_inventory', JSON.stringify(state.inventory));
-  localStorage.setItem('gib_history', JSON.stringify(state.history));
-  localStorage.setItem('gib_settings', JSON.stringify(state.settings));
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
 }
 
 /* ============================================================
@@ -598,7 +799,7 @@ const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'
    ============================================================ */
 function genQuest(rank, type, durMin){
   const target = durMin*60;
-  const avail = EXERCISES.filter(e => e.ranks.includes(rank) && owned(e));
+  const avail = POOL.filter(e => e.ranks.includes(rank) && owned(e));
   const used = new Set();
   const chosen = [];
   const totalT = () => chosen.reduce((s,e)=>s+exTime(e,rank),0);
@@ -833,7 +1034,8 @@ function finishQuest(){
   state.history.push({
     date: isoDate(), type: quest.type, durMin: quest.durMin, xp: earned,
     rank: quest.rank, sets: quest.completedSets,
-    exercises: quest.exercises.map(e=>e.name.replace(/&amp;/g,'&'))
+    exercises: quest.exercises.map(e=>e.name.replace(/&amp;/g,'&')),
+    exIds: quest.exercises.map(e=>e.id)   // stable refs for future analytics; names stay for display
   });
   save();
   $('cs-trials').textContent=quest.exercises.length;
@@ -902,13 +1104,16 @@ function toggleSound(){
   if(state.settings.sound) sfx('chime');
 }
 
-/* backup / restore */
+/* backup / restore
+   The backup file is the live document verbatim (so nothing — including
+   fields a future build may add — is ever lost) wrapped in a small header.
+   Restore feeds whatever it finds back through the same migrate/normalize
+   pipeline used at load, so old backups, new backups and even backups from
+   a newer build all import cleanly. */
 function exportData(){
-  const payload={ version:2, exportedAt:new Date().toISOString(), data:{
-    rank:state.rank, xp:state.xp, inventory:state.inventory,
-    sessionHistory:state.history,
-    settings:{ sound:state.settings.sound, lastDuration:state.settings.lastDuration,
-               lastSessionType:state.settings.lastMode, lastFocus:state.settings.lastFocus } } };
+  const doc = JSON.parse(JSON.stringify(state));   // deep copy, keeps unknown keys
+  const payload = { app:'gym-in-a-box', schemaVersion:state.schemaVersion,
+                    exportedAt:new Date().toISOString(), data:doc };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -922,21 +1127,14 @@ function restoreData(ev){
   reader.onload=()=>{
     try{
       const obj=JSON.parse(reader.result);
-      const d=obj.data||obj;
+      let d=(obj && typeof obj.data==='object') ? obj.data : obj;
       if(!d || typeof d!=='object') throw 0;
+      // Bridge legacy v2 backup shape (sessionHistory + version header).
+      if(d.sessionHistory && !d.history) d.history = d.sessionHistory;
+      if(d.schemaVersion==null) d.schemaVersion = obj.schemaVersion || obj.version || 2;
+      const next = normalize(migrate(d));
       if(!confirm('Restore will REPLACE all current data. Continue?')) return;
-      state.rank = RANK_IDS.includes(d.rank)?d.rank:'apprentice';
-      state.xp = parseInt(d.xp,10)||0;
-      state.inventory = Object.assign({...DEFAULT_INV}, d.inventory||{});
-      state.history = d.sessionHistory || d.history || [];
-      const s=d.settings||{};
-      state.settings = Object.assign({...DEFAULT_SETTINGS}, {
-        sound: s.sound!==false,
-        lastDuration: s.lastDuration||30,
-        lastMode: s.lastSessionType || s.lastMode || 'balanced',
-        lastFocus: s.lastFocus || 'upper'
-      });
-      if(!['balanced','targeted'].includes(state.settings.lastMode)) state.settings.lastMode='balanced';
+      state = next;
       save();
       renderConfig(); renderCodex();
       alert('Chronicle restored.');
