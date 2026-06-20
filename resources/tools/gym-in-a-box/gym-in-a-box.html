@@ -202,10 +202,10 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
       <div class="panel">
         <div class="row" style="justify-content:space-between;align-items:center">
           <span class="pill pill-gold" id="cfg-rank">APPRENTICE</span>
-          <span class="dim" style="font-size:8px" id="cfg-xp">0 XP</span>
+          <span class="dim" style="font-size:8px"><span id="cfg-level">LVL 1</span> · <span id="cfg-xp">0 XP</span></span>
         </div>
         <div class="xpbar"><div class="xpfill" id="cfg-xpfill" style="width:0%"></div></div>
-        <div class="dim center" style="font-size:8px" id="cfg-next">200 XP to Adventurer</div>
+        <div class="dim center" style="font-size:8px" id="cfg-next">100 XP to Level 2</div>
       </div>
 
       <button class="btn btn-red" onclick="beginQuest()"><i class="ti ti-sword"></i> Begin Quest</button>
@@ -304,6 +304,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
   <div id="complete" class="overlay">
     <div class="trophy"><i class="ti ti-trophy"></i></div>
     <div class="h1" style="color:var(--gold)">Quest Complete!</div>
+    <div class="pill pill-gold" id="cs-levelup" style="display:none;margin:0 auto 4px">LEVEL UP!</div>
     <div class="muted read" style="max-width:300px">Every trial conquered is compound interest on your health.</div>
     <div class="cstats">
       <div class="cstat"><div class="v" id="cs-trials">5</div><div class="l">TRIALS</div></div>
@@ -328,7 +329,17 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
     <div class="sheet">
       <h2><i class="ti ti-book"></i> Codex</h2>
 
-      <div class="sec">RANK</div>
+      <div class="sec">LEVEL</div>
+      <div class="panel">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <span class="pill pill-gold" id="cx-level">LVL 1</span>
+          <span class="dim" style="font-size:8px" id="cx-xp">0 XP</span>
+        </div>
+        <div class="xpbar"><div class="xpfill" id="cx-levelfill" style="width:0%"></div></div>
+        <div class="dim center" style="font-size:8px" id="cx-levelnext">100 XP to Level 2</div>
+      </div>
+
+      <div class="sec">TIER</div>
       <div class="panel">
         <div class="row" style="justify-content:space-between;align-items:center">
           <span class="pill pill-gold" id="cx-rank">APPRENTICE</span>
@@ -336,7 +347,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
         </div>
         <div class="xpbar"><div class="xpfill" id="cx-xpfill" style="width:0%"></div></div>
         <div class="dim center" style="font-size:8px;margin-bottom:12px" id="cx-next">200 XP to Adventurer</div>
-        <button class="btn btn-gold" id="cx-advance" onclick="advanceRank()"><i class="ti ti-arrow-up"></i> Advance Rank</button>
+        <button class="btn btn-gold" id="cx-advance" onclick="advanceRank()"><i class="ti ti-arrow-up"></i> Evolve</button>
       </div>
 
       <div class="sec">SOUND</div>
@@ -705,7 +716,7 @@ const DEFAULT_INV = { step:false, bench:false,
 const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30 };
 
 function freshDoc(){
-  return { schemaVersion:SCHEMA_VERSION, rank:'apprentice', xp:0,
+  return { schemaVersion:SCHEMA_VERSION, rank:'apprentice', xp:0, level:1,
     inventory:{...DEFAULT_INV}, history:[], settings:{...DEFAULT_SETTINGS} };
 }
 function safeParse(s, fb){ try{ const v=JSON.parse(s); return v==null?fb:v; }catch(e){ return fb; } }
@@ -742,6 +753,7 @@ function normalize(doc){
   doc = (doc && typeof doc==='object') ? doc : {};
   doc.rank = RANK_IDS.includes(doc.rank) ? doc.rank : 'apprentice';
   let xp = parseInt(doc.xp,10); doc.xp = (isFinite(xp) && xp>=0) ? xp : 0;
+  doc.level = levelFromXp(doc.xp);   // derived from xp; always recomputed so it self-heals
   doc.inventory = Object.assign({...DEFAULT_INV},
     (doc.inventory && typeof doc.inventory==='object') ? doc.inventory : {});
   if(!Array.isArray(doc.history)) doc.history = [];
@@ -786,6 +798,23 @@ function rankObj(id){ return RANKS.find(r=>r.id===id); }
 function rankMult(id){ return rankObj(id).mult; }
 function nextRank(id){ const i=RANK_IDS.indexOf(id); return RANKS[i+1] || null; }
 function canAdvance(){ const n=nextRank(state.rank); return n && state.xp >= n.threshold; }
+
+/* Levels — automatic and derived purely from cumulative XP. Going from level L
+   to L+1 costs 100*L XP, so cumulative XP to *be* level L is 50*L*(L-1):
+   L1=0, L2=100, L3=300, L4=600 … (early levels come quickly). Tiers are a
+   separate, manual choice (see advanceRank); leveling never stops. */
+function xpForLevel(L){ return 50*L*(L-1); }
+function levelFromXp(xp){
+  let L = Math.max(1, Math.floor((1 + Math.sqrt(1 + xp/12.5))/2));
+  while(xpForLevel(L+1) <= xp) L++;     // guard float undershoot
+  while(L>1 && xpForLevel(L) > xp) L--; // guard float overshoot
+  return L;
+}
+function levelProgress(xp){
+  const L=levelFromXp(xp), cur=xpForLevel(L), next=xpForLevel(L+1);
+  return { level:L, into:xp-cur, span:next-cur, toNext:next-xp,
+    pct:Math.max(0,Math.min(100,((xp-cur)/(next-cur))*100)) };
+}
 function isoDate(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function owned(ex){ return ex.equipment.every(t => t==='bodyweight' ? true : !!state.inventory[t]); }
@@ -888,27 +917,19 @@ function renderConfig(){
   document.querySelectorAll('#focus-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.focus===s.lastFocus));
   document.querySelectorAll('#dur-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.dur===s.lastDuration));
 
-  const r=rankObj(state.rank), n=nextRank(state.rank);
+  const r=rankObj(state.rank), lp=levelProgress(state.xp);
   $('cfg-rank').textContent=r.name.toUpperCase();
+  $('cfg-level').textContent='LVL '+lp.level;
   $('cfg-xp').textContent=state.xp.toLocaleString()+' XP';
-  if(n){
-    const span=n.threshold - r.threshold;
-    const pct=Math.max(0,Math.min(100, ((state.xp - r.threshold)/span)*100));
-    $('cfg-xpfill').style.width=pct+'%';
-    $('cfg-next').textContent = state.xp>=n.threshold
-      ? 'Ready to advance to '+n.name+'!'
-      : (n.threshold-state.xp).toLocaleString()+' XP to '+n.name;
-  } else {
-    $('cfg-xpfill').style.width='100%';
-    $('cfg-next').textContent='Maximum rank achieved';
-  }
+  $('cfg-xpfill').style.width=lp.pct+'%';
+  $('cfg-next').textContent=lp.toNext.toLocaleString()+' XP to Level '+(lp.level+1);
   renderToast();
 }
 
 function renderToast(){
   const n=nextRank(state.rank);
   if(canAdvance() && n){
-    $('ranktoast-txt').textContent='You are ready to advance to '+n.name+'! Open the Codex to confirm.';
+    $('ranktoast-txt').textContent='You can evolve into '+n.name+'! Open the Codex to confirm.';
     $('ranktoast').classList.add('show');
   } else $('ranktoast').classList.remove('show');
 }
@@ -1030,10 +1051,13 @@ function finishQuest(){
   clearInterval(restTimer); clearInterval(holdTimer);
   const base=BASE_XP[quest.durMin]||100;
   const earned=base*rankMult(quest.rank);
+  const prevLevel=levelFromXp(state.xp);
   state.xp += earned;
+  state.level=levelFromXp(state.xp);
+  const leveledUp=state.level>prevLevel;
   state.history.push({
     date: isoDate(), type: quest.type, durMin: quest.durMin, xp: earned,
-    rank: quest.rank, sets: quest.completedSets,
+    rank: quest.rank, level: state.level, sets: quest.completedSets,
     exercises: quest.exercises.map(e=>e.name.replace(/&amp;/g,'&')),
     exIds: quest.exercises.map(e=>e.id)   // stable refs for future analytics; names stay for display
   });
@@ -1042,6 +1066,9 @@ function finishQuest(){
   $('cs-sets').textContent=quest.completedSets;
   $('cs-xp').textContent='+'+earned.toLocaleString();
   $('cs-dur').textContent=quest.durMin;
+  const lvlEl=$('cs-levelup');
+  if(leveledUp){ lvlEl.textContent='LEVEL UP! — LVL '+state.level; lvlEl.style.display='block'; }
+  else lvlEl.style.display='none';
   $('quest').classList.remove('active');
   $('complete').classList.add('active');
   sfx('fanfare');
@@ -1071,22 +1098,26 @@ function closeInfo(){ $('info').classList.remove('open'); }
 function openCodex(){ renderCodex(); $('codex').classList.add('open'); }
 function closeCodex(){ $('codex').classList.remove('open'); }
 function renderCodex(){
-  const r=rankObj(state.rank), n=nextRank(state.rank);
+  const r=rankObj(state.rank), n=nextRank(state.rank), lp=levelProgress(state.xp);
+  $('cx-level').textContent='LVL '+lp.level;
+  $('cx-xp').textContent=state.xp.toLocaleString()+' XP';
+  $('cx-levelfill').style.width=lp.pct+'%';
+  $('cx-levelnext').textContent=lp.toNext.toLocaleString()+' XP to Level '+(lp.level+1);
   $('cx-rank').textContent=r.name.toUpperCase();
   $('cx-mult').textContent=r.mult+'× XP';
   if(n){
     const pct=Math.max(0,Math.min(100,((state.xp-r.threshold)/(n.threshold-r.threshold))*100));
     $('cx-xpfill').style.width=pct+'%';
     $('cx-next').textContent = state.xp>=n.threshold
-      ? 'Ready to advance to '+n.name+'!'
+      ? 'Ready to evolve into '+n.name+'!'
       : (n.threshold-state.xp).toLocaleString()+' XP to '+n.name;
     $('cx-advance').disabled=!canAdvance();
-    $('cx-advance').innerHTML='<i class="ti ti-arrow-up"></i> Advance to '+n.name;
+    $('cx-advance').innerHTML='<i class="ti ti-arrow-up"></i> Evolve into '+n.name;
   } else {
     $('cx-xpfill').style.width='100%';
-    $('cx-next').textContent='Maximum rank — you are a Legend.';
+    $('cx-next').textContent='Final tier — you are a Legend.';
     $('cx-advance').disabled=true;
-    $('cx-advance').innerHTML='<i class="ti ti-crown"></i> Max Rank';
+    $('cx-advance').innerHTML='<i class="ti ti-crown"></i> Final Tier';
   }
   $('cx-sound').classList.toggle('on', !!state.settings.sound);
 }
