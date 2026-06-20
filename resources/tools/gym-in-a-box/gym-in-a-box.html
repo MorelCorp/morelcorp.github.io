@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gym in a Box">
+<meta name="theme-color" content="#0A0A0F">
+<title>Gym in a Box</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0A0A0F;--panel:#13131A;--panel2:#1C1C26;--panel3:#242430;--line:#2A2A38;
+  --gold:#FFD700;--red:#CC2200;--teal:#00D9A3;--purple:#6C63FF;
+  --txt:#FFFFFF;--txt2:#A0A0B8;--txt3:#5A5A72;
+}
+html,body{height:100%;background:var(--bg);overflow:hidden}
+body{font-family:'Press Start 2P',monospace;color:var(--txt);font-size:11px}
+#app{position:relative;display:flex;flex-direction:column;height:100vh;height:100dvh;width:100%;max-width:480px;margin:0 auto;background:var(--bg);overflow:hidden}
+.read{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.6;letter-spacing:0}
+
+/* ---- shared pixel chrome ---- */
+.panel{background:var(--panel);border:3px solid var(--line);padding:14px;box-shadow:inset 0 0 0 2px #00000030}
+.eyebrow{font-size:9px;color:var(--purple);letter-spacing:1px;margin-bottom:10px}
+.h1{font-size:16px;line-height:1.5;color:var(--txt)}
+.muted{color:var(--txt2)}
+.dim{color:var(--txt3)}
+.center{text-align:center}
+.row{display:flex;gap:8px}
+.col{display:flex;flex-direction:column;gap:8px}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;font-size:11px;line-height:1.5;color:#fff;background:var(--panel2);border:3px solid #000;padding:15px 12px;width:100%;cursor:pointer;text-transform:uppercase;box-shadow:0 4px 0 #00000099;transition:transform .05s,box-shadow .05s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #00000099}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:0 4px 0 #00000099}
+.btn i{font-size:16px}
+.btn-red{background:var(--red);border-color:#7a1400}
+.btn-teal{background:var(--teal);border-color:#067a5d;color:#04221b}
+.btn-gold{background:var(--gold);border-color:#a88e00;color:#1a1500}
+.btn-ghost{background:var(--panel2);border-color:#3a3a4a;color:var(--txt2)}
+.btn-sm{padding:10px;font-size:9px;box-shadow:0 3px 0 #00000099;width:auto}
+
+.seg{display:flex;gap:6px}
+.seg .opt{flex:1;text-align:center;padding:12px 6px;font-size:10px;background:var(--panel2);border:3px solid var(--line);color:var(--txt2);cursor:pointer;text-transform:uppercase}
+.seg .opt.on{background:#6C63FF22;border-color:var(--purple);color:#A89BFF}
+.seg .opt.on.gold{background:#FFD70022;border-color:var(--gold);color:var(--gold)}
+
+.pill{display:inline-block;font-size:9px;padding:6px 8px;border:2px solid;text-transform:uppercase}
+.pill-purple{border-color:var(--purple);color:#A89BFF;background:#6C63FF18}
+.pill-teal{border-color:var(--teal);color:var(--teal);background:#00D9A318}
+.pill-gold{border-color:var(--gold);color:var(--gold);background:#FFD70014}
+.pill-gray{border-color:var(--line);color:var(--txt2);background:var(--panel2)}
+
+/* ---- xp bar ---- */
+.xpbar{height:16px;background:var(--panel2);border:3px solid var(--line);padding:2px;margin:8px 0}
+.xpfill{height:100%;background:repeating-linear-gradient(90deg,var(--gold) 0,var(--gold) 8px,#e6c200 8px,#e6c200 10px);transition:width .4s}
+
+/* ---- layout chrome ---- */
+#topbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0) + 12px) 14px 12px;border-bottom:3px solid var(--line)}
+#topbar .brand{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:1px}
+#topbar .brand img{width:26px;height:26px;image-rendering:pixelated}
+.iconbtn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--panel2);border:3px solid var(--line);color:var(--txt2);cursor:pointer;font-size:18px}
+#tabs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tab{display:none;flex-direction:column;gap:14px;padding:16px 14px calc(env(safe-area-inset-bottom,0) + 20px)}
+.tab.active{display:flex}
+#bottomnav{flex-shrink:0;display:flex;border-top:3px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0)}
+#bottomnav button{flex:1;background:var(--panel);border:none;border-right:3px solid var(--line);color:var(--txt3);font-family:inherit;font-size:8px;padding:12px 4px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-transform:uppercase}
+#bottomnav button:last-child{border-right:none}
+#bottomnav button i{font-size:20px}
+#bottomnav button.on{color:var(--gold);background:var(--panel2)}
+
+/* ---- overlays ---- */
+.overlay{display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column}
+.overlay.active{display:flex}
+
+/* quest */
+#q-head{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0) + 12px) 14px 10px}
+.q-rank{font-size:9px;padding:6px 8px;border:2px solid var(--gold);color:var(--gold);text-transform:uppercase}
+#q-count{font-size:9px;color:var(--txt2)}
+#q-segs{flex-shrink:0;display:flex;gap:4px;padding:0 14px 12px}
+#q-segs .s{flex:1;height:8px;background:var(--panel2);border:2px solid var(--line)}
+#q-segs .s.done{background:var(--teal);border-color:var(--teal)}
+#q-segs .s.now{background:var(--purple);border-color:var(--purple)}
+#q-body{flex:1;overflow-y:auto;padding:0 14px;display:flex;flex-direction:column;gap:12px}
+#q-name{font-size:18px;line-height:1.45}
+#q-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+#q-note{margin-top:12px;color:var(--txt2)}
+.sets-dots{display:flex;gap:6px;margin-top:12px}
+.sdot{flex:1;height:34px;display:flex;align-items:center;justify-content:center;font-size:9px;border:3px solid var(--line);background:var(--panel2);color:var(--txt3)}
+.sdot.done{background:#00D9A322;border-color:var(--teal);color:var(--teal)}
+.sdot.now{background:#6C63FF22;border-color:var(--purple);color:#A89BFF}
+#q-action{flex-shrink:0;padding:12px 14px calc(env(safe-area-inset-bottom,0) + 14px);display:flex;flex-direction:column;gap:10px}
+.timer-big{font-size:40px;text-align:center;color:var(--txt);font-variant-numeric:tabular-nums;padding:6px 0}
+.timer-big.teal{color:var(--teal)}
+.rest-label{font-size:9px;text-align:center;color:var(--txt3);letter-spacing:1px}
+
+/* complete */
+#complete{align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center}
+.trophy{width:90px;height:90px;display:flex;align-items:center;justify-content:center;font-size:46px;color:var(--gold);border:4px solid var(--gold);background:#FFD70014;box-shadow:0 6px 0 #00000099}
+.cstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px}
+.cstat{background:var(--panel);border:3px solid var(--line);padding:14px 8px}
+.cstat .v{font-size:20px;color:var(--gold)}
+.cstat .l{font-size:8px;color:var(--txt3);margin-top:8px}
+
+/* modal / drawer */
+.scrim{display:none;position:absolute;inset:0;z-index:40;background:#000000bb}
+.scrim.open{display:flex;align-items:flex-end}
+.sheet{background:var(--panel);border-top:4px solid var(--gold);width:100%;max-height:82vh;overflow-y:auto;padding:18px 16px calc(env(safe-area-inset-bottom,0) + 20px)}
+.sheet h2{font-size:13px;margin-bottom:14px;color:var(--gold)}
+.sheet .sec{font-size:9px;color:var(--purple);letter-spacing:1px;margin:18px 0 10px}
+.modal-step{display:flex;gap:10px;padding:9px 0;border-bottom:2px solid #ffffff0a}
+.modal-step:last-child{border-bottom:none}
+.snum{flex-shrink:0;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:9px;background:#6C63FF22;border:2px solid var(--purple);color:#A89BFF}
+
+/* inventory */
+.inv-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;background:var(--panel2);border:3px solid var(--line)}
+.inv-item .nm{font-size:10px}
+.inv-item .sub{font-size:8px;color:var(--txt3);margin-top:6px}
+.tgl{width:54px;height:28px;border:3px solid var(--line);background:var(--bg);position:relative;cursor:pointer;flex-shrink:0}
+.tgl .kn{position:absolute;top:1px;left:1px;width:18px;height:18px;background:var(--txt3);transition:left .12s,background .12s}
+.tgl.on{border-color:var(--teal)}
+.tgl.on .kn{left:29px;background:var(--teal)}
+.tgl.lock{opacity:.7;cursor:default}
+.tgl.lock.on .kn{background:var(--gold)}.tgl.lock.on{border-color:var(--gold)}
+
+/* chronicle */
+.cal-head{display:flex;align-items:center;justify-content:space-between}
+.cal-head .m{font-size:11px;letter-spacing:1px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{font-size:7px;color:var(--txt3);text-align:center;padding:4px 0}
+.cal-cell{aspect-ratio:1;border:2px solid var(--line);background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--txt3);position:relative}
+.cal-cell.empty{border-color:transparent;background:transparent}
+.cal-cell.today{border-color:var(--purple)}
+.cal-cell.has{cursor:pointer;color:var(--bg)}
+.cal-cell .star{position:absolute;font-size:16px;line-height:1}
+.cal-cell .dn{position:absolute;top:2px;left:3px;font-size:7px;color:#00000099}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:8px;color:var(--txt2)}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:10px;height:10px;display:inline-block;border:2px solid #00000055}
+
+.toast{display:none;background:#FFD70014;border:3px solid var(--gold);padding:12px;cursor:pointer;align-items:center;gap:10px}
+.toast.show{display:flex}
+.toast i{color:var(--gold);font-size:20px}
+.toast .t{font-size:9px;line-height:1.6;color:var(--gold)}
+
+.empty-state{text-align:center;color:var(--txt3);font-size:9px;line-height:1.8;padding:30px 10px}
+canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:200}
+</style>
+</head>
+<body>
+<canvas id="fw"></canvas>
+<div id="app">
+
+  <!-- ================= HOME ================= -->
+  <header id="topbar">
+    <div class="brand"><img src="./icon.svg" alt=""> GYM IN A BOX</div>
+    <button class="iconbtn" onclick="openCodex()" aria-label="Codex"><i class="ti ti-settings"></i></button>
+  </header>
+
+  <div id="tabs">
+    <!-- QUEST TAB (pre-quest config) -->
+    <section id="tab-quest" class="tab active">
+      <div id="ranktoast" class="toast" onclick="openCodex()">
+        <i class="ti ti-stars"></i><div class="t" id="ranktoast-txt"></div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow">PREPARE YOUR QUEST</div>
+        <div class="h1">Choose your path</div>
+      </div>
+
+      <div class="panel col">
+        <div class="dim" style="font-size:9px">SESSION TYPE</div>
+        <div class="seg" id="mode-seg">
+          <div class="opt" data-mode="balanced" onclick="setMode('balanced')">Balanced</div>
+          <div class="opt" data-mode="targeted" onclick="setMode('targeted')">Targeted</div>
+        </div>
+        <div class="seg" id="focus-seg" style="display:none">
+          <div class="opt" data-focus="upper" onclick="setFocus('upper')">Upper</div>
+          <div class="opt" data-focus="legs" onclick="setFocus('legs')">Legs</div>
+          <div class="opt" data-focus="core" onclick="setFocus('core')">Core</div>
+        </div>
+      </div>
+
+      <div class="panel col">
+        <div class="dim" style="font-size:9px">DURATION</div>
+        <div class="seg" id="dur-seg">
+          <div class="opt" data-dur="30" onclick="setDuration(30)">30 min</div>
+          <div class="opt" data-dur="45" onclick="setDuration(45)">45 min</div>
+          <div class="opt" data-dur="60" onclick="setDuration(60)">60 min</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <span class="pill pill-gold" id="cfg-rank">APPRENTICE</span>
+          <span class="dim" style="font-size:8px" id="cfg-xp">0 XP</span>
+        </div>
+        <div class="xpbar"><div class="xpfill" id="cfg-xpfill" style="width:0%"></div></div>
+        <div class="dim center" style="font-size:8px" id="cfg-next">200 XP to Adventurer</div>
+      </div>
+
+      <button class="btn btn-red" onclick="beginQuest()"><i class="ti ti-sword"></i> Begin Quest</button>
+      <div class="dim center" style="font-size:8px;line-height:1.8">Complete every set of a trial<br>before the next. 60s recovery between sets.</div>
+    </section>
+
+    <!-- CHRONICLE TAB -->
+    <section id="tab-chronicle" class="tab">
+      <div class="panel">
+        <div class="cal-head">
+          <button class="btn-ghost btn btn-sm" style="width:40px" onclick="calStep(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span class="m" id="cal-month">—</span>
+          <button class="btn-ghost btn btn-sm" style="width:40px" onclick="calStep(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="cal-grid" id="cal-dows" style="margin-top:14px"></div>
+        <div class="cal-grid" id="cal-grid" style="margin-top:4px"></div>
+      </div>
+      <div class="panel">
+        <div class="dim" style="font-size:8px;margin-bottom:10px">VICTORY STICKERS</div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--gold)"></i>Balanced</span>
+          <span><i class="dot" style="background:var(--red)"></i>Upper</span>
+          <span><i class="dot" style="background:#4DA6FF"></i>Legs</span>
+          <span><i class="dot" style="background:var(--teal)"></i>Core</span>
+        </div>
+      </div>
+      <div class="panel center" id="chron-summary"></div>
+    </section>
+
+    <!-- INVENTORY TAB -->
+    <section id="tab-inventory" class="tab">
+      <div class="panel"><div class="eyebrow">INVENTORY</div><div class="h1" style="font-size:13px">Your equipment</div>
+        <div class="muted read" style="margin-top:10px;font-size:12px">More gear unlocks more variety — never harder trials.</div></div>
+      <div class="panel col">
+        <div class="dim" style="font-size:9px">STATIONS</div>
+        <div id="inv-stations" class="col"></div>
+      </div>
+      <div class="panel col">
+        <div class="dim" style="font-size:9px">DUMBBELLS</div>
+        <div id="inv-dumbbells" class="col"></div>
+      </div>
+      <div class="panel col">
+        <div class="dim" style="font-size:9px">BARBELLS</div>
+        <div id="inv-barbells" class="col"></div>
+      </div>
+    </section>
+  </div>
+
+  <nav id="bottomnav">
+    <button data-tab="quest" class="on" onclick="goTab('quest')"><i class="ti ti-sword"></i>Quest</button>
+    <button data-tab="chronicle" onclick="goTab('chronicle')"><i class="ti ti-calendar-star"></i>Chronicle</button>
+    <button data-tab="inventory" onclick="goTab('inventory')"><i class="ti ti-backpack"></i>Inventory</button>
+  </nav>
+
+  <!-- ================= ACTIVE QUEST ================= -->
+  <div id="quest" class="overlay">
+    <div id="q-head">
+      <span class="q-rank" id="q-rank">APPRENTICE</span>
+      <span id="q-count">Trial 1 of 5</span>
+      <button class="iconbtn" style="width:34px;height:34px;font-size:15px" onclick="abandonQuest()" aria-label="Abandon"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="q-segs"></div>
+    <div id="q-body">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div id="q-name">Pushups</div>
+          <button class="iconbtn" style="width:34px;height:34px;font-size:15px" onclick="openInfo()" aria-label="How to"><i class="ti ti-info-circle"></i></button>
+        </div>
+        <div id="q-pills"></div>
+        <div id="q-note" class="read"></div>
+      </div>
+      <div class="panel">
+        <div class="dim" style="font-size:8px">SETS</div>
+        <div class="sets-dots" id="q-dots"></div>
+      </div>
+    </div>
+    <div id="q-action">
+      <!-- rep work -->
+      <button id="act-victory" class="btn btn-red" onclick="repSetDone()"><i class="ti ti-check"></i> Victory</button>
+      <!-- timed work -->
+      <div id="act-timed" style="display:none">
+        <div class="rest-label">HOLD</div>
+        <div class="timer-big teal" id="hold-time">0:30</div>
+        <button class="btn btn-teal" id="hold-btn" onclick="startHold()"><i class="ti ti-player-play"></i> Begin Trial</button>
+      </div>
+      <!-- rest -->
+      <div id="act-rest" style="display:none">
+        <div class="rest-label" id="rest-label">RECOVERY</div>
+        <div class="timer-big teal" id="rest-time">1:00</div>
+        <button class="btn btn-ghost" onclick="skipRest()"><i class="ti ti-player-skip-forward"></i> Skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QUEST COMPLETE ================= -->
+  <div id="complete" class="overlay">
+    <div class="trophy"><i class="ti ti-trophy"></i></div>
+    <div class="h1" style="color:var(--gold)">Quest Complete!</div>
+    <div class="muted read" style="max-width:300px">Every trial conquered is compound interest on your health.</div>
+    <div class="cstats">
+      <div class="cstat"><div class="v" id="cs-trials">5</div><div class="l">TRIALS</div></div>
+      <div class="cstat"><div class="v" id="cs-sets">15</div><div class="l">SETS</div></div>
+      <div class="cstat"><div class="v" id="cs-xp">+100</div><div class="l">XP EARNED</div></div>
+      <div class="cstat"><div class="v" id="cs-dur">30</div><div class="l">MINUTES</div></div>
+    </div>
+    <button class="btn btn-gold" style="max-width:340px" onclick="returnToCamp()"><i class="ti ti-home"></i> Return to Camp</button>
+  </div>
+
+  <!-- ================= INFO MODAL ================= -->
+  <div id="info" class="scrim" onclick="if(event.target===this)closeInfo()">
+    <div class="sheet">
+      <h2 id="info-title">Trial</h2>
+      <div id="info-steps"></div>
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="closeInfo()">Close</button>
+    </div>
+  </div>
+
+  <!-- ================= CODEX (settings) ================= -->
+  <div id="codex" class="scrim" onclick="if(event.target===this)closeCodex()">
+    <div class="sheet">
+      <h2><i class="ti ti-book"></i> Codex</h2>
+
+      <div class="sec">RANK</div>
+      <div class="panel">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <span class="pill pill-gold" id="cx-rank">APPRENTICE</span>
+          <span class="dim" style="font-size:8px" id="cx-mult">1× XP</span>
+        </div>
+        <div class="xpbar"><div class="xpfill" id="cx-xpfill" style="width:0%"></div></div>
+        <div class="dim center" style="font-size:8px;margin-bottom:12px" id="cx-next">200 XP to Adventurer</div>
+        <button class="btn btn-gold" id="cx-advance" onclick="advanceRank()"><i class="ti ti-arrow-up"></i> Advance Rank</button>
+      </div>
+
+      <div class="sec">SOUND</div>
+      <div class="inv-item">
+        <div><div class="nm">8-bit sound</div><div class="sub">Chimes, bells &amp; fanfares</div></div>
+        <div class="tgl" id="cx-sound" onclick="toggleSound()"><div class="kn"></div></div>
+      </div>
+
+      <div class="sec">BACKUP &amp; RESTORE</div>
+      <div class="col">
+        <button class="btn btn-ghost" onclick="exportData()"><i class="ti ti-download"></i> Export Chronicle</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('restore-file').click()"><i class="ti ti-upload"></i> Restore from File</button>
+        <input type="file" id="restore-file" accept="application/json,.json" style="display:none" onchange="restoreData(event)">
+      </div>
+
+      <button class="btn btn-ghost" style="margin-top:18px" onclick="closeCodex()">Close</button>
+    </div>
+  </div>
+
+  <!-- ================= SESSION DETAIL ================= -->
+  <div id="detail" class="scrim" onclick="if(event.target===this)closeDetail()">
+    <div class="sheet" id="detail-body"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA — ranks, xp, weights, exercise pool
+   ============================================================ */
+const RANKS = [
+  { id:'apprentice', name:'Apprentice', mult:1, threshold:0 },
+  { id:'adventurer', name:'Adventurer', mult:2, threshold:200 },
+  { id:'champion',   name:'Champion',   mult:3, threshold:2200 },
+  { id:'legend',     name:'Legend',     mult:4, threshold:17200 }
+];
+const RANK_IDS = RANKS.map(r=>r.id);
+const BASE_XP = { 30:100, 45:150, 60:200 };
+const DEFAULT_SETS = { apprentice:3, adventurer:3, champion:4, legend:4 };
+const DEFAULT_REPS = { apprentice:10, adventurer:12, champion:15, legend:20 };
+const DEFAULT_TIMED= { apprentice:20, adventurer:30, champion:45, legend:60 };
+const W = {
+  bodyweight:        {apprentice:'Bodyweight',adventurer:'Bodyweight',champion:'Bodyweight',legend:'Bodyweight'},
+  dumbbell_light:    {apprentice:'5–10 lb',  adventurer:'8–12 lb',  champion:'10–15 lb', legend:'12–15 lb'},
+  dumbbell_medium:   {apprentice:'15–20 lb', adventurer:'18–22 lb', champion:'22–28 lb', legend:'25–30 lb'},
+  dumbbell_heavy:    {apprentice:'30–35 lb', adventurer:'35–40 lb', champion:'40–50 lb', legend:'50–60 lb'},
+  dumbbell_veryheavy:{apprentice:'60 lb',    adventurer:'65 lb',    champion:'70 lb',    legend:'80 lb+'},
+  barbell_light:     {apprentice:'45–65 lb', adventurer:'65–85 lb', champion:'85–95 lb', legend:'95 lb'},
+  barbell_medium:    {apprentice:'95–115 lb',adventurer:'115–135 lb',champion:'135–165 lb',legend:'165–185 lb'},
+  barbell_heavy:     {apprentice:'185 lb',   adventurer:'205 lb',   champion:'225 lb',   legend:'245 lb+'}
+};
+const EQUIP_LABEL = {
+  step:'Step / box', bench:'Bench / sofa edge',
+  dumbbell_light:'Light (5–15 lb)', dumbbell_medium:'Medium (15–30 lb)',
+  dumbbell_heavy:'Heavy (30–60 lb)', dumbbell_veryheavy:'Very Heavy (60 lb+)',
+  barbell_light:'Light (45–95 lb)', barbell_medium:'Medium (95–185 lb)', barbell_heavy:'Heavy (185 lb+)'
+};
+
+function mkEx(o){
+  const ranks = o.ranks || RANK_IDS;
+  const timed = !!o.timed;
+  const sets  = o.sets || DEFAULT_SETS;
+  const reps  = o.reps || (timed ? DEFAULT_TIMED : DEFAULT_REPS);
+  const primary = o.primary ||
+    o.equipment.find(e => e!=='bodyweight' && e!=='step' && e!=='bench') ||
+    'bodyweight';
+  const weight = W[primary] || W.bodyweight;
+  return { id:o.id, name:o.name, category:o.category, ranks, equipment:o.equipment,
+           sets, reps, timed, unit:o.unit||'', weight, instructions:o.instructions,
+           note:o.note || o.instructions[0] };
+}
+
+const EXERCISES = [
+  /* ---------------- PUSH ---------------- */
+  mkEx({id:'pushup',name:'Pushups',category:'push',equipment:['bodyweight'],
+    instructions:['Hands slightly wider than shoulders, body straight head to heels.','Lower chest toward floor, elbows at 45° — not flared wide.','Push to full extension. Stop 2 reps before failure.']}),
+  mkEx({id:'incline_pushup',name:'Incline Pushups',category:'push',equipment:['bodyweight'],
+    instructions:['Hands on a sturdy chair, sofa or counter; body in a straight line.','Lower chest to the edge, elbows at 45°.','Press back up. The higher the surface, the easier.']}),
+  mkEx({id:'knee_pushup',name:'Knee Pushups',category:'push',equipment:['bodyweight'],ranks:['apprentice','adventurer'],
+    instructions:['Kneel, hands under shoulders, body straight from knees to head.','Lower chest toward the floor with control.','Press back up. Keep hips from sagging.']}),
+  mkEx({id:'wide_pushup',name:'Wide Pushups',category:'push',equipment:['bodyweight'],
+    instructions:['Set hands wider than shoulders.','Lower with control, feeling the chest stretch.','Press up. Keep core braced throughout.']}),
+  mkEx({id:'diamond_pushup',name:'Diamond Pushups',category:'push',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Form a diamond with thumbs and index fingers under your chest.','Lower until chest touches your hands, elbows tucked.','Press up. Hits triceps hard.']}),
+  mkEx({id:'pike_pushup',name:'Pike Pushups',category:'push',equipment:['bodyweight'],ranks:['champion','legend'],
+    instructions:['Downward-dog shape: hips high, hands and feet on floor.','Bend elbows to lower the crown of your head toward the floor.','Press back up. A shoulder-press progression.']}),
+  mkEx({id:'floor_press',name:'DB Floor Press',category:'push',equipment:['dumbbell_light'],
+    instructions:['Lie on your back, knees bent, dumbbells at chest, elbows at 45°.','Press up until arms nearly extend, soft lock at top.','Lower until triceps rest on the floor, brief pause, press.']}),
+  mkEx({id:'seated_ohp',name:'Seated Overhead Press',category:'push',equipment:['dumbbell_light'],
+    instructions:['Sit tall with back support, dumbbells at shoulders, palms forward.','Press straight up until arms nearly extend.','Lower with control to shoulder height. No arching.']}),
+  mkEx({id:'standing_ohp',name:'Standing Overhead Press',category:'push',equipment:['dumbbell_medium'],
+    instructions:['Stand tall, dumbbells at shoulders, core braced.','Press overhead without leaning back.','Lower to shoulders under control.']}),
+  mkEx({id:'db_bench_press',name:'DB Bench Press',category:'push',equipment:['bench','dumbbell_medium'],
+    instructions:['Lie on the bench, dumbbells at chest, feet planted.','Press up until arms extend over your chest.','Lower until you feel a stretch, then press.']}),
+  mkEx({id:'db_incline_press',name:'DB Incline Press',category:'push',equipment:['bench','dumbbell_medium'],
+    instructions:['Set bench to a low incline, dumbbells at upper chest.','Press up and slightly together.','Lower with control. Targets upper chest.']}),
+  mkEx({id:'bb_bench_press',name:'Barbell Bench Press',category:'push',equipment:['bench','barbell_medium'],
+    instructions:['Lie back, grip just wider than shoulders, bar over chest.','Lower to mid-chest, elbows ~45°.','Press up to lockout. Use a spotter when heavy.']}),
+  mkEx({id:'bb_ohp',name:'Barbell Overhead Press',category:'push',equipment:['barbell_light'],
+    instructions:['Bar on front shoulders, hands just outside shoulders.','Brace, press overhead, move head back then through.','Lower to shoulders with control.']}),
+
+  /* ---------------- PULL ---------------- */
+  mkEx({id:'one_arm_row',name:'One-Arm DB Row',category:'pull',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Knee and hand on a chair, opposite foot on the floor.','Let the dumbbell hang, then pull it toward your hip.','Drive the elbow back; squeeze the back. Do all reps, switch sides.']}),
+  mkEx({id:'bent_over_row',name:'Bent-Over DB Row',category:'pull',equipment:['dumbbell_medium'],
+    instructions:['Hinge forward ~45°, back flat, dumbbells hanging.','Row both toward your hips, elbows close.','Lower with control. Keep the torso still.']}),
+  mkEx({id:'chest_supported_row',name:'Chest-Supported Row',category:'pull',equipment:['bench','dumbbell_light'],
+    instructions:['Lie chest-down on an inclined bench, dumbbells hanging.','Row toward your hips, squeezing shoulder blades.','Lower slowly. Removes all lower-back strain.']}),
+  mkEx({id:'superman',name:'Superman',category:'pull',equipment:['bodyweight'],timed:true,
+    instructions:['Lie face-down, arms extended overhead.','Lift arms, chest and legs off the floor.','Hold and squeeze your back and glutes; breathe.']}),
+  mkEx({id:'reverse_snow_angel',name:'Reverse Snow Angel',category:'pull',equipment:['bodyweight'],
+    instructions:['Lie face-down, arms by your sides, palms down, chest lifted.','Sweep arms overhead along the floor, then back.','Move slowly; squeeze the upper back the whole way.']}),
+  mkEx({id:'doorway_row',name:'Doorway Rows',category:'pull',equipment:['bodyweight'],
+    instructions:['Grip both sides of a sturdy door frame, lean back, arms straight.','Pull your chest toward the frame, squeezing your back.','Lower under control. Step feet forward to make it harder.']}),
+  mkEx({id:'rear_delt_fly',name:'Rear Delt Fly',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Hinge forward, light dumbbells hanging, slight elbow bend.','Raise arms out to the sides like wings.','Squeeze rear shoulders; lower slowly.']}),
+  mkEx({id:'db_pullover',name:'DB Pullover',category:'pull',equipment:['bench','dumbbell_medium'],
+    instructions:['Lie on a bench, hold one dumbbell over your chest.','Lower it back behind your head, arms slightly bent.','Pull it back over your chest. Feel the lats and chest.']}),
+  mkEx({id:'bb_row',name:'Barbell Row',category:'pull',equipment:['barbell_medium'],
+    instructions:['Hinge ~45°, back flat, grip just outside knees.','Row the bar to your lower ribs, elbows back.','Lower with control. Keep the spine neutral.']}),
+  mkEx({id:'db_high_pull',name:'DB High Pull',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Stand with dumbbells in front of your thighs.','Pull them up to chest height, elbows leading high.','Lower with control. Trains traps and rear delts.']}),
+
+  /* ---------------- HINGE ---------------- */
+  mkEx({id:'romanian_deadlift',name:'Romanian Deadlift',category:'hinge',equipment:['dumbbell_light'],
+    instructions:['Stand tall, dumbbells in front of thighs, soft knees.','Push hips BACK, sliding weights down your legs.','Feel the hamstring stretch, then drive hips forward to stand.']}),
+  mkEx({id:'single_leg_rdl',name:'Single-Leg RDL',category:'hinge',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Stand on one leg, soft knee, dumbbell in the opposite hand.','Hinge at the hip, free leg extending behind for balance.','Return to standing under control. Switch sides.']}),
+  mkEx({id:'glute_bridge',name:'Glute Bridge',category:'hinge',equipment:['bodyweight'],
+    instructions:['Lie on your back, knees bent, feet flat and hip-width.','Drive through heels to lift hips into a straight line.','Squeeze glutes hard at the top, lower slowly.']}),
+  mkEx({id:'hip_thrust',name:'Hip Thrust',category:'hinge',equipment:['dumbbell_light'],
+    instructions:['Upper back on a sofa edge, dumbbell across your hips.','Drive through heels until knees-to-shoulders are level.','Squeeze glutes one second, lower with control.']}),
+  mkEx({id:'good_morning',name:'Good Morning',category:'hinge',equipment:['bodyweight'],
+    instructions:['Hands behind head, feet hip-width, soft knees.','Hinge at the hips, chest forward, back flat.','Feel the hamstrings, then stand and squeeze glutes.']}),
+  mkEx({id:'db_deadlift',name:'DB Deadlift',category:'hinge',equipment:['dumbbell_medium'],
+    instructions:['Dumbbells beside your feet, hinge and grip them.','Brace, then stand by driving hips forward, back flat.','Lower under control to the floor.']}),
+  mkEx({id:'bb_rdl',name:'Barbell RDL',category:'hinge',equipment:['barbell_medium'],
+    instructions:['Hold the bar at your thighs, soft knees.','Push hips back, bar sliding down your legs.','Stand tall, squeezing glutes. Keep the back flat.']}),
+  mkEx({id:'bb_deadlift',name:'Barbell Deadlift',category:'hinge',equipment:['barbell_heavy'],ranks:['champion','legend'],
+    instructions:['Mid-foot under the bar, grip outside the knees.','Brace, push the floor away, bar close to the body.','Lock out tall, then hinge to lower. Reset each rep.']}),
+
+  /* ---------------- SQUAT ---------------- */
+  mkEx({id:'bodyweight_squat',name:'Bodyweight Squat',category:'squat',equipment:['bodyweight'],
+    instructions:['Feet shoulder-width, toes slightly out.','Sit back and down, chest tall, knees tracking toes.','Drive through your whole foot to stand.']}),
+  mkEx({id:'goblet_squat',name:'Goblet Squat',category:'squat',equipment:['dumbbell_light'],
+    instructions:['Hold one dumbbell vertically at your chest.','Sit back and down, heels flat, elbows inside knees.','Drive up, squeezing glutes at the top.']}),
+  mkEx({id:'reverse_lunge',name:'Reverse Lunge',category:'squat',equipment:['bodyweight'],unit:'/side',
+    instructions:['Step one foot back and lower into a lunge.','Keep the front shin vertical, torso tall.','Push through the front heel to stand. Alternate sides.']}),
+  mkEx({id:'split_squat',name:'Split Squat',category:'squat',equipment:['bodyweight'],unit:'/side',
+    instructions:['Stagger your stance, most weight on the front foot.','Lower straight down until the back knee nears the floor.','Drive up through the front heel. Do all reps, switch.']}),
+  mkEx({id:'wall_sit',name:'Wall Sit',category:'squat',equipment:['bodyweight'],timed:true,
+    instructions:['Slide your back down a wall until thighs are parallel.','Knees over ankles, weight in your heels.','Hold and breathe. Keep the lower back on the wall.']}),
+  mkEx({id:'step_up',name:'Step-Ups',category:'squat',equipment:['step'],unit:'/side',
+    instructions:['Plant one full foot on a sturdy step or box.','Drive through that heel to stand tall on top.','Lower with control. Do all reps, then switch.']}),
+  mkEx({id:'bulgarian_split_squat',name:'Bulgarian Split Squat',category:'squat',equipment:['bench'],unit:'/side',ranks:['adventurer','champion','legend'],
+    instructions:['Rest the top of your back foot on a bench behind you.','Lower straight down on the front leg.','Drive up through the front heel. Switch sides.']}),
+  mkEx({id:'db_front_squat',name:'DB Front Squat',category:'squat',equipment:['dumbbell_medium'],
+    instructions:['Hold dumbbells at your shoulders, elbows up.','Sit back and down, chest tall, heels flat.','Drive up to standing.']}),
+  mkEx({id:'bb_back_squat',name:'Barbell Back Squat',category:'squat',equipment:['barbell_medium'],
+    instructions:['Bar across the upper back, feet shoulder-width.','Brace and sit back and down to depth.','Drive up through mid-foot, chest tall.']}),
+  mkEx({id:'jump_squat',name:'Jump Squat',category:'squat',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Drop into a quarter squat.','Explode up into a jump, arms driving.','Land softly through the whole foot and reset.']}),
+  mkEx({id:'pistol_box_squat',name:'Box Pistol Squat',category:'squat',equipment:['bench'],unit:'/side',ranks:['champion','legend'],
+    instructions:['Stand on one leg in front of a bench, other leg forward.','Sit back to lightly touch the bench, then drive up.','Keep the heel down. Switch sides.']}),
+
+  /* ---------------- CORE ---------------- */
+  mkEx({id:'plank',name:'Plank',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['Forearms under shoulders, body straight head to heels.','Squeeze abs, glutes and quads together.','Breathe normally. No sagging or piking.']}),
+  mkEx({id:'side_plank',name:'Side Plank',category:'core',equipment:['bodyweight'],timed:true,unit:'/side',
+    instructions:['On one forearm, body in a straight line, hips stacked.','Lift hips so your body forms a straight diagonal.','Hold, breathe, then switch sides.']}),
+  mkEx({id:'dead_bug',name:'Dead Bug',category:'core',equipment:['bodyweight'],unit:'/side',
+    instructions:['On your back, arms up, knees bent 90°, shins parallel.','Press the lower back FLAT into the floor.','Lower opposite arm and leg, return, alternate.']}),
+  mkEx({id:'bird_dog',name:'Bird Dog',category:'core',equipment:['bodyweight'],unit:'/side',
+    instructions:['On all fours, wrists under shoulders, spine neutral.','Extend opposite arm and leg until level with the torso.','Pause, return with control, alternate sides.']}),
+  mkEx({id:'hollow_hold',name:'Hollow Hold',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['On your back, press the lower back into the floor.','Lift shoulders and legs into a shallow banana shape.','Hold, arms by ears or sides. Lower legs if it strains.']}),
+  mkEx({id:'bicycle_crunch',name:'Bicycle Crunch',category:'core',equipment:['bodyweight'],
+    instructions:['On your back, hands by ears, shoulders lifted.','Bring opposite elbow toward the opposite knee.','Alternate slowly; do not yank the neck.']}),
+  mkEx({id:'mountain_climber',name:'Mountain Climbers',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['Start in a high plank, shoulders over wrists.','Drive knees toward your chest one at a time.','Keep hips low and steady; pick a sustainable pace.']}),
+  mkEx({id:'russian_twist',name:'Russian Twist',category:'core',equipment:['dumbbell_light'],
+    instructions:['Sit, lean back slightly, heels down or lifted.','Hold a dumbbell and rotate it side to side.','Move from the ribs, not just the arms.']}),
+  mkEx({id:'leg_raise',name:'Lying Leg Raise',category:'core',equipment:['bodyweight'],
+    instructions:['On your back, legs straight, hands under your hips.','Lift legs to vertical, keeping the lower back flat.','Lower slowly; stop before the back arches.']}),
+  mkEx({id:'reverse_crunch',name:'Reverse Crunch',category:'core',equipment:['bodyweight'],
+    instructions:['On your back, knees bent over hips.','Curl the hips up, lifting the tailbone off the floor.','Lower slowly with control.']}),
+  mkEx({id:'plank_shoulder_tap',name:'Plank Shoulder Taps',category:'core',equipment:['bodyweight'],
+    instructions:['High plank, feet a little wide for stability.','Tap one hand to the opposite shoulder.','Keep hips dead still. Alternate hands.']}),
+  mkEx({id:'farmer_carry',name:'Farmer Carry',category:'core',equipment:['dumbbell_medium'],timed:true,
+    instructions:['Hold a dumbbell in each hand, stand tall, shoulders back.','Walk slowly with controlled steps, bracing your core.','Keep breathing; do not lean. Walk for the time shown.']}),
+  mkEx({id:'suitcase_carry',name:'Suitcase Carry',category:'core',equipment:['dumbbell_medium'],timed:true,unit:'/side',
+    instructions:['Hold one dumbbell at your side, stand tall.','Walk without letting your torso tip toward the weight.','Brace the opposite side hard. Switch hands after the hold.']}),
+  mkEx({id:'v_up',name:'V-Ups',category:'core',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Lie flat, arms overhead.','Lift legs and torso together, reaching for your toes.','Lower with control into the next rep.']}),
+
+  /* ---------------- FULL BODY ---------------- */
+  mkEx({id:'burpee',name:'Burpees',category:'fullbody',equipment:['bodyweight'],
+    instructions:['From standing, drop hands down and kick feet back to a plank.','Optional push-up, then jump feet in.','Stand and jump. Step it out to scale down.']}),
+  mkEx({id:'thruster',name:'DB Thruster',category:'fullbody',equipment:['dumbbell_light'],
+    instructions:['Dumbbells at shoulders, drop into a front squat.','Drive up explosively and press the weights overhead.','Lower to shoulders and flow into the next rep.']}),
+  mkEx({id:'db_clean_press',name:'DB Clean &amp; Press',category:'fullbody',equipment:['dumbbell_medium'],
+    instructions:['Dumbbells hanging, hinge slightly then pull them to shoulders.','Dip and press them overhead.','Lower to shoulders, then to hangs. Use the legs.']}),
+  mkEx({id:'bear_crawl',name:'Bear Crawl',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['On hands and toes, knees hovering just off the floor.','Crawl forward and back, moving opposite hand and foot.','Keep hips low and back flat for the time shown.']}),
+  mkEx({id:'inchworm',name:'Inchworm',category:'fullbody',equipment:['bodyweight'],
+    instructions:['From standing, hinge and walk your hands out to a plank.','Hold the plank a beat, then walk the feet to the hands.','Stand tall. Move with control.']}),
+  mkEx({id:'devil_press',name:'DB Devil Press',category:'fullbody',equipment:['dumbbell_medium'],ranks:['champion','legend'],
+    instructions:['Burpee onto two dumbbells on the floor.','As you stand, swing them overhead in one arc.','Lower to the floor and repeat. Powerful and brutal.']}),
+  mkEx({id:'turkish_getup',name:'Turkish Get-Up',category:'fullbody',equipment:['dumbbell_medium'],unit:'/side',ranks:['champion','legend'],
+    instructions:['Lie down, press one dumbbell straight up over your shoulder.','Stand up step by step, keeping the arm locked overhead.','Reverse the steps back to the floor. Switch sides.']})
+];
+
+/* ============================================================
+   STATE & STORAGE
+   ============================================================ */
+const DEFAULT_INV = { step:false, bench:false,
+  dumbbell_light:true, dumbbell_medium:false, dumbbell_heavy:false, dumbbell_veryheavy:false,
+  barbell_light:false, barbell_medium:false, barbell_heavy:false };
+const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30 };
+
+let state = { rank:'apprentice', xp:0, inventory:{...DEFAULT_INV}, history:[], settings:{...DEFAULT_SETTINGS} };
+
+function load(){
+  try {
+    state.rank = localStorage.getItem('gib_rank') || 'apprentice';
+    if(!RANK_IDS.includes(state.rank)) state.rank='apprentice';
+    state.xp = parseInt(localStorage.getItem('gib_xp')||'0',10) || 0;
+    state.inventory = Object.assign({...DEFAULT_INV}, JSON.parse(localStorage.getItem('gib_inventory')||'{}'));
+    state.history = JSON.parse(localStorage.getItem('gib_history')||'[]') || [];
+    state.settings = Object.assign({...DEFAULT_SETTINGS}, JSON.parse(localStorage.getItem('gib_settings')||'{}'));
+  } catch(e){ /* keep defaults */ }
+}
+function save(){
+  localStorage.setItem('gib_rank', state.rank);
+  localStorage.setItem('gib_xp', String(state.xp));
+  localStorage.setItem('gib_inventory', JSON.stringify(state.inventory));
+  localStorage.setItem('gib_history', JSON.stringify(state.history));
+  localStorage.setItem('gib_settings', JSON.stringify(state.settings));
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+function rankObj(id){ return RANKS.find(r=>r.id===id); }
+function rankMult(id){ return rankObj(id).mult; }
+function nextRank(id){ const i=RANK_IDS.indexOf(id); return RANKS[i+1] || null; }
+function canAdvance(){ const n=nextRank(state.rank); return n && state.xp >= n.threshold; }
+function isoDate(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function owned(ex){ return ex.equipment.every(t => t==='bodyweight' ? true : !!state.inventory[t]); }
+function exTime(ex,rank){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v:v*3) + s*60; }
+function repsLabel(ex,rank){ const v=ex.reps[rank]; return ex.timed ? v+'s'+(ex.unit?' '+ex.unit:'') : v+(ex.unit?ex.unit:'')+' reps'; }
+const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core' };
+const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3' };
+
+/* ============================================================
+   SESSION GENERATOR
+   ============================================================ */
+function genQuest(rank, type, durMin){
+  const target = durMin*60;
+  const avail = EXERCISES.filter(e => e.ranks.includes(rank) && owned(e));
+  const used = new Set();
+  const chosen = [];
+  const totalT = () => chosen.reduce((s,e)=>s+exTime(e,rank),0);
+  const tryAdd = e => { if(e && !used.has(e.id)){ chosen.push(e); used.add(e.id); return true; } return false; };
+  const addOneFrom = cats => { const c=shuffle(avail.filter(e=>cats.includes(e.category)&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
+
+  const primMap = { upper:['push','pull'], legs:['hinge','squat'], core:['core'] };
+  const offMap  = { upper:'core', legs:'core', core:'fullbody' };
+
+  if(type==='balanced'){
+    addOneFrom(['push']); addOneFrom(['pull']); addOneFrom(['hinge','squat']); addOneFrom(['core']);
+  } else {
+    addOneFrom(primMap[type]);
+    addOneFrom([offMap[type]]);
+  }
+
+  let fill;
+  if(type==='balanced') fill = shuffle(avail.filter(e=>!used.has(e.id)));
+  else fill = shuffle(avail.filter(e=>primMap[type].includes(e.category) && !used.has(e.id)));
+
+  for(const e of fill){
+    if(chosen.length>=10) break;
+    if(totalT()+exTime(e,rank) > target && chosen.length>=4) break;
+    tryAdd(e);
+  }
+  if(chosen.length<4){
+    for(const e of shuffle(avail.filter(e=>!used.has(e.id)))){ if(chosen.length>=4) break; tryAdd(e); }
+  }
+  return chosen;
+}
+
+/* ============================================================
+   AUDIO (Web Audio API, no files)
+   ============================================================ */
+let AC=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return AC; }
+function beep(freq,t0,dur,type,vol){
+  const c=ac(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t0);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol,t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(t0); o.stop(t0+dur+0.03);
+}
+function sfx(name){
+  if(!state.settings.sound) return;
+  const c=ac(); if(!c) return;
+  if(c.state==='suspended') c.resume();
+  const t=c.currentTime;
+  if(name==='chime'){ [523,659,784].forEach((f,i)=>beep(f,t+i*0.05,0.12,'square',0.16)); }
+  else if(name==='bell'){ beep(880,t,0.45,'triangle',0.20); beep(1320,t+0.01,0.45,'sine',0.08); }
+  else if(name==='fanfare'){
+    const seq=[[523,0,.13],[523,.13,.13],[523,.26,.13],[659,.40,.18],[784,.60,.18],[1047,.82,.45]];
+    seq.forEach(([f,dt,d])=>beep(f,t+dt,d,'square',0.18));
+  }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  $('tab-'+tab).classList.add('active');
+  document.querySelectorAll('#bottomnav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===tab));
+  $('tabs').scrollTop=0;
+  if(tab==='chronicle') renderChronicle();
+  if(tab==='inventory') renderInventory();
+  if(tab==='quest') renderConfig();
+}
+
+/* ============================================================
+   PRE-QUEST CONFIG
+   ============================================================ */
+function setMode(m){ state.settings.lastMode=m; save(); renderConfig(); }
+function setFocus(f){ state.settings.lastFocus=f; save(); renderConfig(); }
+function setDuration(d){ state.settings.lastDuration=d; save(); renderConfig(); }
+
+function resolvedType(){ return state.settings.lastMode==='balanced' ? 'balanced' : state.settings.lastFocus; }
+
+function renderConfig(){
+  const s=state.settings;
+  document.querySelectorAll('#mode-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.mode===s.lastMode));
+  $('focus-seg').style.display = s.lastMode==='targeted' ? 'flex' : 'none';
+  document.querySelectorAll('#focus-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.focus===s.lastFocus));
+  document.querySelectorAll('#dur-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.dur===s.lastDuration));
+
+  const r=rankObj(state.rank), n=nextRank(state.rank);
+  $('cfg-rank').textContent=r.name.toUpperCase();
+  $('cfg-xp').textContent=state.xp.toLocaleString()+' XP';
+  if(n){
+    const span=n.threshold - r.threshold;
+    const pct=Math.max(0,Math.min(100, ((state.xp - r.threshold)/span)*100));
+    $('cfg-xpfill').style.width=pct+'%';
+    $('cfg-next').textContent = state.xp>=n.threshold
+      ? 'Ready to advance to '+n.name+'!'
+      : (n.threshold-state.xp).toLocaleString()+' XP to '+n.name;
+  } else {
+    $('cfg-xpfill').style.width='100%';
+    $('cfg-next').textContent='Maximum rank achieved';
+  }
+  renderToast();
+}
+
+function renderToast(){
+  const n=nextRank(state.rank);
+  if(canAdvance() && n){
+    $('ranktoast-txt').textContent='You are ready to advance to '+n.name+'! Open the Codex to confirm.';
+    $('ranktoast').classList.add('show');
+  } else $('ranktoast').classList.remove('show');
+}
+
+/* ============================================================
+   ACTIVE QUEST
+   ============================================================ */
+let quest=null, restTimer=null, holdTimer=null;
+
+function beginQuest(){
+  ac(); // unlock audio on user gesture
+  const rank=state.rank, type=resolvedType(), durMin=state.settings.lastDuration;
+  const exercises=genQuest(rank,type,durMin);
+  if(!exercises.length){ alert('No trials available with your current inventory.'); return; }
+  quest={ rank, type, durMin, exercises, exIdx:0, setIdx:0, completedSets:0 };
+  $('q-rank').textContent=rankObj(rank).name.toUpperCase();
+  $('quest').classList.add('active');
+  renderTrial();
+  showWork();
+}
+
+function renderTrial(){
+  const ex=quest.exercises[quest.exIdx];
+  const rank=quest.rank;
+  $('q-count').textContent='Trial '+(quest.exIdx+1)+' of '+quest.exercises.length;
+  $('q-name').innerHTML=ex.name;
+  $('q-note').textContent=ex.note;
+  $('q-pills').innerHTML=
+    '<span class="pill pill-purple">'+ex.sets[rank]+' sets</span>'+
+    '<span class="pill pill-teal">'+repsLabel(ex,rank)+'</span>'+
+    '<span class="pill pill-gray">'+ex.weight[rank]+'</span>';
+  $('q-segs').innerHTML=quest.exercises.map((_,i)=>
+    '<div class="s '+(i<quest.exIdx?'done':i===quest.exIdx?'now':'')+'"></div>').join('');
+  renderDots();
+}
+function renderDots(){
+  const ex=quest.exercises[quest.exIdx], n=ex.sets[quest.rank];
+  $('q-dots').innerHTML=Array.from({length:n},(_,i)=>
+    '<div class="sdot '+(i<quest.setIdx?'done':i===quest.setIdx?'now':'')+'">'+
+      (i<quest.setIdx?'<i class="ti ti-check"></i>':(i+1))+'</div>').join('');
+}
+
+function hideActions(){ $('act-victory').style.display='none'; $('act-timed').style.display='none'; $('act-rest').style.display='none'; }
+function showWork(){
+  clearInterval(restTimer); clearInterval(holdTimer);
+  hideActions();
+  const ex=quest.exercises[quest.exIdx];
+  if(ex.timed){
+    $('act-timed').style.display='block';
+    $('hold-time').textContent=fmt(ex.reps[quest.rank]);
+    const b=$('hold-btn'); b.disabled=false; b.innerHTML='<i class="ti ti-player-play"></i> Begin Trial';
+  } else {
+    $('act-victory').style.display='flex';
+  }
+}
+function fmt(sec){ sec=Math.max(0,sec); return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'); }
+
+/* rep-based set complete */
+function repSetDone(){ setComplete(true); }
+
+/* timed hold */
+function startHold(){
+  ac();
+  const ex=quest.exercises[quest.exIdx];
+  let left=ex.reps[quest.rank];
+  $('hold-btn').disabled=true;
+  $('hold-time').textContent=fmt(left);
+  clearInterval(holdTimer);
+  holdTimer=setInterval(()=>{
+    left--; $('hold-time').textContent=fmt(left);
+    if(left<=0){ clearInterval(holdTimer); sfx('bell'); setComplete(false); }
+  },1000);
+}
+
+function setComplete(playChime){
+  if(playChime) sfx('chime');
+  burstAt('q-action',['#FFD700','#00D9A3','#6C63FF','#ffffffaa']);
+  quest.completedSets++;
+  const ex=quest.exercises[quest.exIdx];
+  quest.setIdx++;
+  renderDots();
+  if(quest.setIdx < ex.sets[quest.rank]){
+    enterRest('set');
+  } else if(quest.exIdx >= quest.exercises.length-1){
+    finishQuest();
+  } else {
+    quest.exIdx++; quest.setIdx=0; renderTrial();
+    enterRest('ex');
+  }
+}
+
+function enterRest(kind){
+  hideActions();
+  $('act-rest').style.display='block';
+  const bell = kind==='set';
+  $('rest-label').textContent = kind==='set' ? 'RECOVERY' : 'PREPARE FOR NEXT TRIAL';
+  startRest(60, bell, ()=>{ showWork(); });
+}
+function startRest(secs, bell, onEnd){
+  clearInterval(restTimer);
+  let left=secs;
+  $('rest-time').textContent=fmt(left);
+  restTimer=setInterval(()=>{
+    left--; $('rest-time').textContent=fmt(left);
+    if(left<=0){ clearInterval(restTimer); if(bell) sfx('bell'); onEnd(); }
+  },1000);
+  startRest._onEnd=onEnd;
+}
+function skipRest(){ clearInterval(restTimer); const cb=startRest._onEnd; if(cb) cb(); }
+
+function abandonQuest(){
+  if(!confirm('Abandon this quest? Progress will not be saved.')) return;
+  clearInterval(restTimer); clearInterval(holdTimer);
+  quest=null;
+  $('quest').classList.remove('active');
+}
+
+function finishQuest(){
+  clearInterval(restTimer); clearInterval(holdTimer);
+  const base=BASE_XP[quest.durMin]||100;
+  const earned=base*rankMult(quest.rank);
+  state.xp += earned;
+  state.history.push({
+    date: isoDate(), type: quest.type, durMin: quest.durMin, xp: earned,
+    rank: quest.rank, sets: quest.completedSets,
+    exercises: quest.exercises.map(e=>e.name.replace(/&amp;/g,'&'))
+  });
+  save();
+  $('cs-trials').textContent=quest.exercises.length;
+  $('cs-sets').textContent=quest.completedSets;
+  $('cs-xp').textContent='+'+earned.toLocaleString();
+  $('cs-dur').textContent=quest.durMin;
+  $('quest').classList.remove('active');
+  $('complete').classList.add('active');
+  sfx('fanfare');
+  finaleBurst();
+}
+function returnToCamp(){
+  $('complete').classList.remove('active');
+  quest=null;
+  goTab('quest');
+  renderConfig();
+}
+
+/* info modal */
+function openInfo(){
+  if(!quest) return;
+  const ex=quest.exercises[quest.exIdx];
+  $('info-title').innerHTML=ex.name;
+  $('info-steps').innerHTML=ex.instructions.map((s,i)=>
+    '<div class="modal-step"><div class="snum">'+(i+1)+'</div><div class="read" style="flex:1">'+s+'</div></div>').join('');
+  $('info').classList.add('open');
+}
+function closeInfo(){ $('info').classList.remove('open'); }
+
+/* ============================================================
+   CODEX (settings)
+   ============================================================ */
+function openCodex(){ renderCodex(); $('codex').classList.add('open'); }
+function closeCodex(){ $('codex').classList.remove('open'); }
+function renderCodex(){
+  const r=rankObj(state.rank), n=nextRank(state.rank);
+  $('cx-rank').textContent=r.name.toUpperCase();
+  $('cx-mult').textContent=r.mult+'× XP';
+  if(n){
+    const pct=Math.max(0,Math.min(100,((state.xp-r.threshold)/(n.threshold-r.threshold))*100));
+    $('cx-xpfill').style.width=pct+'%';
+    $('cx-next').textContent = state.xp>=n.threshold
+      ? 'Ready to advance to '+n.name+'!'
+      : (n.threshold-state.xp).toLocaleString()+' XP to '+n.name;
+    $('cx-advance').disabled=!canAdvance();
+    $('cx-advance').innerHTML='<i class="ti ti-arrow-up"></i> Advance to '+n.name;
+  } else {
+    $('cx-xpfill').style.width='100%';
+    $('cx-next').textContent='Maximum rank — you are a Legend.';
+    $('cx-advance').disabled=true;
+    $('cx-advance').innerHTML='<i class="ti ti-crown"></i> Max Rank';
+  }
+  $('cx-sound').classList.toggle('on', !!state.settings.sound);
+}
+function advanceRank(){
+  if(!canAdvance()) return;
+  const n=nextRank(state.rank);
+  state.rank=n.id; save();
+  renderCodex(); renderConfig();
+  burstAt('cx-advance',['#FFD700','#FFE873','#ffffff']);
+  sfx('fanfare');
+}
+function toggleSound(){
+  state.settings.sound=!state.settings.sound; save();
+  $('cx-sound').classList.toggle('on', state.settings.sound);
+  if(state.settings.sound) sfx('chime');
+}
+
+/* backup / restore */
+function exportData(){
+  const payload={ version:2, exportedAt:new Date().toISOString(), data:{
+    rank:state.rank, xp:state.xp, inventory:state.inventory,
+    sessionHistory:state.history,
+    settings:{ sound:state.settings.sound, lastDuration:state.settings.lastDuration,
+               lastSessionType:state.settings.lastMode, lastFocus:state.settings.lastFocus } } };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='gym-in-a-box-backup-'+isoDate()+'.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function restoreData(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const obj=JSON.parse(reader.result);
+      const d=obj.data||obj;
+      if(!d || typeof d!=='object') throw 0;
+      if(!confirm('Restore will REPLACE all current data. Continue?')) return;
+      state.rank = RANK_IDS.includes(d.rank)?d.rank:'apprentice';
+      state.xp = parseInt(d.xp,10)||0;
+      state.inventory = Object.assign({...DEFAULT_INV}, d.inventory||{});
+      state.history = d.sessionHistory || d.history || [];
+      const s=d.settings||{};
+      state.settings = Object.assign({...DEFAULT_SETTINGS}, {
+        sound: s.sound!==false,
+        lastDuration: s.lastDuration||30,
+        lastMode: s.lastSessionType || s.lastMode || 'balanced',
+        lastFocus: s.lastFocus || 'upper'
+      });
+      if(!['balanced','targeted'].includes(state.settings.lastMode)) state.settings.lastMode='balanced';
+      save();
+      renderConfig(); renderCodex();
+      alert('Chronicle restored.');
+      closeCodex();
+    }catch(e){ alert('That file could not be read as a Gym in a Box backup.'); }
+    ev.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   INVENTORY
+   ============================================================ */
+function renderInventory(){
+  $('inv-stations').innerHTML =
+    invRow('Bodyweight','Always equipped','bodyweight',true,true) +
+    invRow('Step / box','Step-ups & elevated work','step',state.inventory.step,false) +
+    invRow('Bench','Bench, sofa edge or sturdy chair','bench',state.inventory.bench,false);
+  $('inv-dumbbells').innerHTML = ['dumbbell_light','dumbbell_medium','dumbbell_heavy','dumbbell_veryheavy']
+    .map(k=>invRow(EQUIP_LABEL[k],'',k,state.inventory[k],false)).join('');
+  $('inv-barbells').innerHTML = ['barbell_light','barbell_medium','barbell_heavy']
+    .map(k=>invRow(EQUIP_LABEL[k],'',k,state.inventory[k],false)).join('');
+}
+function invRow(name,sub,key,on,lock){
+  return '<div class="inv-item"><div><div class="nm">'+name+'</div>'+
+    (sub?'<div class="sub">'+sub+'</div>':'')+'</div>'+
+    '<div class="tgl'+(on?' on':'')+(lock?' lock':'')+'" '+
+      (lock?'':'onclick="toggleEquip(\''+key+'\')"')+'><div class="kn"></div></div></div>';
+}
+function toggleEquip(key){
+  state.inventory[key]=!state.inventory[key];
+  save();
+  renderInventory();
+}
+
+/* ============================================================
+   CHRONICLE (calendar)
+   ============================================================ */
+let cal={ y:new Date().getFullYear(), m:new Date().getMonth() };
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW=['S','M','T','W','T','F','S'];
+
+function calStep(d){ cal.m+=d; if(cal.m<0){cal.m=11;cal.y--;} if(cal.m>11){cal.m=0;cal.y++;} renderChronicle(); }
+
+function renderChronicle(){
+  $('cal-month').textContent=MONTHS[cal.m]+' '+cal.y;
+  $('cal-dows').innerHTML=DOW.map(d=>'<div class="cal-dow">'+d+'</div>').join('');
+  const byDate={};
+  state.history.forEach(h=>{ (byDate[h.date]=byDate[h.date]||[]).push(h); });
+  const first=new Date(cal.y,cal.m,1).getDay();
+  const days=new Date(cal.y,cal.m+1,0).getDate();
+  const today=isoDate();
+  let cells='';
+  for(let i=0;i<first;i++) cells+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=cal.y+'-'+String(cal.m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const recs=byDate[ds];
+    let cls='cal-cell'+(ds===today?' today':'');
+    if(recs){
+      const col=TYPE_COLOR[recs[recs.length-1].type]||'#FFD700';
+      cells+='<div class="'+cls+' has" onclick="showDetail(\''+ds+'\')">'+
+        '<span class="dn">'+d+'</span>'+
+        '<span class="star" style="color:'+col+'">★</span></div>';
+    } else {
+      cells+='<div class="'+cls+'">'+d+'</div>';
+    }
+  }
+  $('cal-grid').innerHTML=cells;
+
+  const total=state.history.length;
+  const totXp=state.history.reduce((s,h)=>s+(h.xp||0),0);
+  $('chron-summary').innerHTML='<div class="dim" style="font-size:8px">LIFETIME</div>'+
+    '<div class="h1" style="font-size:13px;margin-top:8px">'+total+' quests · '+totXp.toLocaleString()+' XP</div>';
+}
+
+function showDetail(ds){
+  const recs=state.history.filter(h=>h.date===ds);
+  if(!recs.length) return;
+  const body=recs.map(h=>{
+    const col=TYPE_COLOR[h.type]||'#FFD700';
+    return '<div class="panel" style="margin-bottom:10px">'+
+      '<div class="row" style="justify-content:space-between;align-items:center">'+
+        '<span class="pill" style="border-color:'+col+';color:'+col+'">'+(TYPE_LABEL[h.type]||h.type)+'</span>'+
+        '<span class="dim" style="font-size:8px">'+h.durMin+' min</span></div>'+
+      '<div class="row" style="gap:8px;margin-top:12px">'+
+        '<span class="pill pill-gold">+'+(h.xp||0)+' XP</span>'+
+        '<span class="pill pill-gray">'+(rankObj(h.rank)?rankObj(h.rank).name:h.rank)+'</span>'+
+        '<span class="pill pill-gray">'+(h.sets||0)+' sets</span></div>'+
+      '<div class="dim" style="font-size:8px;margin:14px 0 8px">TRIALS</div>'+
+      '<div class="read" style="font-size:12px;line-height:1.9">'+(h.exercises||[]).join('<br>')+'</div></div>';
+  }).join('');
+  $('detail-body').innerHTML='<h2><i class="ti ti-calendar-event"></i> '+prettyDate(ds)+'</h2>'+body+
+    '<button class="btn btn-ghost" onclick="closeDetail()">Close</button>';
+  $('detail').classList.add('open');
+}
+function prettyDate(ds){ const [y,m,d]=ds.split('-').map(Number); return MONTHS[m-1]+' '+d+', '+y; }
+function closeDetail(){ $('detail').classList.remove('open'); }
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+const fw=$('fw'), fctx=fw.getContext('2d');
+let pts=[];
+function rsz(){ fw.width=window.innerWidth; fw.height=window.innerHeight; }
+rsz(); window.addEventListener('resize',rsz);
+function spawnAt(x,y,n,colors){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=2+Math.random()*7;
+    pts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,a:1,s:4+Math.random()*5,
+      c:colors[Math.floor(Math.random()*colors.length)],d:0.015+Math.random()*0.02});
+  }
+}
+function loop(){
+  if(!pts.length){ fctx.clearRect(0,0,fw.width,fw.height); return; }
+  fctx.clearRect(0,0,fw.width,fw.height);
+  pts=pts.filter(p=>p.a>0.02);
+  pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.a-=p.d;
+    fctx.save(); fctx.globalAlpha=Math.max(0,p.a); fctx.fillStyle=p.c;
+    fctx.fillRect(p.x,p.y,p.s,p.s); fctx.restore(); });
+  requestAnimationFrame(loop);
+}
+function burstAt(elId,colors){
+  const el=$(elId); if(!el) return;
+  const r=el.getBoundingClientRect();
+  spawnAt(r.left+r.width/2, r.top+r.height/2, 26, colors); loop();
+}
+function finaleBurst(){
+  let i=0;
+  const t=setInterval(()=>{
+    spawnAt(fw.width*(0.15+Math.random()*0.7), fw.height*(0.1+Math.random()*0.4), 60,
+      ['#FFD700','#CC2200','#00D9A3','#6C63FF','#ffffff','#FFE873']);
+    loop(); if(++i>6) clearInterval(t);
+  },200);
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+load();
+renderConfig();
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>

@@ -71,8 +71,8 @@ Voici plusieurs outils qui me sont présentement utiles pour le développement d
   %}
   {% include link-object.html
     title="Gym In A Box"
-    url="/resources/tools/gym-in-a-box.html"
-    description="Programme d'entraînement guidé en deux sessions (A et B) avec minuteur de repos, suivi des séries et exercices détaillés. Aucun équipement de gym requis."
+    url="/resources/tools/gym-in-a-box/gym-in-a-box.html"
+    description="Application web d'entraînement à domicile en pixel-art RPG. Quêtes générées, rangs et XP, minuteurs de repos, inventaire d'équipement et chronique en calendrier. Installable et entièrement hors ligne."
     icon="feather.svg"
   %}
 </div>
