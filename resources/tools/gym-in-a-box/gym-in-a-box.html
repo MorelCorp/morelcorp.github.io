@@ -151,6 +151,10 @@ body{font-family:'Press Start 2P',monospace;color:var(--txt);font-size:11px}
 .toast i{color:var(--gold);font-size:20px}
 .toast .t{font-size:9px;line-height:1.6;color:var(--gold)}
 
+#q-dice{color:var(--gold);border-color:var(--gold)}
+#q-dice:disabled{opacity:.35;color:var(--txt3);border-color:var(--line);cursor:not-allowed}
+#q-dice-n{position:absolute;top:-7px;right:-7px;min-width:15px;height:15px;padding:0 2px;font-size:8px;line-height:15px;text-align:center;background:var(--gold);color:#1a1500;border:2px solid var(--bg)}
+#q-dice:disabled #q-dice-n{background:var(--txt3);color:var(--bg)}
 .empty-state{text-align:center;color:var(--txt3);font-size:9px;line-height:1.8;padding:30px 10px}
 canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:200}
 </style>
@@ -272,7 +276,10 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
       <div class="panel">
         <div class="row" style="justify-content:space-between;align-items:flex-start">
           <div id="q-name">Pushups</div>
-          <button class="iconbtn" style="width:34px;height:34px;font-size:15px" onclick="openInfo()" aria-label="How to"><i class="ti ti-info-circle"></i></button>
+          <div class="row" style="gap:18px;flex-shrink:0;align-items:flex-start">
+            <button class="iconbtn" id="q-dice" style="width:34px;height:34px;font-size:15px;position:relative" onclick="rerollTrial()" aria-label="Re-roll this trial"><i class="ti ti-dice-5"></i><span id="q-dice-n">3</span></button>
+            <button class="iconbtn" style="width:34px;height:34px;font-size:15px" onclick="openInfo()" aria-label="How to"><i class="ti ti-info-circle"></i></button>
+          </div>
         </div>
         <div id="q-pills"></div>
         <div id="q-note" class="read"></div>
@@ -378,26 +385,36 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
 /* ============================================================
    DATA — ranks, xp, weights, exercise pool
    ============================================================ */
+/* TIERS — a manual, cosmetic-plus-multiplier progression separate from Levels.
+   Pacing is deliberately slow: each tier takes more sessions than the last at
+   the previous tier's XP rate (30-min session = BASE_XP[30] * mult):
+     Apprentice→Squire     : ~10 sessions @ 1×  (10×100  = 1000)
+     Squire→Adventurer     : ~15 sessions @ 2×  (15×200  = 3000 ⇒ 4000)
+     Adventurer→Champion   : ~25 sessions @ 3×  (25×300  = 7500 ⇒ 11500)
+     Champion→Legend       : ~40 sessions @ 4×  (40×400 = 16000 ⇒ 27500)
+   'squire' is inserted between the legacy 'apprentice' and 'adventurer' ids;
+   existing saved ranks keep working because no id was renamed or removed. */
 const RANKS = [
   { id:'apprentice', name:'Apprentice', mult:1, threshold:0 },
-  { id:'adventurer', name:'Adventurer', mult:2, threshold:200 },
-  { id:'champion',   name:'Champion',   mult:3, threshold:2200 },
-  { id:'legend',     name:'Legend',     mult:4, threshold:17200 }
+  { id:'squire',     name:'Squire',     mult:2, threshold:1000 },
+  { id:'adventurer', name:'Adventurer', mult:3, threshold:4000 },
+  { id:'champion',   name:'Champion',   mult:4, threshold:11500 },
+  { id:'legend',     name:'Legend',     mult:5, threshold:27500 }
 ];
 const RANK_IDS = RANKS.map(r=>r.id);
 const BASE_XP = { 30:100, 45:150, 60:200 };
-const DEFAULT_SETS = { apprentice:3, adventurer:3, champion:4, legend:4 };
-const DEFAULT_REPS = { apprentice:10, adventurer:12, champion:15, legend:20 };
-const DEFAULT_TIMED= { apprentice:20, adventurer:30, champion:45, legend:60 };
+const DEFAULT_SETS = { apprentice:3, squire:3, adventurer:3, champion:4, legend:4 };
+const DEFAULT_REPS = { apprentice:10, squire:12, adventurer:12, champion:15, legend:20 };
+const DEFAULT_TIMED= { apprentice:20, squire:25, adventurer:30, champion:45, legend:60 };
 const W = {
-  bodyweight:        {apprentice:'Bodyweight',adventurer:'Bodyweight',champion:'Bodyweight',legend:'Bodyweight'},
-  dumbbell_light:    {apprentice:'5–10 lb',  adventurer:'8–12 lb',  champion:'10–15 lb', legend:'12–15 lb'},
-  dumbbell_medium:   {apprentice:'15–20 lb', adventurer:'18–22 lb', champion:'22–28 lb', legend:'25–30 lb'},
-  dumbbell_heavy:    {apprentice:'30–35 lb', adventurer:'35–40 lb', champion:'40–50 lb', legend:'50–60 lb'},
-  dumbbell_veryheavy:{apprentice:'60 lb',    adventurer:'65 lb',    champion:'70 lb',    legend:'80 lb+'},
-  barbell_light:     {apprentice:'45–65 lb', adventurer:'65–85 lb', champion:'85–95 lb', legend:'95 lb'},
-  barbell_medium:    {apprentice:'95–115 lb',adventurer:'115–135 lb',champion:'135–165 lb',legend:'165–185 lb'},
-  barbell_heavy:     {apprentice:'185 lb',   adventurer:'205 lb',   champion:'225 lb',   legend:'245 lb+'}
+  bodyweight:        {apprentice:'Bodyweight',squire:'Bodyweight',adventurer:'Bodyweight',champion:'Bodyweight',legend:'Bodyweight'},
+  dumbbell_light:    {apprentice:'5–10 lb',  squire:'8–10 lb',  adventurer:'8–12 lb',  champion:'10–15 lb', legend:'12–15 lb'},
+  dumbbell_medium:   {apprentice:'15–20 lb', squire:'15–20 lb', adventurer:'18–22 lb', champion:'22–28 lb', legend:'25–30 lb'},
+  dumbbell_heavy:    {apprentice:'30–35 lb', squire:'30–38 lb', adventurer:'35–40 lb', champion:'40–50 lb', legend:'50–60 lb'},
+  dumbbell_veryheavy:{apprentice:'60 lb',    squire:'60 lb',    adventurer:'65 lb',    champion:'70 lb',    legend:'80 lb+'},
+  barbell_light:     {apprentice:'45–65 lb', squire:'55–75 lb', adventurer:'65–85 lb', champion:'85–95 lb', legend:'95 lb'},
+  barbell_medium:    {apprentice:'95–115 lb',squire:'95–125 lb',adventurer:'115–135 lb',champion:'135–165 lb',legend:'165–185 lb'},
+  barbell_heavy:     {apprentice:'185 lb',   squire:'185 lb',   adventurer:'205 lb',   champion:'225 lb',   legend:'245 lb+'}
 };
 const EQUIP_LABEL = {
   step:'Step / box', bench:'Bench / sofa edge',
@@ -430,7 +447,7 @@ const EXERCISES = [
     instructions:['Hands slightly wider than shoulders, body straight head to heels.','Lower chest toward floor, elbows at 45° — not flared wide.','Push to full extension. Stop 2 reps before failure.']}),
   mkEx({id:'incline_pushup',name:'Incline Pushups',category:'push',equipment:['bodyweight'],
     instructions:['Hands on a sturdy chair, sofa or counter; body in a straight line.','Lower chest to the edge, elbows at 45°.','Press back up. The higher the surface, the easier.']}),
-  mkEx({id:'knee_pushup',name:'Knee Pushups',category:'push',equipment:['bodyweight'],ranks:['apprentice','adventurer'],
+  mkEx({id:'knee_pushup',name:'Knee Pushups',category:'push',equipment:['bodyweight'],ranks:['apprentice','squire','adventurer'],
     instructions:['Kneel, hands under shoulders, body straight from knees to head.','Lower chest toward the floor with control.','Press back up. Keep hips from sagging.']}),
   mkEx({id:'wide_pushup',name:'Wide Pushups',category:'push',equipment:['bodyweight'],
     instructions:['Set hands wider than shoulders.','Lower with control, feeling the chest stretch.','Press up. Keep core braced throughout.']}),
@@ -635,7 +652,223 @@ const EXERCISES = [
   mkEx({id:'db_man_maker',name:'DB Man Maker',category:'fullbody',equipment:['dumbbell_medium'],ranks:['champion','legend'],
     instructions:['Holding dumbbells in a plank, row one then the other.','Jump the feet in and clean the dumbbells to your shoulders.','Stand and press them overhead. Lower and flow into the next.']}),
   mkEx({id:'db_snatch',name:'DB Snatch',category:'fullbody',equipment:['dumbbell_medium'],unit:'/side',ranks:['champion','legend'],
-    instructions:['One dumbbell between your feet, hinge and grip it.','Explode through the hips, pulling it overhead in one motion.','Lock out overhead, then lower with control. Switch sides.']})
+    instructions:['One dumbbell between your feet, hinge and grip it.','Explode through the hips, pulling it overhead in one motion.','Lock out overhead, then lower with control. Switch sides.']}),
+
+  /* ============================================================
+     EXPANSION PACK — +100 trials (brings the registry to 200)
+     ============================================================ */
+
+  /* ---------------- PUSH (expansion) ---------------- */
+  mkEx({id:'staggered_pushup',name:'Staggered Pushups',category:'push',equipment:['bodyweight'],unit:'/side',
+    instructions:['Set one hand forward and the other slightly back, body straight.','Lower with control, the chest favouring the forward hand.','Press up. Do all reps, then switch which hand leads.']}),
+  mkEx({id:'archer_pushup',name:'Archer Pushups',category:'push',equipment:['bodyweight'],unit:'/side',ranks:['adventurer','champion','legend'],
+    instructions:['Set your hands very wide, body straight head to heels.','Bend one arm to lower toward that side, the other arm straight.','Press back up. Do all reps, then switch sides.']}),
+  mkEx({id:'hindu_pushup',name:'Hindu Pushups',category:'push',equipment:['bodyweight'],
+    instructions:['Start in a downward-dog shape, hips high.','Swoop your chest down and forward, then up into a cobra.','Reverse the arc back to the start. Flow smoothly.']}),
+  mkEx({id:'spiderman_pushup',name:'Spiderman Pushups',category:'push',equipment:['bodyweight'],unit:'/side',ranks:['adventurer','champion','legend'],
+    instructions:['Start in a high plank, body straight.','As you lower, drive one knee out toward that same elbow.','Press up and return the leg. Alternate sides each rep.']}),
+  mkEx({id:'clap_pushup',name:'Clap Pushups',category:'push',equipment:['bodyweight'],ranks:['champion','legend'],
+    instructions:['Lower into a controlled pushup, core braced.','Press up explosively so your hands leave the floor and clap.','Land softly with bent elbows and flow into the next rep.']}),
+  mkEx({id:'close_grip_pushup',name:'Close-Grip Pushups',category:'push',equipment:['bodyweight'],
+    instructions:['Hands under your shoulders, narrower than normal.','Lower with elbows tucked tight to your ribs.','Press to full extension. Targets the triceps.']}),
+  mkEx({id:'tempo_pushup',name:'Tempo Pushups',category:'push',equipment:['bodyweight'],
+    instructions:['Take a slow three-count to lower your chest to the floor.','Pause for one count at the bottom, body tight.','Press up under control. Slow tempo, full range.']}),
+  mkEx({id:'db_squeeze_press',name:'DB Squeeze Press',category:'push',equipment:['bench','dumbbell_light'],
+    instructions:['Lie on the bench, press two dumbbells together over your chest.','Keep squeezing them hard as you lower to your chest.','Press back up, still squeezing. Hits the inner chest.']}),
+  mkEx({id:'db_front_raise',name:'DB Front Raise',category:'push',equipment:['dumbbell_light'],
+    instructions:['Stand tall, dumbbells resting in front of your thighs.','Raise them straight in front to shoulder height, arms long.','Lower slowly. No swinging or leaning back.']}),
+  mkEx({id:'db_z_press',name:'DB Z Press',category:'push',equipment:['dumbbell_light'],
+    instructions:['Sit on the floor, legs straight, dumbbells at your shoulders.','Brace hard and press them overhead without leaning back.','Lower to your shoulders under control. No back support.']}),
+  mkEx({id:'db_tate_press',name:'DB Tate Press',category:'push',equipment:['bench','dumbbell_light'],
+    instructions:['Lie on the bench, dumbbells pressed together over your chest.','Lower them by flaring the elbows out, weights toward the chest.','Press back to the top. Isolates the triceps.']}),
+  mkEx({id:'db_push_press',name:'DB Push Press',category:'push',equipment:['dumbbell_medium'],
+    instructions:['Dumbbells at your shoulders, a small dip in the knees.','Drive up with your legs and press them overhead.','Lower to your shoulders with control. Use the leg drive.']}),
+  mkEx({id:'db_single_arm_press',name:'DB Single-Arm Press',category:'push',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Stand tall, one dumbbell at your shoulder, core braced.','Press straight overhead without leaning to the side.','Lower with control. Do all reps, then switch hands.']}),
+  mkEx({id:'bb_close_grip_bench',name:'Barbell Close-Grip Bench',category:'push',equipment:['bench','barbell_medium'],
+    instructions:['Lie back, grip the bar about shoulder-width, elbows tucked.','Lower to your lower chest, keeping elbows close.','Press to lockout. Great for the triceps.']}),
+  mkEx({id:'bb_push_press',name:'Barbell Push Press',category:'push',equipment:['barbell_medium'],
+    instructions:['Bar on your front shoulders, dip slightly at the knees.','Drive up with the legs and press the bar overhead.','Lower to your shoulders. Reset and repeat.']}),
+  mkEx({id:'db_cuban_press',name:'DB Cuban Press',category:'push',equipment:['dumbbell_light'],
+    instructions:['Hold light dumbbells, elbows high and out, forearms hanging.','Rotate the forearms up, then press overhead.','Reverse the path back down slowly. Great for shoulder health.']}),
+  mkEx({id:'wall_handstand',name:'Wall Handstand Hold',category:'push',equipment:['bodyweight'],timed:true,ranks:['champion','legend'],
+    instructions:['Kick up to a handstand with your heels resting on a wall.','Stack your hands, shoulders and hips; squeeze everything tight.','Hold and breathe. Come down with control when the time ends.']}),
+
+  /* ---------------- PULL (expansion) ---------------- */
+  mkEx({id:'renegade_row',name:'DB Renegade Row',category:'pull',equipment:['dumbbell_medium'],unit:'/side',ranks:['adventurer','champion','legend'],
+    instructions:['Start in a plank gripping two dumbbells, feet wide.','Row one dumbbell to your hip while bracing hard against twist.','Lower it and row the other side. Keep the hips level.']}),
+  mkEx({id:'gorilla_row',name:'DB Gorilla Row',category:'pull',equipment:['dumbbell_medium'],unit:'/side',
+    instructions:['Hinge over with a dumbbell resting by each foot.','Row one to your hip while the other stays on the floor.','Lower and alternate. Keep the back flat and hips still.']}),
+  mkEx({id:'seal_row',name:'DB Seal Row',category:'pull',equipment:['bench','dumbbell_light'],
+    instructions:['Lie chest-down on a raised bench, dumbbells hanging below.','Row both to the bench, squeezing your shoulder blades.','Lower fully. All the strict pull, zero body english.']}),
+  mkEx({id:'db_concentration_curl',name:'DB Concentration Curl',category:'pull',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Sit, elbow braced on the inside of your thigh.','Curl the dumbbell to your shoulder, squeezing the bicep.','Lower all the way under control. Switch arms after your reps.']}),
+  mkEx({id:'db_incline_curl',name:'DB Incline Curl',category:'pull',equipment:['bench','dumbbell_light'],
+    instructions:['Lie back on an inclined bench, arms hanging straight down.','Curl the dumbbells up, keeping your upper arms still.','Lower fully for a deep stretch. No swinging.']}),
+  mkEx({id:'db_zottman_curl',name:'DB Zottman Curl',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Curl the dumbbells up with palms facing up.','At the top, rotate your palms to face down.','Lower slowly in that position, then rotate back. Repeat.']}),
+  mkEx({id:'db_reverse_curl',name:'DB Reverse Curl',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Hold the dumbbells with palms facing down (overhand).','Curl them up, keeping the elbows pinned to your sides.','Lower slowly. Builds the forearms and outer biceps.']}),
+  mkEx({id:'db_drag_curl',name:'DB Drag Curl',category:'pull',equipment:['dumbbell_light'],
+    instructions:['Stand tall, dumbbells at your thighs, palms forward.','Curl by dragging them straight up along your body, elbows back.','Lower along the same path. Keeps tension on the biceps.']}),
+  mkEx({id:'towel_row',name:'Towel Door Rows',category:'pull',equipment:['bodyweight'],
+    instructions:['Loop a sturdy towel around a door handle and grip both ends.','Lean back with straight arms, feet close to the door.','Pull your chest toward the door, squeezing the back. Lower slowly.']}),
+  mkEx({id:'prone_t_raise',name:'Prone T-Raise',category:'pull',equipment:['bodyweight'],
+    instructions:['Lie face-down, arms out to the sides in a T, thumbs up.','Lift your arms off the floor, squeezing the mid-back.','Lower slowly. Keep your forehead down and neck long.']}),
+  mkEx({id:'prone_w_raise',name:'Prone W-Raise',category:'pull',equipment:['bodyweight'],
+    instructions:['Lie face-down, elbows bent and tucked to make a W shape.','Lift your hands and elbows, driving the shoulder blades down.','Lower with control. Targets the lower traps.']}),
+  mkEx({id:'db_wide_row',name:'Wide-Grip DB Row',category:'pull',equipment:['dumbbell_medium'],
+    instructions:['Hinge forward, dumbbells hanging, palms facing back.','Row out to the sides toward your lower ribs, elbows wide.','Squeeze the rear shoulders, lower slowly. Targets the upper back.']}),
+  mkEx({id:'bb_pendlay_row',name:'Barbell Pendlay Row',category:'pull',equipment:['barbell_medium'],ranks:['adventurer','champion','legend'],
+    instructions:['Hinge to near-parallel, back flat, bar on the floor.','Explosively row the bar to your lower chest.','Lower it all the way to the floor and reset each rep.']}),
+  mkEx({id:'bb_reverse_grip_row',name:'Reverse-Grip Barbell Row',category:'pull',equipment:['barbell_medium'],
+    instructions:['Hold the bar with an underhand grip, hinge ~45°.','Row to your belly, driving the elbows back and down.','Lower with control. Hits the lats and biceps.']}),
+  mkEx({id:'bb_shrug',name:'Barbell Shrug',category:'pull',equipment:['barbell_medium'],
+    instructions:['Stand tall holding the bar at your thighs.','Lift your shoulders straight up toward your ears.','Pause, then lower slowly. Do not roll the shoulders.']}),
+  mkEx({id:'scapular_pushup',name:'Scapular Pushups',category:'pull',equipment:['bodyweight'],
+    instructions:['Start in a high plank with your arms locked straight.','Without bending the elbows, let your chest sink between the blades.','Push the floor away to spread the blades wide. Small, controlled reps.']}),
+  mkEx({id:'floor_angel',name:'Floor Angels',category:'pull',equipment:['bodyweight'],
+    instructions:['Lie on your back, knees bent, arms out in a goalpost.','Slide your arms overhead along the floor, keeping contact.','Slide back down to the start. Move slowly and squeeze.']}),
+
+  /* ---------------- HINGE (expansion) ---------------- */
+  mkEx({id:'b_stance_rdl',name:'B-Stance RDL',category:'hinge',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Stagger your feet, back toe lightly down for balance.','Hinge over the front leg, dumbbells sliding down.','Drive the front hip forward to stand. Switch the working leg.']}),
+  mkEx({id:'db_stiff_leg_deadlift',name:'DB Stiff-Leg Deadlift',category:'hinge',equipment:['dumbbell_medium'],
+    instructions:['Stand tall, dumbbells in front, knees nearly straight.','Hinge at the hips, lowering the weights down your shins.','Feel the hamstrings, then stand tall and squeeze the glutes.']}),
+  mkEx({id:'db_single_leg_hip_thrust',name:'Single-Leg Hip Thrust',category:'hinge',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Upper back on a sofa edge, one foot planted, the other lifted.','Drive through the planted heel to lift the hips level.','Squeeze the glute, lower with control. Switch legs.']}),
+  mkEx({id:'db_good_morning',name:'DB Good Morning',category:'hinge',equipment:['dumbbell_light'],
+    instructions:['Hold one dumbbell against your upper chest, soft knees.','Hinge at the hips, chest forward and back flat.','Feel the hamstrings, then stand and squeeze the glutes.']}),
+  mkEx({id:'kang_squat',name:'Kang Squat',category:'hinge',equipment:['bodyweight'],
+    instructions:['Hands behind your head, hinge forward into a good morning.','From the bottom, drop into a deep squat.','Stand up, then hinge back to the start. Flow the two together.']}),
+  mkEx({id:'glute_bridge_march',name:'Glute Bridge March',category:'hinge',equipment:['bodyweight'],unit:'/side',
+    instructions:['Hold a glute bridge, hips high and level.','Lift one knee toward your chest without dropping the hips.','Lower it and switch. Keep the hips dead still.']}),
+  mkEx({id:'elevated_glute_bridge',name:'Feet-Elevated Glute Bridge',category:'hinge',equipment:['step'],
+    instructions:['Lie on your back with your heels on a step or low box.','Drive through your heels to lift the hips into a line.','Squeeze the glutes hard at the top, then lower slowly.']}),
+  mkEx({id:'db_kickstand_deadlift',name:'Kickstand DB Deadlift',category:'hinge',equipment:['dumbbell_medium'],unit:'/side',
+    instructions:['Stagger your feet, back toe as a light kickstand.','Hinge and lower a dumbbell down the front shin.','Drive through the front heel to stand. Switch sides.']}),
+  mkEx({id:'cook_hip_lift',name:'Cook Hip Lift',category:'hinge',equipment:['bodyweight'],unit:'/side',
+    instructions:['On your back, hug one knee tight to your chest.','Drive through the other heel to lift the hips a few inches.','Squeeze the glute hard, lower slowly. Switch sides.']}),
+  mkEx({id:'db_jefferson_curl',name:'DB Jefferson Curl',category:'hinge',equipment:['dumbbell_light'],ranks:['adventurer','champion','legend'],
+    instructions:['Stand tall holding a light dumbbell, feet together.','Roll down slowly one vertebra at a time, knees soft.','Reverse and stack back up. Move slow; keep it light.']}),
+  mkEx({id:'bb_good_morning',name:'Barbell Good Morning',category:'hinge',equipment:['barbell_light'],
+    instructions:['Bar across your upper back, soft knees, core braced.','Hinge forward at the hips, back flat, until your torso nears parallel.','Drive the hips forward to stand and squeeze the glutes.']}),
+  mkEx({id:'bb_sumo_deadlift',name:'Barbell Sumo Deadlift',category:'hinge',equipment:['barbell_medium'],
+    instructions:['Wide stance, toes out, grip the bar inside your knees.','Brace, push the floor away and drive the hips through.','Lock out tall, then hinge to lower. Reset each rep.']}),
+  mkEx({id:'bb_stiff_leg_deadlift',name:'Barbell Stiff-Leg Deadlift',category:'hinge',equipment:['barbell_medium'],
+    instructions:['Hold the bar at your thighs, knees almost straight.','Hinge and lower the bar down your shins, back flat.','Stand tall by driving the hips, squeezing the glutes.']}),
+  mkEx({id:'single_leg_hip_hinge',name:'Single-Leg Hip Hinge',category:'hinge',equipment:['bodyweight'],unit:'/side',
+    instructions:['Stand on one leg, soft knee, arms reaching forward.','Hinge at the hip, the free leg extending behind for balance.','Return to standing with control. Do all reps, then switch.']}),
+  mkEx({id:'quadruped_hip_extension',name:'Quadruped Hip Extension',category:'hinge',equipment:['bodyweight'],unit:'/side',
+    instructions:['On all fours, keep one knee bent at 90°.','Press that heel toward the ceiling, squeezing the glute.','Lower with control without arching the back. Switch sides.']}),
+  mkEx({id:'db_swing_single',name:'Single-Arm DB Swing',category:'hinge',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Hold one dumbbell in one hand, hinge and hike it back.','Snap the hips forward to float it to chest height.','Let it fall and hinge again. Switch hands after your reps.']}),
+
+  /* ---------------- SQUAT (expansion) ---------------- */
+  mkEx({id:'pause_squat',name:'Pause Squat',category:'squat',equipment:['bodyweight'],
+    instructions:['Sit back and down into a full squat, chest tall.','Pause for two full seconds at the bottom, staying tight.','Drive up through the whole foot. Control the bottom.']}),
+  mkEx({id:'tempo_squat',name:'Tempo Squat',category:'squat',equipment:['bodyweight'],
+    instructions:['Lower into your squat over a slow three-count.','Keep your heels flat and chest up the whole way down.','Stand up at a normal pace. Repeat with the slow descent.']}),
+  mkEx({id:'pulse_squat',name:'Pulse Squat',category:'squat',equipment:['bodyweight'],
+    instructions:['Drop into the bottom of a squat, thighs near parallel.','Pulse up and down a few inches without standing fully.','Keep tension in the legs the whole set. Chest tall.']}),
+  mkEx({id:'squat_to_calf_raise',name:'Squat to Calf Raise',category:'squat',equipment:['bodyweight'],
+    instructions:['Perform a full bodyweight squat and stand tall.','At the top, rise onto the balls of your feet for a calf raise.','Lower the heels and flow into the next squat.']}),
+  mkEx({id:'heels_elevated_squat',name:'Heels-Elevated Squat',category:'squat',equipment:['step'],
+    instructions:['Stand with your heels on a small plate, book or wedge.','Sit straight down, keeping your torso tall.','Drive up. The elevation lets you reach more depth.']}),
+  mkEx({id:'db_bulgarian_split_squat',name:'DB Bulgarian Split Squat',category:'squat',equipment:['bench','dumbbell_medium'],unit:'/side',ranks:['adventurer','champion','legend'],
+    instructions:['Top of your back foot on a bench, dumbbells at your sides.','Lower straight down on the front leg.','Drive up through the front heel. Switch sides.']}),
+  mkEx({id:'db_reverse_lunge',name:'DB Reverse Lunge',category:'squat',equipment:['dumbbell_medium'],unit:'/side',
+    instructions:['Hold dumbbells at your sides and step one foot back.','Lower until the back knee nears the floor, torso tall.','Push through the front heel to stand. Alternate sides.']}),
+  mkEx({id:'db_lateral_lunge',name:'DB Lateral Lunge',category:'squat',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Hold dumbbells, step wide to one side and push the hips back.','Bend the stepping leg, keeping the other straight, chest up.','Push back to center. Do all reps, then switch.']}),
+  mkEx({id:'db_curtsy_lunge',name:'DB Curtsy Lunge',category:'squat',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Hold dumbbells, step one foot back and across behind you.','Lower into a curtsy, both knees bending.','Drive back to standing. Do all reps, then switch.']}),
+  mkEx({id:'db_split_squat',name:'DB Split Squat',category:'squat',equipment:['dumbbell_medium'],unit:'/side',
+    instructions:['Stagger your stance, dumbbells at your sides.','Lower straight down until the back knee nears the floor.','Drive up through the front heel. Switch after your reps.']}),
+  mkEx({id:'calf_raise',name:'Standing Calf Raise',category:'squat',equipment:['bodyweight'],
+    instructions:['Stand tall, feet hip-width, near a wall for balance.','Rise up onto the balls of your feet as high as you can.','Pause at the top, then lower the heels slowly.']}),
+  mkEx({id:'db_calf_raise',name:'DB Calf Raise',category:'squat',equipment:['dumbbell_medium'],
+    instructions:['Stand tall holding dumbbells at your sides.','Rise up onto the balls of your feet, squeezing the calves.','Pause, then lower the heels slowly for a full stretch.']}),
+  mkEx({id:'bb_front_squat',name:'Barbell Front Squat',category:'squat',equipment:['barbell_medium'],
+    instructions:['Rest the bar on your front shoulders, elbows high.','Sit straight down, keeping the torso upright.','Drive up through mid-foot. Keep the elbows lifted.']}),
+  mkEx({id:'bb_split_squat',name:'Barbell Split Squat',category:'squat',equipment:['barbell_light'],unit:'/side',ranks:['adventurer','champion','legend'],
+    instructions:['Bar on your back, stagger your stance.','Lower straight down until the back knee nears the floor.','Drive up through the front heel. Switch sides.']}),
+  mkEx({id:'db_jump_squat',name:'DB Jump Squat',category:'squat',equipment:['dumbbell_light'],ranks:['adventurer','champion','legend'],
+    instructions:['Hold light dumbbells at your sides, drop into a quarter squat.','Explode up into a small jump, the weights staying at your sides.','Land softly through the whole foot and reset.']}),
+  mkEx({id:'squat_hold',name:'Squat Hold',category:'squat',equipment:['bodyweight'],timed:true,
+    instructions:['Sit back and down until your thighs are about parallel.','Hold the bottom position, chest tall and heels flat.','Breathe and stay tight. Stand when the time ends.']}),
+
+  /* ---------------- CORE (expansion) ---------------- */
+  mkEx({id:'plank_reach',name:'Plank Reach-Outs',category:'core',equipment:['bodyweight'],unit:'/side',
+    instructions:['Hold a forearm or high plank, feet a little wide.','Reach one arm straight out in front without twisting the hips.','Return it and switch. Keep the body still and braced.']}),
+  mkEx({id:'plank_updown',name:'Plank Up-Downs',category:'core',equipment:['bodyweight'],
+    instructions:['Start in a forearm plank, body straight and braced.','Press up to a high plank one hand at a time, then back down.','Keep the hips from rocking. Alternate the leading arm.']}),
+  mkEx({id:'hollow_rock',name:'Hollow Rocks',category:'core',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Lie back in a hollow shape, lower back pressed flat.','Rock gently head-to-toe, keeping the shape rigid.','Stay tight; do not let the lower back lift off.']}),
+  mkEx({id:'side_plank_dip',name:'Side Plank Hip Dips',category:'core',equipment:['bodyweight'],unit:'/side',
+    instructions:['Hold a side plank on your forearm, body in a line.','Lower your hips toward the floor, then lift them back up.','Move slowly. Do all reps, then switch sides.']}),
+  mkEx({id:'crunch',name:'Crunches',category:'core',equipment:['bodyweight'],
+    instructions:['Lie on your back, knees bent, hands by your ears.','Curl your shoulders off the floor, ribs toward hips.','Lower with control. Do not pull on your neck.']}),
+  mkEx({id:'crossbody_climber',name:'Cross-Body Mountain Climbers',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['Start in a high plank, shoulders over your wrists.','Drive each knee toward the opposite elbow.','Keep the hips low and steady. Alternate at a sustainable pace.']}),
+  mkEx({id:'plank_knee_elbow',name:'Plank Knee-to-Elbow',category:'core',equipment:['bodyweight'],
+    instructions:['Hold a high plank, body braced and straight.','Bring one knee forward to tap the same-side elbow.','Return it and alternate. Keep the hips low and still.']}),
+  mkEx({id:'seated_knee_tuck',name:'Seated Knee Tucks',category:'core',equipment:['bodyweight'],
+    instructions:['Sit and lean back on your hands, feet off the floor.','Tuck your knees toward your chest, then extend the legs.','Keep the feet hovering throughout. Move with control.']}),
+  mkEx({id:'l_sit',name:'Floor L-Sit',category:'core',equipment:['bodyweight'],timed:true,ranks:['champion','legend'],
+    instructions:['Sit, hands flat by your hips, and press your body up off the floor.','Extend your legs straight out in an L and hold.','Squeeze everything. Bend the knees to scale it down.']}),
+  mkEx({id:'bear_plank_hold',name:'Bear Plank Hold',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['On hands and toes, knees bent and hovering an inch off the floor.','Keep a flat back and braced core, shoulders over wrists.','Hold and breathe. Do not let the hips sag or pike.']}),
+  mkEx({id:'db_side_bend',name:'DB Side Bend',category:'core',equipment:['dumbbell_medium'],unit:'/side',
+    instructions:['Stand tall with a dumbbell in one hand at your side.','Bend sideways toward the weight, then pull back up tall.','Keep the motion straight to the side. Switch hands.']}),
+  mkEx({id:'db_woodchop',name:'DB Woodchopper',category:'core',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Hold one dumbbell with both hands by one hip.','Sweep it diagonally up and across to above the far shoulder.','Control it back down. Rotate from the trunk. Switch sides.']}),
+  mkEx({id:'plank_walkout',name:'Plank Walkout',category:'core',equipment:['bodyweight'],
+    instructions:['From standing, hinge and walk your hands out to a plank.','Hold the braced plank for a beat, hips level.','Walk the hands back to your feet and stand. Repeat.']}),
+  mkEx({id:'scissor_kick',name:'Scissor Kicks',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['On your back, hands under your hips, legs straight and low.','Press the lower back flat and cross the legs over and under.','Keep a steady rhythm and keep breathing.']}),
+  mkEx({id:'v_sit_hold',name:'V-Sit Hold',category:'core',equipment:['bodyweight'],timed:true,
+    instructions:['Sit and lean back, lifting your legs into a V shape.','Reach your arms forward alongside your legs and balance.','Hold and breathe. Bend the knees to make it easier.']}),
+  mkEx({id:'oblique_crunch',name:'Oblique Crunch',category:'core',equipment:['bodyweight'],unit:'/side',
+    instructions:['Lie on your back, both knees dropped to one side.','Crunch your shoulders straight up off the floor.','Lower with control. Do all reps, then switch sides.']}),
+  mkEx({id:'side_plank_reach',name:'Side Plank Reach-Through',category:'core',equipment:['bodyweight'],unit:'/side',
+    instructions:['Hold a side plank, top arm reaching toward the ceiling.','Rotate and thread that arm under your torso, then back up.','Move slowly without dropping the hips. Switch sides.']}),
+
+  /* ---------------- FULL BODY (expansion) ---------------- */
+  mkEx({id:'half_burpee',name:'Half Burpees',category:'fullbody',equipment:['bodyweight'],
+    instructions:['From a plank, jump both feet in toward your hands.','Jump them back out to a strong plank.','Keep a steady rhythm. No push-up or stand needed.']}),
+  mkEx({id:'burpee_broad_jump',name:'Burpee Broad Jump',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Drop into a burpee and stand explosively.','Instead of jumping up, jump forward as far as you safely can.','Land soft, turn around and repeat back the other way.']}),
+  mkEx({id:'db_clean',name:'DB Clean',category:'fullbody',equipment:['dumbbell_medium'],
+    instructions:['Dumbbells hanging, hinge slightly with a flat back.','Explode through the hips and pull them to your shoulders.','Lower under control back to the hang. Use the legs.']}),
+  mkEx({id:'crab_walk',name:'Crab Walk',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Sit, hands behind you, and lift your hips off the floor.','Walk forward and back on your hands and feet.','Keep the hips up and core braced for the time shown.']}),
+  mkEx({id:'crab_reach',name:'Crab Reach',category:'fullbody',equipment:['bodyweight'],unit:'/side',
+    instructions:['From a crab position, lift the hips into a tabletop.','Reach one hand back over the opposite shoulder.','Return and switch. Keep driving the hips up.']}),
+  mkEx({id:'lunge_knee_drive',name:'Lunge to Knee Drive',category:'fullbody',equipment:['bodyweight'],unit:'/side',
+    instructions:['Step back into a reverse lunge, both knees bending.','Drive up explosively, bringing the back knee up to your chest.','Step back into the next lunge. Do all reps, then switch.']}),
+  mkEx({id:'star_jump',name:'Star Jumps',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Start in a small crouch, arms tucked in.','Jump up explosively, spreading arms and legs into a star.','Land soft back into the crouch. Keep a steady pace.']}),
+  mkEx({id:'tuck_jump',name:'Tuck Jumps',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Drop into a quarter squat, arms ready.','Jump up and pull both knees toward your chest.','Land softly with bent knees and immediately reset.']}),
+  mkEx({id:'broad_jump',name:'Broad Jumps',category:'fullbody',equipment:['bodyweight'],
+    instructions:['Hinge back and swing your arms for momentum.','Jump forward as far as you safely can, landing soft.','Steady yourself, turn, and jump back the other way.']}),
+  mkEx({id:'db_single_thruster',name:'Single-Arm DB Thruster',category:'fullbody',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['One dumbbell at your shoulder, drop into a front squat.','Drive up explosively and press the weight overhead.','Lower to your shoulder and flow on. Switch after your reps.']}),
+  mkEx({id:'shuttle_run',name:'Shuttle Sprints',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Mark two points a few steps apart.','Run or shuffle quickly between them, touching low each turn.','Stay light on your feet and keep the pace up.']}),
+  mkEx({id:'shadow_box',name:'Shadow Boxing',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Stand light on your toes, hands up to guard your face.','Throw controlled jabs, crosses and hooks, rotating the hips.','Keep moving and breathing for the time shown.']}),
+  mkEx({id:'db_overhead_lunge',name:'DB Overhead Lunge',category:'fullbody',equipment:['dumbbell_light'],unit:'/side',
+    instructions:['Press one dumbbell overhead and lock the arm.','Step back into a lunge, keeping the weight stacked above you.','Drive up and reset. Do all reps, then switch sides.']}),
+  mkEx({id:'get_up_squat',name:'Get-Up Squat',category:'fullbody',equipment:['bodyweight'],
+    instructions:['Sit down to the floor with control, then lie back briefly.','Rock up and stand without using your hands if you can.','Finish in a tall squat stance. Repeat smoothly.']}),
+  mkEx({id:'lateral_bear_crawl',name:'Lateral Bear Crawl',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['On hands and toes, knees hovering just off the floor.','Step both hands and feet sideways together, then back.','Keep the hips low and the back flat for the time shown.']}),
+  mkEx({id:'army_crawl',name:'Army Crawl',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Lie face-down and rise onto your forearms and toes.','Crawl forward low to the ground, opposite arm and leg.','Keep your hips low and core tight for the time shown.']}),
+  mkEx({id:'rotational_jump_squat',name:'180° Jump Squats',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+    instructions:['Drop into a squat, then jump and rotate 180° in the air.','Land softly facing the other way, absorbing into a squat.','Jump and rotate back. Keep the landings soft and controlled.']})
 ];
 
 /* ============================================================
@@ -823,6 +1056,11 @@ function repsLabel(ex,rank){ const v=ex.reps[rank]; return ex.timed ? v+'s'+(ex.
 const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core' };
 const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3' };
 
+/* Broad muscle group for the re-roll: a push can swap for a pull (both upper),
+   a hinge for a squat (both lower), core stays core, full-body stays full-body. */
+const TYPE_GROUP = { push:'upper', pull:'upper', hinge:'lower', squat:'lower', core:'core', fullbody:'fullbody' };
+const REROLLS_PER_QUEST = 3;
+
 /* ============================================================
    SESSION GENERATOR
    ============================================================ */
@@ -887,6 +1125,16 @@ function sfx(name){
     seq.forEach(([f,dt,d])=>beep(f,t+dt,d,'square',0.18));
   }
 }
+/* Final-seconds countdown: a small, growing beep → Beep → BeeP → BEEP.
+   step 1 (4s left) is the quietest/lowest, step 4 (1s left) the loudest/highest. */
+function countBeep(step){
+  if(!state.settings.sound) return;
+  const c=ac(); if(!c) return;
+  if(c.state==='suspended') c.resume();
+  const freqs=[620,700,790,920], vols=[0.07,0.11,0.16,0.23], durs=[0.10,0.11,0.12,0.16];
+  const i=Math.max(0,Math.min(3,step-1));
+  beep(freqs[i], c.currentTime, durs[i], 'square', vols[i]);
+}
 
 /* ============================================================
    NAVIGATION
@@ -944,7 +1192,7 @@ function beginQuest(){
   const rank=state.rank, type=resolvedType(), durMin=state.settings.lastDuration;
   const exercises=genQuest(rank,type,durMin);
   if(!exercises.length){ alert('No trials available with your current inventory.'); return; }
-  quest={ rank, type, durMin, exercises, exIdx:0, setIdx:0, completedSets:0 };
+  quest={ rank, type, durMin, exercises, exIdx:0, setIdx:0, completedSets:0, rerollsLeft:REROLLS_PER_QUEST };
   $('q-rank').textContent=rankObj(rank).name.toUpperCase();
   $('quest').classList.add('active');
   renderTrial();
@@ -964,6 +1212,44 @@ function renderTrial(){
   $('q-segs').innerHTML=quest.exercises.map((_,i)=>
     '<div class="s '+(i<quest.exIdx?'done':i===quest.exIdx?'now':'')+'"></div>').join('');
   renderDots();
+  updateDice();
+}
+
+/* ---- randomizer (dice) ---------------------------------------
+   Up to REROLLS_PER_QUEST times per quest, swap the current trial for a
+   different exercise in the SAME broad group (upper / lower / core /
+   full-body) that the player owns the gear for and isn't already doing,
+   then restart the trial from its first set. */
+function rerollCandidates(){
+  if(!quest) return [];
+  const cur=quest.exercises[quest.exIdx];
+  const group=TYPE_GROUP[cur.category];
+  const inQuest=new Set(quest.exercises.map(e=>e.id));
+  return POOL.filter(e=>
+    TYPE_GROUP[e.category]===group &&
+    e.ranks.includes(quest.rank) &&
+    owned(e) &&
+    !inQuest.has(e.id));
+}
+function updateDice(){
+  const btn=$('q-dice'); if(!btn||!quest) return;
+  const left=quest.rerollsLeft;
+  $('q-dice-n').textContent=left;
+  btn.disabled = left<=0 || rerollCandidates().length===0;
+}
+function rerollTrial(){
+  if(!quest || quest.rerollsLeft<=0) return;
+  const pool=rerollCandidates();
+  if(!pool.length){ updateDice(); return; }
+  ac();
+  clearInterval(restTimer); clearInterval(holdTimer);
+  quest.exercises[quest.exIdx]=pool[Math.floor(Math.random()*pool.length)];
+  quest.setIdx=0;
+  quest.rerollsLeft--;
+  sfx('chime');
+  burstAt('q-dice',['#FFD700','#FFE873','#6C63FF','#ffffff']);
+  renderTrial();
+  showWork();
 }
 function renderDots(){
   const ex=quest.exercises[quest.exIdx], n=ex.sets[quest.rank];
@@ -1000,6 +1286,7 @@ function startHold(){
   clearInterval(holdTimer);
   holdTimer=setInterval(()=>{
     left--; $('hold-time').textContent=fmt(left);
+    if(left>=1 && left<=4) countBeep(5-left);
     if(left<=0){ clearInterval(holdTimer); sfx('bell'); setComplete(false); }
   },1000);
 }
@@ -1034,6 +1321,7 @@ function startRest(secs, bell, onEnd){
   $('rest-time').textContent=fmt(left);
   restTimer=setInterval(()=>{
     left--; $('rest-time').textContent=fmt(left);
+    if(left>=1 && left<=4) countBeep(5-left);
     if(left<=0){ clearInterval(restTimer); if(bell) sfx('bell'); onEnd(); }
   },1000);
   startRest._onEnd=onEnd;
