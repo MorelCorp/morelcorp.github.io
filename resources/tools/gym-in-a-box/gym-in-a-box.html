@@ -335,6 +335,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
   <div id="codex" class="scrim" onclick="if(event.target===this)closeCodex()">
     <div class="sheet">
       <h2><i class="ti ti-book"></i> Codex</h2>
+      <div id="cx-version" class="dim" style="font-size:8px;margin:-8px 0 14px;letter-spacing:1px"></div>
 
       <div class="sec">LEVEL</div>
       <div class="panel">
@@ -382,6 +383,12 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
 </div>
 
 <script>
+/* Bump on every deploy. Shown at the top of the Codex so you can confirm the
+   freshly deployed build actually reached the browser (the service worker
+   caches hard — if this number is stale you're on a cached copy). Keep it in
+   step with the service-worker CACHE name. */
+const APP_VERSION = 'v6';
+
 /* ============================================================
    DATA — ranks, xp, weights, exercise pool
    ============================================================ */
@@ -1386,6 +1393,7 @@ function closeInfo(){ $('info').classList.remove('open'); }
 function openCodex(){ renderCodex(); $('codex').classList.add('open'); }
 function closeCodex(){ $('codex').classList.remove('open'); }
 function renderCodex(){
+  $('cx-version').textContent='BUILD '+APP_VERSION+' · '+POOL.length+' TRIALS';
   const r=rankObj(state.rank), n=nextRank(state.rank), lp=levelProgress(state.xp);
   $('cx-level').textContent='LVL '+lp.level;
   $('cx-xp').textContent=state.xp.toLocaleString()+' XP';

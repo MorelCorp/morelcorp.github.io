@@ -1,5 +1,5 @@
 // Gym in a Box — offline service worker
-const CACHE = 'gym-in-a-box-v5';
+const CACHE = 'gym-in-a-box-v6';
 
 // Local assets that make up the app shell.
 const SHELL = [
@@ -40,16 +40,36 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Cache-first, falling back to network and stashing successful GETs so that
-// fonts/webfont files loaded at runtime become available offline next time.
+// Two strategies:
+//  • Navigations / the app HTML → NETWORK-FIRST so a fresh deploy shows up
+//    immediately when online; fall back to the cached shell when offline.
+//  • Everything else (fonts, webfont, icons) → CACHE-FIRST, stashing
+//    successful GETs so they become available offline next time.
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(resp => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+
+  const isHTML = req.mode === 'navigate' ||
+    (req.destination === 'document') ||
+    /\.html(\?|$)/.test(new URL(req.url).pathname);
+
+  if (isHTML) {
+    event.respondWith(
+      fetch(req).then(resp => {
         const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put(event.request, copy)).catch(() => {});
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+        return resp;
+      }).catch(() => caches.match(req).then(c => c || caches.match('./gym-in-a-box.html')))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(req).then(cached => {
+      if (cached) return cached;
+      return fetch(req).then(resp => {
+        const copy = resp.clone();
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
         return resp;
       }).catch(() => cached);
     })
