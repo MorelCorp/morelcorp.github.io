@@ -127,6 +127,63 @@ show_title: true
   line-height: 1.5;
 }
 
+.microapp-type-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  padding: 2px 7px;
+  background: rgba(124,58,237,0.85);
+  color: #fff;
+  z-index: 1;
+}
+.microapp-type-badge--script { background: rgba(217,119,6,0.85); }
+.microapp-type-badge--executable { background: rgba(5,150,105,0.85); }
+
+.microapp-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #e2e8f0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.microapp-feature-badges {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.microapp-feature-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.67rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  white-space: nowrap;
+}
+.microapp-feature-badge--upgrade {
+  background: #f0fdf4;
+  color: #15803d;
+}
+.microapp-version {
+  font-size: 0.67rem;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
 .microapp-philosophy {
   background: #f8fafc;
   border-left: 4px solid #2563eb;
@@ -148,6 +205,10 @@ show_title: true
     screenshot="/images/microapps/124all.jpg"
     category="Facilitation"
     description="Run a 1-2-4-All workshop: import attendees, randomize groups, and keep time with a built-in countdown timer."
+    type="PWA"
+    local_memory="true"
+    upgradeable="false"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -156,6 +217,10 @@ show_title: true
     screenshot="/images/microapps/fitness-coach.jpg"
     category="Wellness"
     description="Browser-based fitness coach for office workers. Get exercise reminders, track your progress, and stay active during the workday."
+    type="PWA"
+    local_memory="true"
+    upgradeable="true"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -164,6 +229,10 @@ show_title: true
     screenshot="/images/microapps/gym-in-a-box.jpg"
     category="Wellness"
     description="Phone-first home workout PWA styled as a pixel-art fantasy RPG. Generated quests, XP ranks, rest timers, and a calendar chronicle. Fully offline."
+    type="PWA"
+    local_memory="true"
+    upgradeable="true"
+    version="1.6.0"
   %}
 
   {% include microapp_card.html
@@ -172,6 +241,10 @@ show_title: true
     screenshot="/images/microapps/challenge-tracker.jpg"
     category="Wellness"
     description="Track pushups, situps, and planks with intelligent progression and audio feedback."
+    type="PWA"
+    local_memory="true"
+    upgradeable="true"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -180,6 +253,10 @@ show_title: true
     screenshot="/images/microapps/nihon-supermemo.jpg"
     category="Learning"
     description="Interactive Japanese learning app for kana and kanji with spaced repetition and multiple study modes."
+    type="PWA"
+    local_memory="true"
+    upgradeable="true"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -188,6 +265,10 @@ show_title: true
     screenshot="/images/microapps/supermemo2.jpg"
     category="Learning"
     description="Learn acronyms and concepts with CSV imports, SuperMemo2 spaced-repetition scheduling, and full offline support."
+    type="PWA"
+    local_memory="true"
+    upgradeable="true"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -196,6 +277,10 @@ show_title: true
     screenshot="/images/microapps/markdown-editor.jpg"
     category="Productivity"
     description="Online Markdown editor with live preview and Jekyll frontmatter support — useful for writing site content."
+    type="PWA"
+    local_memory="false"
+    upgradeable="false"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -204,6 +289,10 @@ show_title: true
     screenshot="/images/microapps/trackit.jpg"
     category="Productivity"
     description="A lightweight Trello-inspired kanban board with local-storage backup — get things moving without an account."
+    type="PWA"
+    local_memory="true"
+    upgradeable="false"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -212,6 +301,10 @@ show_title: true
     screenshot="/images/microapps/pdf-converter.jpg"
     category="Data"
     description="Convert PDF files to plain text directly in the browser with a drag-and-drop interface and progress tracking."
+    type="PWA"
+    local_memory="false"
+    upgradeable="false"
+    version="1.0.0"
   %}
 
   {% include microapp_card.html
@@ -220,6 +313,10 @@ show_title: true
     screenshot="/images/microapps/extractor.jpg"
     category="Data"
     description="Extract book info and cover images from Hardcover.app — a great alternative to Goodreads — for easy archiving."
+    type="PWA"
+    local_memory="false"
+    upgradeable="false"
+    version="1.0.0"
   %}
 
 </div>

@@ -2,6 +2,8 @@
   <a href="{{ include.url }}" target="_blank" rel="noopener" class="microapp-screenshot-link" tabindex="-1">
     <div class="microapp-screenshot-wrapper">
       <img src="{{ include.screenshot }}" alt="Screenshot of {{ include.title }}" class="microapp-screenshot" loading="lazy">
+      {% assign app_type = include.type | default: "PWA" %}
+      <span class="microapp-type-badge microapp-type-badge--{{ app_type | downcase }}">{{ app_type }}</span>
       <div class="microapp-overlay">
         <span class="microapp-launch-btn">Launch &rarr;</span>
       </div>
@@ -13,5 +15,18 @@
     {% endif %}
     <h3 class="microapp-title"><a href="{{ include.url }}" target="_blank" rel="noopener">{{ include.title }}</a></h3>
     <p class="microapp-description">{{ include.description }}</p>
+    <div class="microapp-meta">
+      <div class="microapp-feature-badges">
+        {% if include.local_memory == "true" %}
+        <span class="microapp-feature-badge microapp-feature-badge--memory" title="Saves data locally in your browser">💾 Local data</span>
+        {% endif %}
+        {% if include.upgradeable == "true" %}
+        <span class="microapp-feature-badge microapp-feature-badge--upgrade" title="Auto-updates when online">⬆ Auto-updates</span>
+        {% endif %}
+      </div>
+      {% if include.version %}
+      <span class="microapp-version">v{{ include.version }}</span>
+      {% endif %}
+    </div>
   </div>
 </div>
