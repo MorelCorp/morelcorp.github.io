@@ -3,7 +3,7 @@ layout: frontpage
 header:
   image_fullwidth: header_1.jpg
 title: "Bienvenue chez MorelCorp"
-description: "PlanPrism, microapps, livres et idées pour des équipes qui veulent avancer ensemble."
+description: "Microapps, livres et idées pour des équipes qui veulent avancer ensemble."
 permalink: /index.html
 homepage: true
 lang: fr
@@ -24,12 +24,6 @@ Des applications autonomes qui fonctionnent directement dans le navigateur — s
 Une sélection de livres sur les équipes, le leadership et la technologie qui ont vraiment façonné ma façon de penser et de travailler.
 
 [Parcourir la bibliothèque](/books/)
-
-## 🚀 PlanPrism : planifie tes sprints avec confiance
-
-Fini les estimations à l'aveugle. PlanPrism aide les équipes à visualiser l'incertitude, à prendre de meilleures décisions de portée et à communiquer clairement.
-
-[Découvrir PlanPrism](/projects/planprism/)
 
 ## 👋 Qui suis-je ?
 

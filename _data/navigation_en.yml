@@ -14,14 +14,10 @@
   url: "/en/blog/"
   side: left
 
-- title: PlanPrism
-  url: "/en/projects/planprism/"
-  side: left
+- title: Team
+  url: "/en/team/"
+  side: right
 
 - title: Search
   url: "/en/search/"
-  side: right
-
-- title: Contact
-  url: "/en/contact/"
   side: right
