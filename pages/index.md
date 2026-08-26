@@ -3,7 +3,7 @@ layout: frontpage
 header:
   image_fullwidth: header_1.jpg
 title: "Bienvenue chez MorelCorp"
-description: "PlanPrism, consultation, ressources et plus pour des équipes qui veulent avancer ensemble."
+description: "PlanPrism, microapps, livres et idées pour des équipes qui veulent avancer ensemble."
 permalink: /index.html
 homepage: true
 lang: fr
@@ -13,33 +13,27 @@ lang: fr
 
 Ici, on croit que la technologie, c'est avant tout une histoire d'humains. Que tu sois une équipe de devs qui veut mieux planifier ses sprints, un leader technique en quête de clarté, ou simplement curieux(se) de nouvelles approches, tu es au bon endroit.
 
-## 🚀 PlanPrism : Planifie tes sprints avec confiance
+## ⚡ Microapps : de petits outils, un vrai impact
 
-Fini les estimations à l'aveugle ! PlanPrism t'aide à :
+Des applications autonomes qui fonctionnent directement dans le navigateur — sans installation, sans compte, sans friction. La plupart ont été créées avec l'IA en moins d'une heure.
 
-- Visualiser l'incertitude (et en parler sans gêne)
-- Prendre de meilleures décisions de portée et de capacité
-- Communiquer clairement avec ton équipe et tes parties prenantes
+[Explorer les microapps](/microapps/)
+
+## 📚 Des livres qui valent la peine
+
+Une sélection de livres sur les équipes, le leadership et la technologie qui ont vraiment façonné ma façon de penser et de travailler.
+
+[Parcourir la bibliothèque](/books/)
+
+## 🚀 PlanPrism : planifie tes sprints avec confiance
+
+Fini les estimations à l'aveugle. PlanPrism aide les équipes à visualiser l'incertitude, à prendre de meilleures décisions de portée et à communiquer clairement.
 
 [Découvrir PlanPrism](/projects/planprism/)
-
-## 🤝 Consultation & accompagnement
-
-Parfois, il suffit d'une bonne discussion pour débloquer une situation.  
-Je t'aide à :
-
-- Prendre du recul sur ta stratégie ou ton organisation
-- Développer ton leadership ou celui de ton équipe
-- Naviguer les changements (petits ou grands)
-- Animer des ateliers qui font vraiment avancer
-
-[En savoir plus sur la consultation](/consultation/)
 
 ## 👋 Qui suis-je ?
 
 Je m'appelle Jean-François. Après 15 ans à bâtir des équipes et des produits dans des contextes variés (jeux vidéo, IA, robotique…), j'ai une passion : aider les gens à travailler ensemble, à livrer avec confiance, et à rendre l'agilité naturelle.
-
-[Rencontrer l'équipe](/team/)
 
 ---
 

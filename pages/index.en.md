@@ -3,7 +3,7 @@ layout: frontpage
 header:
   image_fullwidth: header_1.jpg
 title: "Welcome to MorelCorp"
-description: "PlanPrism, consulting, resources and more for teams who want to move forward together."
+description: "PlanPrism, microapps, books and ideas for teams who want to move forward together."
 permalink: /en/index.html
 homepage: true
 lang: en
@@ -13,33 +13,27 @@ lang: en
 
 Here, we believe technology is, above all, a human story. Whether you're a dev team looking to plan your sprints better, a technical leader seeking clarity, or just curious about new approaches, you're in the right place.
 
-## 🚀 PlanPrism: Plan your sprints with confidence
+## ⚡ Microapps: small tools, real impact
 
-No more blind estimates! PlanPrism helps you:
+Self-contained browser apps built to solve a specific problem — no install, no account, no fuss. Most were created with AI in under an hour.
 
-- Visualize uncertainty (and talk about it openly)
-- Make better decisions about scope and capacity
-- Communicate clearly with your team and stakeholders
+[Explore the microapps](/en/microapps/)
 
-[Discover PlanPrism](/projects/planprism/)
+## 📚 Books worth reading
 
-## 🤝 Consulting & Support
+A curated shelf of books on teams, leadership, and technology that actually shaped how I think and work.
 
-Sometimes, all it takes is a good conversation to unlock a situation.  
-I can help you:
+[Browse the bookshelf](/en/books/)
 
-- Step back and review your strategy or organization
-- Develop your leadership or your team's
-- Navigate change (big or small)
-- Facilitate workshops that actually move things forward
+## 🚀 PlanPrism: plan your sprints with confidence
 
-[Learn more about consulting](/consultation/)
+No more blind estimates. PlanPrism helps teams visualize uncertainty, make better scope decisions, and communicate clearly with stakeholders.
+
+[Discover PlanPrism](/en/projects/planprism/)
 
 ## 👋 Who am I?
 
 My name is Jean-François. After 15 years building teams and products in various fields (video games, AI, robotics…), my passion is helping people work together, deliver with confidence, and make agility feel natural.
-
-[Meet the team](/team/)
 
 ---
 

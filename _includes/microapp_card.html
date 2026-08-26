@@ -1,0 +1,17 @@
+<div class="microapp-card">
+  <a href="{{ include.url }}" target="_blank" rel="noopener" class="microapp-screenshot-link" tabindex="-1">
+    <div class="microapp-screenshot-wrapper">
+      <img src="{{ include.screenshot }}" alt="Screenshot of {{ include.title }}" class="microapp-screenshot" loading="lazy">
+      <div class="microapp-overlay">
+        <span class="microapp-launch-btn">Launch &rarr;</span>
+      </div>
+    </div>
+  </a>
+  <div class="microapp-info">
+    {% if include.category %}
+    <span class="microapp-category microapp-category--{{ include.category | downcase | replace: ' ', '-' }}">{{ include.category }}</span>
+    {% endif %}
+    <h3 class="microapp-title"><a href="{{ include.url }}" target="_blank" rel="noopener">{{ include.title }}</a></h3>
+    <p class="microapp-description">{{ include.description }}</p>
+  </div>
+</div>
