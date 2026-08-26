@@ -2,35 +2,21 @@
   url: "/en/"
   side: left
 
-- title: Projects
-  url: "/en/Projects/"
+- title: Microapps
+  url: "/en/microapps/"
   side: left
-  dropdown:
-    - title: "PlanPrism"
-      url: "/en/projects/planprism/"
 
-- title: Consulting
-  url: "/en/consultation/"
+- title: Books
+  url: "/en/books/"
   side: left
 
 - title: Blog
   url: "/en/blog/"
   side: left
 
-- title: Our Team
-  url: "/en/team/"
+- title: PlanPrism
+  url: "/en/projects/planprism/"
   side: left
-
-- title: Resources
-  url: "/en/resources/"
-  side: left
-  dropdown:
-    - title: "Tools"
-      url: "/en/resources/tools/"
-    - title: "Bibliography"
-      url: "/en/resources/bibliography/"
-    - title: "References"
-      url: "/en/resources/references/"
 
 - title: Search
   url: "/en/search/"
@@ -38,4 +24,4 @@
 
 - title: Contact
   url: "/en/contact/"
-  side: right 
+  side: right
