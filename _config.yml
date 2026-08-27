@@ -51,9 +51,7 @@ logo_en: "logo_en.png"
 
 # Plugins
 plugins:
-    - jekyll-asciidoc
     - jekyll-gist
-    - jekyll-reading-time
 
 
 #       ____              _             __  _
