@@ -14,10 +14,8 @@
             <p class="shadow-black">
               {% if page.lang == 'en' or site.language == 'en' %}
                 {{ site.description_en }}
-                <a href="{{ site.url }}{{ site.baseurl }}/info/">{{ site.data.language_en.more }}</a>
               {% else %}
                 {{ site.description_fr }}
-                <a href="{{ site.url }}{{ site.baseurl }}/info/">{{ site.data.language.more }}</a>
               {% endif %}
             </p>
           </div><!-- /.large-6.columns -->

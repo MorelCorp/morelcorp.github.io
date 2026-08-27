@@ -8,11 +8,6 @@
   class: icon-youtube
   title: "Videos, Video-Anleitungen und Filme von Phlow auf YouTube"
 
-- name: Twitter
-  url: http://twitter.com/
-  class: icon-twitter
-  title: "Immer das Neuste von Phlow gibt es auf Twitter"
-
 
 # - name: Facebook
 #   url: http://www.facebook.com/
