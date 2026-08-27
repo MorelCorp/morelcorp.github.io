@@ -13,11 +13,13 @@ Each microapp on the microapps page (`pages/microapps.en.md` and `pages/microapp
 Each app entry looks like:
 
 ```liquid
+{% raw %}
 {% include microapp_card.html
   title="App Name"
   ...
   version="1.0.0"
 %}
+{% endraw %}
 ```
 
 Update the `version` field in **both** `pages/microapps.en.md` and `pages/microapps.md`.

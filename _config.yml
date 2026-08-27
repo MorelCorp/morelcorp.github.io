@@ -51,7 +51,9 @@ logo_en: "logo_en.png"
 
 # Plugins
 plugins:
+    - jekyll-asciidoc
     - jekyll-gist
+    - jekyll-reading-time
 
 
 #       ____              _             __  _
@@ -86,6 +88,9 @@ exclude:
     - LICENSE
     - README.md
     - INSTALL.md
+    - CLAUDE.md
+    - PLANPRISM_SUBSITE_PROJECT_PLAN.md
+    - .github
     - vendor
     - src_material
 
