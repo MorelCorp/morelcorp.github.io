@@ -52,6 +52,8 @@ body{font-family:'Press Start 2P',monospace;color:var(--txt);font-size:11px}
 .seg .opt{flex:1;text-align:center;padding:12px 6px;font-size:10px;background:var(--panel2);border:3px solid var(--line);color:var(--txt2);cursor:pointer;text-transform:uppercase}
 .seg .opt.on{background:#6C63FF22;border-color:var(--purple);color:#A89BFF}
 .seg .opt.on.gold{background:#FFD70022;border-color:var(--gold);color:var(--gold)}
+#focus-seg .opt{font-size:9px;padding:12px 4px}
+#rank-seg .opt{font-size:8px;padding:12px 4px;overflow-wrap:anywhere}
 
 .pill{display:inline-block;font-size:9px;padding:6px 8px;border:2px solid;text-transform:uppercase}
 .pill-purple{border-color:var(--purple);color:#A89BFF;background:#6C63FF18}
@@ -185,12 +187,19 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
         <div class="dim" style="font-size:9px">SESSION TYPE</div>
         <div class="seg" id="mode-seg">
           <div class="opt" data-mode="balanced" onclick="setMode('balanced')">Balanced</div>
-          <div class="opt" data-mode="targeted" onclick="setMode('targeted')">Targeted</div>
+          <div class="opt" data-mode="custom" onclick="setMode('custom')">Custom</div>
         </div>
-        <div class="seg" id="focus-seg" style="display:none">
-          <div class="opt" data-focus="upper" onclick="setFocus('upper')">Upper</div>
-          <div class="opt" data-focus="legs" onclick="setFocus('legs')">Legs</div>
-          <div class="opt" data-focus="core" onclick="setFocus('core')">Core</div>
+        <div id="custom-cfg" class="col" style="display:none">
+          <div class="dim" style="font-size:9px;margin-top:6px">FOCUS</div>
+          <div class="seg" id="focus-seg">
+            <div class="opt" data-focus="upper" onclick="setFocus('upper')">Upper</div>
+            <div class="opt" data-focus="legs" onclick="setFocus('legs')">Legs</div>
+            <div class="opt" data-focus="core" onclick="setFocus('core')">Core</div>
+            <div class="opt" data-focus="cardio" onclick="setFocus('cardio')">Cardio</div>
+          </div>
+          <div class="dim" style="font-size:9px;margin-top:6px">LEVEL</div>
+          <div class="seg" id="rank-seg"></div>
+          <div class="dim" style="font-size:8px;line-height:1.7">Play one tier up or down. XP is always earned at your own tier's rate.</div>
         </div>
       </div>
 
@@ -240,6 +249,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
           <span><i class="dot" style="background:var(--red)"></i>Upper</span>
           <span><i class="dot" style="background:#4DA6FF"></i>Legs</span>
           <span><i class="dot" style="background:var(--teal)"></i>Core</span>
+          <span><i class="dot" style="background:#FF8C42"></i>Cardio</span>
         </div>
       </div>
       <div class="panel center" id="chron-summary"></div>
@@ -966,7 +976,7 @@ const POOL = buildPool(EXERCISES);
      • NEVER rename or delete an existing field in place — migrate
        it, and keep additions additive.
    ============================================================ */
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const STORE_KEY = 'gib';
 const LEGACY_KEYS = ['gib_rank','gib_xp','gib_inventory','gib_history','gib_settings'];
 
@@ -974,7 +984,8 @@ const DEFAULT_INV = { step:false, bench:false,
   dumbbell_light:true, dumbbell_medium:false, dumbbell_heavy:false, dumbbell_veryheavy:false,
   barbell_light:false, barbell_medium:false, barbell_heavy:false };
 const REST_OPTIONS = [30,45,60];
-const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30, restSecs:60 };
+const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30, restSecs:60, rankOffset:0 };
+const FOCUS_TYPES = ['upper','legs','core','cardio'];
 
 function freshDoc(){
   return { schemaVersion:SCHEMA_VERSION, rank:'apprentice', xp:0, level:1,
@@ -993,6 +1004,14 @@ const MIGRATIONS = {
   2(d){
     const s = (d.settings && typeof d.settings==='object') ? d.settings : {};
     if(s.lastSessionType && !s.lastMode) s.lastMode = s.lastSessionType;
+    d.settings = s;
+    return d;
+  },
+  // 3 -> 4 : the "targeted" session mode was renamed "custom" (it now also
+  //          carries a focus of cardio and a tier offset).
+  3(d){
+    const s = (d.settings && typeof d.settings==='object') ? d.settings : {};
+    if(s.lastMode==='targeted') s.lastMode='custom';
     d.settings = s;
     return d;
   }
@@ -1020,8 +1039,10 @@ function normalize(doc){
   if(!Array.isArray(doc.history)) doc.history = [];
   doc.settings = Object.assign({...DEFAULT_SETTINGS},
     (doc.settings && typeof doc.settings==='object') ? doc.settings : {});
-  if(!['balanced','targeted'].includes(doc.settings.lastMode)) doc.settings.lastMode='balanced';
-  if(!['upper','legs','core'].includes(doc.settings.lastFocus)) doc.settings.lastFocus='upper';
+  if(doc.settings.lastMode==='targeted') doc.settings.lastMode='custom';   // belt-and-braces with MIGRATIONS[3]
+  if(!['balanced','custom'].includes(doc.settings.lastMode)) doc.settings.lastMode='balanced';
+  if(!FOCUS_TYPES.includes(doc.settings.lastFocus)) doc.settings.lastFocus='upper';
+  if(![-1,0,1].includes(doc.settings.rankOffset)) doc.settings.rankOffset=0;
   if(![30,45,60].includes(doc.settings.lastDuration)) doc.settings.lastDuration=30;
   if(!REST_OPTIONS.includes(doc.settings.restSecs)) doc.settings.restSecs=60;
   doc.settings.sound = doc.settings.sound!==false;
@@ -1082,8 +1103,18 @@ function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.flo
 function owned(ex){ return ex.equipment.every(t => t==='bodyweight' ? true : !!state.inventory[t]); }
 function exTime(ex,rank,rest){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v*(ex.sides?2:1):v*3) + s*(rest||60); }
 function repsLabel(ex,rank){ const v=ex.reps[rank]; return ex.timed ? v+'s'+(ex.unit?' '+ex.unit:'') : v+(ex.unit?ex.unit:'')+' reps'; }
-const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core' };
-const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3' };
+const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core', cardio:'Cardio' };
+const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3', cardio:'#FF8C42' };
+
+/* Difficulty tier a quest is generated at. Custom mode may shift one tier up
+   or down from the player's own tier (clamped at the ends of the ladder);
+   balanced quests always use the player's tier. XP is unaffected — it is
+   always earned at the player's own tier multiplier (see finishQuest). */
+function questRank(){
+  if(state.settings.lastMode!=='custom') return state.rank;
+  const i=RANK_IDS.indexOf(state.rank)+(state.settings.rankOffset||0);
+  return RANK_IDS[Math.max(0,Math.min(RANK_IDS.length-1,i))];
+}
 
 /* Broad muscle group for the re-roll: a push can swap for a pull (both upper),
    a hinge for a squat (both lower), core stays core, full-body stays full-body. */
@@ -1103,7 +1134,11 @@ function genQuest(rank, type, durMin, rest){
   const addOneFrom = cats => { const c=shuffle(avail.filter(e=>cats.includes(e.category)&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
 
   const primMap = { upper:['push','pull'], legs:['hinge','squat'], core:['core'] };
-  const offMap  = { upper:'core', legs:'core', core:'fullbody' };
+  const offMap  = { upper:'core', legs:'core', core:'fullbody', cardio:'core' };
+  // Cardio is a tag rather than a category: its primary pool cuts across
+  // categories (jump squats, mountain climbers, jumping jacks…).
+  const isPrimary = type==='cardio' ? (e=>e.cardio) : (e=>(primMap[type]||[]).includes(e.category));
+  const addOnePrimary = () => { const c=shuffle(avail.filter(e=>isPrimary(e)&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
 
   const addOneCardio = () => { const c=shuffle(avail.filter(e=>e.cardio&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
 
@@ -1111,13 +1146,13 @@ function genQuest(rank, type, durMin, rest){
     addOneFrom(['push']); addOneFrom(['pull']); addOneFrom(['hinge','squat']); addOneFrom(['core']);
     if(!chosen.some(e=>e.cardio)) addOneCardio();
   } else {
-    addOneFrom(primMap[type]);
+    addOnePrimary();
     addOneFrom([offMap[type]]);
   }
 
   let fill;
   if(type==='balanced') fill = shuffle(avail.filter(e=>!used.has(e.id)));
-  else fill = shuffle(avail.filter(e=>primMap[type].includes(e.category) && !used.has(e.id)));
+  else fill = shuffle(avail.filter(e=>isPrimary(e) && !used.has(e.id)));
 
   for(const e of fill){
     if(chosen.length>=10) break;
@@ -1186,6 +1221,7 @@ function goTab(tab){
    PRE-QUEST CONFIG
    ============================================================ */
 function setMode(m){ state.settings.lastMode=m; save(); renderConfig(); }
+function setRankOffset(o){ state.settings.rankOffset=o; save(); renderConfig(); }
 function setFocus(f){ state.settings.lastFocus=f; save(); renderConfig(); }
 function setDuration(d){ state.settings.lastDuration=d; save(); renderConfig(); }
 function setRest(r){ state.settings.restSecs=r; save(); renderConfig(); }
@@ -1195,8 +1231,14 @@ function resolvedType(){ return state.settings.lastMode==='balanced' ? 'balanced
 function renderConfig(){
   const s=state.settings;
   document.querySelectorAll('#mode-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.mode===s.lastMode));
-  $('focus-seg').style.display = s.lastMode==='targeted' ? 'flex' : 'none';
+  $('custom-cfg').style.display = s.lastMode==='custom' ? 'flex' : 'none';
   document.querySelectorAll('#focus-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.focus===s.lastFocus));
+  // Level picker: the player's tier plus its neighbours (fewer at the ends).
+  const ri=RANK_IDS.indexOf(state.rank), qr=questRank();
+  $('rank-seg').innerHTML=[-1,0,1].filter(o=>RANKS[ri+o]).map(o=>{
+    const r=RANKS[ri+o];
+    return '<div class="opt'+(r.id===qr?' on':'')+(o===0?' gold':'')+'" onclick="setRankOffset('+o+')">'+r.name+'</div>';
+  }).join('');
   document.querySelectorAll('#dur-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.dur===s.lastDuration));
   document.querySelectorAll('#rest-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.rest===s.restSecs));
   $('cfg-hint').innerHTML='Complete every set of a trial<br>before the next. '+s.restSecs+'s recovery between sets.';
@@ -1225,7 +1267,7 @@ let quest=null, restTimer=null, holdTimer=null;
 
 function beginQuest(){
   ac(); // unlock audio on user gesture
-  const rank=state.rank, type=resolvedType(), durMin=state.settings.lastDuration, rest=state.settings.restSecs;
+  const rank=questRank(), type=resolvedType(), durMin=state.settings.lastDuration, rest=state.settings.restSecs;
   const exercises=genQuest(rank,type,durMin,rest);
   if(!exercises.length){ alert('No trials available with your current inventory.'); return; }
   quest={ rank, type, durMin, rest, exercises, exIdx:0, setIdx:0, completedSets:0, rerollsLeft:REROLLS_PER_QUEST };
@@ -1385,14 +1427,14 @@ function abandonQuest(){
 function finishQuest(){
   clearInterval(restTimer); clearInterval(holdTimer);
   const base=BASE_XP[quest.durMin]||100;
-  const earned=base*rankMult(quest.rank);
+  const earned=base*rankMult(state.rank);   // player's own tier, not the quest's difficulty
   const prevLevel=levelFromXp(state.xp);
   state.xp += earned;
   state.level=levelFromXp(state.xp);
   const leveledUp=state.level>prevLevel;
   state.history.push({
     date: isoDate(), type: quest.type, durMin: quest.durMin, xp: earned,
-    rank: quest.rank, level: state.level, sets: quest.completedSets,
+    rank: quest.rank, tier: state.rank, level: state.level, sets: quest.completedSets,
     exercises: quest.exercises.map(e=>e.name.replace(/&amp;/g,'&')),
     exIds: quest.exercises.map(e=>e.id)   // stable refs for future analytics; names stay for display
   });
