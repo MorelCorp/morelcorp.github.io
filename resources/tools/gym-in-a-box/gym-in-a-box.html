@@ -201,6 +201,12 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
           <div class="opt" data-dur="45" onclick="setDuration(45)">45 min</div>
           <div class="opt" data-dur="60" onclick="setDuration(60)">60 min</div>
         </div>
+        <div class="dim" style="font-size:9px;margin-top:6px">REST BETWEEN SETS &amp; TRIALS</div>
+        <div class="seg" id="rest-seg">
+          <div class="opt" data-rest="30" onclick="setRest(30)">30 s</div>
+          <div class="opt" data-rest="45" onclick="setRest(45)">45 s</div>
+          <div class="opt" data-rest="60" onclick="setRest(60)">60 s</div>
+        </div>
       </div>
 
       <div class="panel">
@@ -213,7 +219,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
       </div>
 
       <button class="btn btn-red" onclick="beginQuest()"><i class="ti ti-sword"></i> Begin Quest</button>
-      <div class="dim center" style="font-size:8px;line-height:1.8">Complete every set of a trial<br>before the next. 60s recovery between sets.</div>
+      <div class="dim center" style="font-size:8px;line-height:1.8" id="cfg-hint">Complete every set of a trial<br>before the next. 60s recovery between sets.</div>
     </section>
 
     <!-- CHRONICLE TAB -->
@@ -956,7 +962,8 @@ const LEGACY_KEYS = ['gib_rank','gib_xp','gib_inventory','gib_history','gib_sett
 const DEFAULT_INV = { step:false, bench:false,
   dumbbell_light:true, dumbbell_medium:false, dumbbell_heavy:false, dumbbell_veryheavy:false,
   barbell_light:false, barbell_medium:false, barbell_heavy:false };
-const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30 };
+const REST_OPTIONS = [30,45,60];
+const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30, restSecs:60 };
 
 function freshDoc(){
   return { schemaVersion:SCHEMA_VERSION, rank:'apprentice', xp:0, level:1,
@@ -1005,6 +1012,7 @@ function normalize(doc){
   if(!['balanced','targeted'].includes(doc.settings.lastMode)) doc.settings.lastMode='balanced';
   if(!['upper','legs','core'].includes(doc.settings.lastFocus)) doc.settings.lastFocus='upper';
   if(![30,45,60].includes(doc.settings.lastDuration)) doc.settings.lastDuration=30;
+  if(!REST_OPTIONS.includes(doc.settings.restSecs)) doc.settings.restSecs=60;
   doc.settings.sound = doc.settings.sound!==false;
   if((parseInt(doc.schemaVersion,10)||0) < SCHEMA_VERSION) doc.schemaVersion = SCHEMA_VERSION;
   return doc;
@@ -1061,7 +1069,7 @@ function levelProgress(xp){
 function isoDate(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function owned(ex){ return ex.equipment.every(t => t==='bodyweight' ? true : !!state.inventory[t]); }
-function exTime(ex,rank){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v*(ex.sides?2:1):v*3) + s*60; }
+function exTime(ex,rank,rest){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v*(ex.sides?2:1):v*3) + s*(rest||60); }
 function repsLabel(ex,rank){ const v=ex.reps[rank]; return ex.timed ? v+'s'+(ex.unit?' '+ex.unit:'') : v+(ex.unit?ex.unit:'')+' reps'; }
 const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core' };
 const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3' };
@@ -1074,12 +1082,12 @@ const REROLLS_PER_QUEST = 3;
 /* ============================================================
    SESSION GENERATOR
    ============================================================ */
-function genQuest(rank, type, durMin){
+function genQuest(rank, type, durMin, rest){
   const target = durMin*60;
   const avail = POOL.filter(e => e.ranks.includes(rank) && owned(e));
   const used = new Set();
   const chosen = [];
-  const totalT = () => chosen.reduce((s,e)=>s+exTime(e,rank),0);
+  const totalT = () => chosen.reduce((s,e)=>s+exTime(e,rank,rest),0);
   const tryAdd = e => { if(e && !used.has(e.id)){ chosen.push(e); used.add(e.id); return true; } return false; };
   const addOneFrom = cats => { const c=shuffle(avail.filter(e=>cats.includes(e.category)&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
 
@@ -1099,7 +1107,7 @@ function genQuest(rank, type, durMin){
 
   for(const e of fill){
     if(chosen.length>=10) break;
-    if(totalT()+exTime(e,rank) > target && chosen.length>=4) break;
+    if(totalT()+exTime(e,rank,rest) > target && chosen.length>=4) break;
     tryAdd(e);
   }
   if(chosen.length<4){
@@ -1166,6 +1174,7 @@ function goTab(tab){
 function setMode(m){ state.settings.lastMode=m; save(); renderConfig(); }
 function setFocus(f){ state.settings.lastFocus=f; save(); renderConfig(); }
 function setDuration(d){ state.settings.lastDuration=d; save(); renderConfig(); }
+function setRest(r){ state.settings.restSecs=r; save(); renderConfig(); }
 
 function resolvedType(){ return state.settings.lastMode==='balanced' ? 'balanced' : state.settings.lastFocus; }
 
@@ -1175,6 +1184,8 @@ function renderConfig(){
   $('focus-seg').style.display = s.lastMode==='targeted' ? 'flex' : 'none';
   document.querySelectorAll('#focus-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.focus===s.lastFocus));
   document.querySelectorAll('#dur-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.dur===s.lastDuration));
+  document.querySelectorAll('#rest-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.rest===s.restSecs));
+  $('cfg-hint').innerHTML='Complete every set of a trial<br>before the next. '+s.restSecs+'s recovery between sets.';
 
   const r=rankObj(state.rank), lp=levelProgress(state.xp);
   $('cfg-rank').textContent=r.name.toUpperCase();
@@ -1200,10 +1211,10 @@ let quest=null, restTimer=null, holdTimer=null;
 
 function beginQuest(){
   ac(); // unlock audio on user gesture
-  const rank=state.rank, type=resolvedType(), durMin=state.settings.lastDuration;
-  const exercises=genQuest(rank,type,durMin);
+  const rank=state.rank, type=resolvedType(), durMin=state.settings.lastDuration, rest=state.settings.restSecs;
+  const exercises=genQuest(rank,type,durMin,rest);
   if(!exercises.length){ alert('No trials available with your current inventory.'); return; }
-  quest={ rank, type, durMin, exercises, exIdx:0, setIdx:0, completedSets:0, rerollsLeft:REROLLS_PER_QUEST };
+  quest={ rank, type, durMin, rest, exercises, exIdx:0, setIdx:0, completedSets:0, rerollsLeft:REROLLS_PER_QUEST };
   $('q-rank').textContent=rankObj(rank).name.toUpperCase();
   $('quest').classList.add('active');
   renderTrial();
@@ -1332,7 +1343,7 @@ function enterRest(kind){
   $('act-rest').style.display='block';
   const bell = kind==='set';
   $('rest-label').textContent = kind==='set' ? 'RECOVERY' : 'PREPARE FOR NEXT TRIAL';
-  startRest(60, bell, ()=>{ showWork(); });
+  startRest(quest.rest||60, bell, ()=>{ showWork(); });
 }
 function startRest(secs, bell, onEnd){
   clearInterval(restTimer);
