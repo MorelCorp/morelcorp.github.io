@@ -294,7 +294,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
       <button id="act-victory" class="btn btn-red" onclick="repSetDone()"><i class="ti ti-check"></i> Victory</button>
       <!-- timed work -->
       <div id="act-timed" style="display:none">
-        <div class="rest-label">HOLD</div>
+        <div class="rest-label" id="hold-label">HOLD</div>
         <div class="timer-big teal" id="hold-time">0:30</div>
         <button class="btn btn-teal" id="hold-btn" onclick="startHold()"><i class="ti ti-player-play"></i> Begin Trial</button>
       </div>
@@ -443,8 +443,11 @@ function mkEx(o){
     'bodyweight';
   const weight = W[primary] || W.bodyweight;
   const instructions = o.instructions || [];
+  // Timed holds done one side at a time (side plank, suitcase carry…): the
+  // trial runs the hold twice back-to-back with a switch-side bell between.
+  const sides = !!o.sides || (timed && o.unit==='/side');
   return { id:o.id, name:o.name, category:o.category, ranks, equipment,
-           sets, reps, timed, unit:o.unit||'', weight, instructions,
+           sets, reps, timed, sides, unit:o.unit||'', weight, instructions,
            note:o.note || instructions[0] || '' };
 }
 
@@ -1058,7 +1061,7 @@ function levelProgress(xp){
 function isoDate(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function owned(ex){ return ex.equipment.every(t => t==='bodyweight' ? true : !!state.inventory[t]); }
-function exTime(ex,rank){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v:v*3) + s*60; }
+function exTime(ex,rank){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v*(ex.sides?2:1):v*3) + s*60; }
 function repsLabel(ex,rank){ const v=ex.reps[rank]; return ex.timed ? v+'s'+(ex.unit?' '+ex.unit:'') : v+(ex.unit?ex.unit:'')+' reps'; }
 const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core' };
 const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3' };
@@ -1127,6 +1130,7 @@ function sfx(name){
   const t=c.currentTime;
   if(name==='chime'){ [523,659,784].forEach((f,i)=>beep(f,t+i*0.05,0.12,'square',0.16)); }
   else if(name==='bell'){ beep(880,t,0.45,'triangle',0.20); beep(1320,t+0.01,0.45,'sine',0.08); }
+  else if(name==='switch'){ beep(660,t,0.22,'triangle',0.20); beep(990,t+0.26,0.40,'triangle',0.20); beep(1485,t+0.27,0.40,'sine',0.07); }
   else if(name==='fanfare'){
     const seq=[[523,0,.13],[523,.13,.13],[523,.26,.13],[659,.40,.18],[784,.60,.18],[1047,.82,.45]];
     seq.forEach(([f,dt,d])=>beep(f,t+dt,d,'square',0.18));
@@ -1272,6 +1276,7 @@ function showWork(){
   const ex=quest.exercises[quest.exIdx];
   if(ex.timed){
     $('act-timed').style.display='block';
+    $('hold-label').textContent = ex.sides ? 'HOLD · SIDE 1 OF 2' : 'HOLD';
     $('hold-time').textContent=fmt(ex.reps[quest.rank]);
     const b=$('hold-btn'); b.disabled=false; b.innerHTML='<i class="ti ti-player-play"></i> Begin Trial';
   } else {
@@ -1287,13 +1292,20 @@ function repSetDone(){ setComplete(true); }
 function startHold(){
   ac();
   const ex=quest.exercises[quest.exIdx];
-  let left=ex.reps[quest.rank];
+  const per=ex.reps[quest.rank];          // seconds per side (or total, if single-sided)
+  const half=ex.sides ? per : 0;          // seconds remaining at the switch point
+  let left=per*(ex.sides?2:1);
   $('hold-btn').disabled=true;
-  $('hold-time').textContent=fmt(left);
+  $('hold-label').textContent = ex.sides ? 'HOLD · SIDE 1 OF 2' : 'HOLD';
+  $('hold-time').textContent=fmt(per);
   clearInterval(holdTimer);
   holdTimer=setInterval(()=>{
-    left--; $('hold-time').textContent=fmt(left);
-    if(left>=1 && left<=4) countBeep(5-left);
+    left--;
+    // The display counts each side down separately: 25…1, bell, 25…1.
+    $('hold-time').textContent=fmt(left>half ? left-half : left);
+    const toBoundary = left>half ? left-half : left;
+    if(toBoundary>=1 && toBoundary<=4) countBeep(5-toBoundary);
+    if(half && left===half){ sfx('switch'); $('hold-label').textContent='SWITCH · SIDE 2 OF 2'; }
     if(left<=0){ clearInterval(holdTimer); sfx('bell'); setComplete(false); }
   },1000);
 }
