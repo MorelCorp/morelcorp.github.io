@@ -1,5 +1,5 @@
 // Gym in a Box — offline service worker
-const CACHE = 'gym-in-a-box-v6';
+const CACHE = 'gym-in-a-box-v7';
 
 // Local assets that make up the app shell.
 const SHELL = [

@@ -232,7 +232,7 @@ show_title: true
     type="PWA"
     local_memory="true"
     upgradeable="true"
-    version="1.6.0"
+    version="1.7.0"
   %}
 
   {% include microapp_card.html

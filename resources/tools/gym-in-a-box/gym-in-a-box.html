@@ -52,6 +52,8 @@ body{font-family:'Press Start 2P',monospace;color:var(--txt);font-size:11px}
 .seg .opt{flex:1;text-align:center;padding:12px 6px;font-size:10px;background:var(--panel2);border:3px solid var(--line);color:var(--txt2);cursor:pointer;text-transform:uppercase}
 .seg .opt.on{background:#6C63FF22;border-color:var(--purple);color:#A89BFF}
 .seg .opt.on.gold{background:#FFD70022;border-color:var(--gold);color:var(--gold)}
+#focus-seg .opt{font-size:9px;padding:12px 4px}
+#rank-seg .opt{font-size:8px;padding:12px 4px;overflow-wrap:anywhere}
 
 .pill{display:inline-block;font-size:9px;padding:6px 8px;border:2px solid;text-transform:uppercase}
 .pill-purple{border-color:var(--purple);color:#A89BFF;background:#6C63FF18}
@@ -153,8 +155,6 @@ body{font-family:'Press Start 2P',monospace;color:var(--txt);font-size:11px}
 
 #q-dice{color:var(--gold);border-color:var(--gold)}
 #q-dice:disabled{opacity:.35;color:var(--txt3);border-color:var(--line);cursor:not-allowed}
-#q-dice-n{position:absolute;top:-7px;right:-7px;min-width:15px;height:15px;padding:0 2px;font-size:8px;line-height:15px;text-align:center;background:var(--gold);color:#1a1500;border:2px solid var(--bg)}
-#q-dice:disabled #q-dice-n{background:var(--txt3);color:var(--bg)}
 .empty-state{text-align:center;color:var(--txt3);font-size:9px;line-height:1.8;padding:30px 10px}
 canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:200}
 </style>
@@ -185,12 +185,19 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
         <div class="dim" style="font-size:9px">SESSION TYPE</div>
         <div class="seg" id="mode-seg">
           <div class="opt" data-mode="balanced" onclick="setMode('balanced')">Balanced</div>
-          <div class="opt" data-mode="targeted" onclick="setMode('targeted')">Targeted</div>
+          <div class="opt" data-mode="custom" onclick="setMode('custom')">Custom</div>
         </div>
-        <div class="seg" id="focus-seg" style="display:none">
-          <div class="opt" data-focus="upper" onclick="setFocus('upper')">Upper</div>
-          <div class="opt" data-focus="legs" onclick="setFocus('legs')">Legs</div>
-          <div class="opt" data-focus="core" onclick="setFocus('core')">Core</div>
+        <div id="custom-cfg" class="col" style="display:none">
+          <div class="dim" style="font-size:9px;margin-top:6px">FOCUS</div>
+          <div class="seg" id="focus-seg">
+            <div class="opt" data-focus="upper" onclick="setFocus('upper')">Upper</div>
+            <div class="opt" data-focus="legs" onclick="setFocus('legs')">Legs</div>
+            <div class="opt" data-focus="core" onclick="setFocus('core')">Core</div>
+            <div class="opt" data-focus="cardio" onclick="setFocus('cardio')">Cardio</div>
+          </div>
+          <div class="dim" style="font-size:9px;margin-top:6px">LEVEL</div>
+          <div class="seg" id="rank-seg"></div>
+          <div class="dim" style="font-size:8px;line-height:1.7">Play one tier up or down. XP is always earned at your own tier's rate.</div>
         </div>
       </div>
 
@@ -200,6 +207,12 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
           <div class="opt" data-dur="30" onclick="setDuration(30)">30 min</div>
           <div class="opt" data-dur="45" onclick="setDuration(45)">45 min</div>
           <div class="opt" data-dur="60" onclick="setDuration(60)">60 min</div>
+        </div>
+        <div class="dim" style="font-size:9px;margin-top:6px">REST BETWEEN SETS &amp; TRIALS</div>
+        <div class="seg" id="rest-seg">
+          <div class="opt" data-rest="30" onclick="setRest(30)">30 s</div>
+          <div class="opt" data-rest="45" onclick="setRest(45)">45 s</div>
+          <div class="opt" data-rest="60" onclick="setRest(60)">60 s</div>
         </div>
       </div>
 
@@ -213,7 +226,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
       </div>
 
       <button class="btn btn-red" onclick="beginQuest()"><i class="ti ti-sword"></i> Begin Quest</button>
-      <div class="dim center" style="font-size:8px;line-height:1.8">Complete every set of a trial<br>before the next. 60s recovery between sets.</div>
+      <div class="dim center" style="font-size:8px;line-height:1.8" id="cfg-hint">Complete every set of a trial<br>before the next. 60s recovery between sets.</div>
     </section>
 
     <!-- CHRONICLE TAB -->
@@ -234,6 +247,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
           <span><i class="dot" style="background:var(--red)"></i>Upper</span>
           <span><i class="dot" style="background:#4DA6FF"></i>Legs</span>
           <span><i class="dot" style="background:var(--teal)"></i>Core</span>
+          <span><i class="dot" style="background:#FF8C42"></i>Cardio</span>
         </div>
       </div>
       <div class="panel center" id="chron-summary"></div>
@@ -277,7 +291,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
         <div class="row" style="justify-content:space-between;align-items:flex-start">
           <div id="q-name">Pushups</div>
           <div class="row" style="gap:18px;flex-shrink:0;align-items:flex-start">
-            <button class="iconbtn" id="q-dice" style="width:34px;height:34px;font-size:15px;position:relative" onclick="rerollTrial()" aria-label="Re-roll this trial"><i class="ti ti-dice-5"></i><span id="q-dice-n">3</span></button>
+            <button class="iconbtn" id="q-dice" style="width:34px;height:34px;font-size:15px;position:relative" onclick="rerollTrial()" aria-label="Re-roll this trial"><i class="ti ti-dice-5"></i></button>
             <button class="iconbtn" style="width:34px;height:34px;font-size:15px" onclick="openInfo()" aria-label="How to"><i class="ti ti-info-circle"></i></button>
           </div>
         </div>
@@ -294,7 +308,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
       <button id="act-victory" class="btn btn-red" onclick="repSetDone()"><i class="ti ti-check"></i> Victory</button>
       <!-- timed work -->
       <div id="act-timed" style="display:none">
-        <div class="rest-label">HOLD</div>
+        <div class="rest-label" id="hold-label">HOLD</div>
         <div class="timer-big teal" id="hold-time">0:30</div>
         <button class="btn btn-teal" id="hold-btn" onclick="startHold()"><i class="ti ti-player-play"></i> Begin Trial</button>
       </div>
@@ -387,7 +401,7 @@ canvas#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
    freshly deployed build actually reached the browser (the service worker
    caches hard — if this number is stale you're on a cached copy). Keep it in
    step with the service-worker CACHE name. */
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 
 /* ============================================================
    DATA — ranks, xp, weights, exercise pool
@@ -443,8 +457,14 @@ function mkEx(o){
     'bodyweight';
   const weight = W[primary] || W.bodyweight;
   const instructions = o.instructions || [];
+  // Timed holds done one side at a time (side plank, suitcase carry…): the
+  // trial runs the hold twice back-to-back with a switch-side bell between.
+  const sides = !!o.sides || (timed && o.unit==='/side');
+  // Cardio trials get the heart rate up (jumps, sprints, climbers). Balanced
+  // quests always include one; the Custom "Cardio" focus is built from them.
+  const cardio = !!o.cardio;
   return { id:o.id, name:o.name, category:o.category, ranks, equipment,
-           sets, reps, timed, unit:o.unit||'', weight, instructions,
+           sets, reps, timed, sides, cardio, unit:o.unit||'', weight, instructions,
            note:o.note || instructions[0] || '' };
 }
 
@@ -572,7 +592,7 @@ const EXERCISES = [
     instructions:['Hold dumbbells at your shoulders, elbows up.','Sit back and down, chest tall, heels flat.','Drive up to standing.']}),
   mkEx({id:'bb_back_squat',name:'Barbell Back Squat',category:'squat',equipment:['barbell_medium'],
     instructions:['Bar across the upper back, feet shoulder-width.','Brace and sit back and down to depth.','Drive up through mid-foot, chest tall.']}),
-  mkEx({id:'jump_squat',name:'Jump Squat',category:'squat',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+  mkEx({id:'jump_squat',cardio:true,name:'Jump Squat',category:'squat',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
     instructions:['Drop into a quarter squat.','Explode up into a jump, arms driving.','Land softly through the whole foot and reset.']}),
   mkEx({id:'pistol_box_squat',name:'Box Pistol Squat',category:'squat',equipment:['bench'],unit:'/side',ranks:['champion','legend'],
     instructions:['Stand on one leg in front of a bench, other leg forward.','Sit back to lightly touch the bench, then drive up.','Keep the heel down. Switch sides.']}),
@@ -602,7 +622,7 @@ const EXERCISES = [
     instructions:['On your back, press the lower back into the floor.','Lift shoulders and legs into a shallow banana shape.','Hold, arms by ears or sides. Lower legs if it strains.']}),
   mkEx({id:'bicycle_crunch',name:'Bicycle Crunch',category:'core',equipment:['bodyweight'],
     instructions:['On your back, hands by ears, shoulders lifted.','Bring opposite elbow toward the opposite knee.','Alternate slowly; do not yank the neck.']}),
-  mkEx({id:'mountain_climber',name:'Mountain Climbers',category:'core',equipment:['bodyweight'],timed:true,
+  mkEx({id:'mountain_climber',cardio:true,name:'Mountain Climbers',category:'core',equipment:['bodyweight'],timed:true,
     instructions:['Start in a high plank, shoulders over wrists.','Drive knees toward your chest one at a time.','Keep hips low and steady; pick a sustainable pace.']}),
   mkEx({id:'russian_twist',name:'Russian Twist',category:'core',equipment:['dumbbell_light'],
     instructions:['Sit, lean back slightly, heels down or lifted.','Hold a dumbbell and rotate it side to side.','Move from the ribs, not just the arms.']}),
@@ -632,7 +652,7 @@ const EXERCISES = [
     instructions:['On your back, arms out wide, legs up toward the ceiling.','Lower both legs to one side under control, shoulders down.','Bring them back up and over to the other side. Alternate.']}),
 
   /* ---------------- FULL BODY ---------------- */
-  mkEx({id:'burpee',name:'Burpees',category:'fullbody',equipment:['bodyweight'],
+  mkEx({id:'burpee',cardio:true,name:'Burpees',category:'fullbody',equipment:['bodyweight'],
     instructions:['From standing, drop hands down and kick feet back to a plank.','Optional push-up, then jump feet in.','Stand and jump. Step it out to scale down.']}),
   mkEx({id:'thruster',name:'DB Thruster',category:'fullbody',equipment:['dumbbell_light'],
     instructions:['Dumbbells at shoulders, drop into a front squat.','Drive up explosively and press the weights overhead.','Lower to shoulders and flow into the next rep.']}),
@@ -646,15 +666,15 @@ const EXERCISES = [
     instructions:['Burpee onto two dumbbells on the floor.','As you stand, swing them overhead in one arc.','Lower to the floor and repeat. Powerful and brutal.']}),
   mkEx({id:'turkish_getup',name:'Turkish Get-Up',category:'fullbody',equipment:['dumbbell_medium'],unit:'/side',ranks:['champion','legend'],
     instructions:['Lie down, press one dumbbell straight up over your shoulder.','Stand up step by step, keeping the arm locked overhead.','Reverse the steps back to the floor. Switch sides.']}),
-  mkEx({id:'jumping_jack',name:'Jumping Jacks',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'jumping_jack',cardio:true,name:'Jumping Jacks',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Stand tall, arms at your sides, feet together.','Jump your feet wide while raising your arms overhead.','Jump back to the start. Keep a steady, springy rhythm.']}),
-  mkEx({id:'high_knees',name:'High Knees',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'high_knees',cardio:true,name:'High Knees',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Jog in place, driving each knee up to hip height.','Stay light on the balls of your feet, arms pumping.','Keep your core tall and the pace quick for the time shown.']}),
-  mkEx({id:'skater_jumps',name:'Skater Jumps',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'skater_jumps',cardio:true,name:'Skater Jumps',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Bound sideways onto one leg, sweeping the other behind you.','Land soft and balanced, then bound to the other side.','Use your arms for momentum. Keep it light and controlled.']}),
-  mkEx({id:'plank_jacks',name:'Plank Jacks',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'plank_jacks',cardio:true,name:'Plank Jacks',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Start in a forearm plank, body straight and braced.','Jump both feet wide, then back together, like a jumping jack.','Keep the hips low and steady. Do not let them bounce.']}),
-  mkEx({id:'squat_thrust',name:'Squat Thrust',category:'fullbody',equipment:['bodyweight'],
+  mkEx({id:'squat_thrust',cardio:true,name:'Squat Thrust',category:'fullbody',equipment:['bodyweight'],
     instructions:['From standing, squat down and plant your hands on the floor.','Kick both feet back to a plank, then jump them back in.','Stand tall. Like a burpee without the jump or push-up.']}),
   mkEx({id:'db_man_maker',name:'DB Man Maker',category:'fullbody',equipment:['dumbbell_medium'],ranks:['champion','legend'],
     instructions:['Holding dumbbells in a plank, row one then the other.','Jump the feet in and clean the dumbbells to your shoulders.','Stand and press them overhead. Lower and flow into the next.']}),
@@ -816,7 +836,7 @@ const EXERCISES = [
     instructions:['Hold a side plank on your forearm, body in a line.','Lower your hips toward the floor, then lift them back up.','Move slowly. Do all reps, then switch sides.']}),
   mkEx({id:'crunch',name:'Crunches',category:'core',equipment:['bodyweight'],
     instructions:['Lie on your back, knees bent, hands by your ears.','Curl your shoulders off the floor, ribs toward hips.','Lower with control. Do not pull on your neck.']}),
-  mkEx({id:'crossbody_climber',name:'Cross-Body Mountain Climbers',category:'core',equipment:['bodyweight'],timed:true,
+  mkEx({id:'crossbody_climber',cardio:true,name:'Cross-Body Mountain Climbers',category:'core',equipment:['bodyweight'],timed:true,
     instructions:['Start in a high plank, shoulders over your wrists.','Drive each knee toward the opposite elbow.','Keep the hips low and steady. Alternate at a sustainable pace.']}),
   mkEx({id:'plank_knee_elbow',name:'Plank Knee-to-Elbow',category:'core',equipment:['bodyweight'],
     instructions:['Hold a high plank, body braced and straight.','Bring one knee forward to tap the same-side elbow.','Return it and alternate. Keep the hips low and still.']}),
@@ -842,9 +862,9 @@ const EXERCISES = [
     instructions:['Hold a side plank, top arm reaching toward the ceiling.','Rotate and thread that arm under your torso, then back up.','Move slowly without dropping the hips. Switch sides.']}),
 
   /* ---------------- FULL BODY (expansion) ---------------- */
-  mkEx({id:'half_burpee',name:'Half Burpees',category:'fullbody',equipment:['bodyweight'],
+  mkEx({id:'half_burpee',cardio:true,name:'Half Burpees',category:'fullbody',equipment:['bodyweight'],
     instructions:['From a plank, jump both feet in toward your hands.','Jump them back out to a strong plank.','Keep a steady rhythm. No push-up or stand needed.']}),
-  mkEx({id:'burpee_broad_jump',name:'Burpee Broad Jump',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+  mkEx({id:'burpee_broad_jump',cardio:true,name:'Burpee Broad Jump',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
     instructions:['Drop into a burpee and stand explosively.','Instead of jumping up, jump forward as far as you safely can.','Land soft, turn around and repeat back the other way.']}),
   mkEx({id:'db_clean',name:'DB Clean',category:'fullbody',equipment:['dumbbell_medium'],
     instructions:['Dumbbells hanging, hinge slightly with a flat back.','Explode through the hips and pull them to your shoulders.','Lower under control back to the hang. Use the legs.']}),
@@ -852,19 +872,19 @@ const EXERCISES = [
     instructions:['Sit, hands behind you, and lift your hips off the floor.','Walk forward and back on your hands and feet.','Keep the hips up and core braced for the time shown.']}),
   mkEx({id:'crab_reach',name:'Crab Reach',category:'fullbody',equipment:['bodyweight'],unit:'/side',
     instructions:['From a crab position, lift the hips into a tabletop.','Reach one hand back over the opposite shoulder.','Return and switch. Keep driving the hips up.']}),
-  mkEx({id:'lunge_knee_drive',name:'Lunge to Knee Drive',category:'fullbody',equipment:['bodyweight'],unit:'/side',
+  mkEx({id:'lunge_knee_drive',cardio:true,name:'Lunge to Knee Drive',category:'fullbody',equipment:['bodyweight'],unit:'/side',
     instructions:['Step back into a reverse lunge, both knees bending.','Drive up explosively, bringing the back knee up to your chest.','Step back into the next lunge. Do all reps, then switch.']}),
-  mkEx({id:'star_jump',name:'Star Jumps',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'star_jump',cardio:true,name:'Star Jumps',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Start in a small crouch, arms tucked in.','Jump up explosively, spreading arms and legs into a star.','Land soft back into the crouch. Keep a steady pace.']}),
-  mkEx({id:'tuck_jump',name:'Tuck Jumps',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+  mkEx({id:'tuck_jump',cardio:true,name:'Tuck Jumps',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
     instructions:['Drop into a quarter squat, arms ready.','Jump up and pull both knees toward your chest.','Land softly with bent knees and immediately reset.']}),
-  mkEx({id:'broad_jump',name:'Broad Jumps',category:'fullbody',equipment:['bodyweight'],
+  mkEx({id:'broad_jump',cardio:true,name:'Broad Jumps',category:'fullbody',equipment:['bodyweight'],
     instructions:['Hinge back and swing your arms for momentum.','Jump forward as far as you safely can, landing soft.','Steady yourself, turn, and jump back the other way.']}),
   mkEx({id:'db_single_thruster',name:'Single-Arm DB Thruster',category:'fullbody',equipment:['dumbbell_light'],unit:'/side',
     instructions:['One dumbbell at your shoulder, drop into a front squat.','Drive up explosively and press the weight overhead.','Lower to your shoulder and flow on. Switch after your reps.']}),
-  mkEx({id:'shuttle_run',name:'Shuttle Sprints',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'shuttle_run',cardio:true,name:'Shuttle Sprints',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Mark two points a few steps apart.','Run or shuffle quickly between them, touching low each turn.','Stay light on your feet and keep the pace up.']}),
-  mkEx({id:'shadow_box',name:'Shadow Boxing',category:'fullbody',equipment:['bodyweight'],timed:true,
+  mkEx({id:'shadow_box',cardio:true,name:'Shadow Boxing',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Stand light on your toes, hands up to guard your face.','Throw controlled jabs, crosses and hooks, rotating the hips.','Keep moving and breathing for the time shown.']}),
   mkEx({id:'db_overhead_lunge',name:'DB Overhead Lunge',category:'fullbody',equipment:['dumbbell_light'],unit:'/side',
     instructions:['Press one dumbbell overhead and lock the arm.','Step back into a lunge, keeping the weight stacked above you.','Drive up and reset. Do all reps, then switch sides.']}),
@@ -874,7 +894,15 @@ const EXERCISES = [
     instructions:['On hands and toes, knees hovering just off the floor.','Step both hands and feet sideways together, then back.','Keep the hips low and the back flat for the time shown.']}),
   mkEx({id:'army_crawl',name:'Army Crawl',category:'fullbody',equipment:['bodyweight'],timed:true,
     instructions:['Lie face-down and rise onto your forearms and toes.','Crawl forward low to the ground, opposite arm and leg.','Keep your hips low and core tight for the time shown.']}),
-  mkEx({id:'rotational_jump_squat',name:'180° Jump Squats',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
+  mkEx({id:'butt_kick',cardio:true,name:'Butt Kicks',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Jog in place, kicking each heel up toward your glutes.','Stay tall and light on the balls of your feet, arms pumping.','Keep the cadence quick for the time shown.']}),
+  mkEx({id:'fast_feet',cardio:true,name:'Fast Feet',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Athletic stance, knees bent, weight on the balls of your feet.','Sprint in place with tiny, rapid steps — as fast as you can.','Keep your chest up and arms driving for the time shown.']}),
+  mkEx({id:'lateral_hops',cardio:true,name:'Lateral Hops',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Feet together, imagine a line on the floor beside you.','Hop side to side over the line, landing soft on both feet.','Stay springy and keep a steady rhythm for the time shown.']}),
+  mkEx({id:'jump_rope',cardio:true,name:'Invisible Jump Rope',category:'fullbody',equipment:['bodyweight'],timed:true,
+    instructions:['Elbows in, wrists turning as if spinning a rope.','Bounce on the balls of your feet with small, quick hops.','Keep the bounces low and the rhythm even for the time shown.']}),
+  mkEx({id:'rotational_jump_squat',cardio:true,name:'180° Jump Squats',category:'fullbody',equipment:['bodyweight'],ranks:['adventurer','champion','legend'],
     instructions:['Drop into a squat, then jump and rotate 180° in the air.','Land softly facing the other way, absorbing into a squat.','Jump and rotate back. Keep the landings soft and controlled.']})
 ];
 
@@ -946,14 +974,16 @@ const POOL = buildPool(EXERCISES);
      • NEVER rename or delete an existing field in place — migrate
        it, and keep additions additive.
    ============================================================ */
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const STORE_KEY = 'gib';
 const LEGACY_KEYS = ['gib_rank','gib_xp','gib_inventory','gib_history','gib_settings'];
 
 const DEFAULT_INV = { step:false, bench:false,
   dumbbell_light:true, dumbbell_medium:false, dumbbell_heavy:false, dumbbell_veryheavy:false,
   barbell_light:false, barbell_medium:false, barbell_heavy:false };
-const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30 };
+const REST_OPTIONS = [30,45,60];
+const DEFAULT_SETTINGS = { sound:true, lastMode:'balanced', lastFocus:'upper', lastDuration:30, restSecs:60, rankOffset:0 };
+const FOCUS_TYPES = ['upper','legs','core','cardio'];
 
 function freshDoc(){
   return { schemaVersion:SCHEMA_VERSION, rank:'apprentice', xp:0, level:1,
@@ -972,6 +1002,14 @@ const MIGRATIONS = {
   2(d){
     const s = (d.settings && typeof d.settings==='object') ? d.settings : {};
     if(s.lastSessionType && !s.lastMode) s.lastMode = s.lastSessionType;
+    d.settings = s;
+    return d;
+  },
+  // 3 -> 4 : the "targeted" session mode was renamed "custom" (it now also
+  //          carries a focus of cardio and a tier offset).
+  3(d){
+    const s = (d.settings && typeof d.settings==='object') ? d.settings : {};
+    if(s.lastMode==='targeted') s.lastMode='custom';
     d.settings = s;
     return d;
   }
@@ -999,9 +1037,12 @@ function normalize(doc){
   if(!Array.isArray(doc.history)) doc.history = [];
   doc.settings = Object.assign({...DEFAULT_SETTINGS},
     (doc.settings && typeof doc.settings==='object') ? doc.settings : {});
-  if(!['balanced','targeted'].includes(doc.settings.lastMode)) doc.settings.lastMode='balanced';
-  if(!['upper','legs','core'].includes(doc.settings.lastFocus)) doc.settings.lastFocus='upper';
+  if(doc.settings.lastMode==='targeted') doc.settings.lastMode='custom';   // belt-and-braces with MIGRATIONS[3]
+  if(!['balanced','custom'].includes(doc.settings.lastMode)) doc.settings.lastMode='balanced';
+  if(!FOCUS_TYPES.includes(doc.settings.lastFocus)) doc.settings.lastFocus='upper';
+  if(![-1,0,1].includes(doc.settings.rankOffset)) doc.settings.rankOffset=0;
   if(![30,45,60].includes(doc.settings.lastDuration)) doc.settings.lastDuration=30;
+  if(!REST_OPTIONS.includes(doc.settings.restSecs)) doc.settings.restSecs=60;
   doc.settings.sound = doc.settings.sound!==false;
   if((parseInt(doc.schemaVersion,10)||0) < SCHEMA_VERSION) doc.schemaVersion = SCHEMA_VERSION;
   return doc;
@@ -1058,45 +1099,61 @@ function levelProgress(xp){
 function isoDate(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function owned(ex){ return ex.equipment.every(t => t==='bodyweight' ? true : !!state.inventory[t]); }
-function exTime(ex,rank){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v:v*3) + s*60; }
+function exTime(ex,rank,rest){ const s=ex.sets[rank], v=ex.reps[rank]; return s*(ex.timed?v*(ex.sides?2:1):v*3) + s*(rest||60); }
 function repsLabel(ex,rank){ const v=ex.reps[rank]; return ex.timed ? v+'s'+(ex.unit?' '+ex.unit:'') : v+(ex.unit?ex.unit:'')+' reps'; }
-const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core' };
-const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3' };
+const TYPE_LABEL = { balanced:'Balanced', upper:'Upper Body', legs:'Legs', core:'Core', cardio:'Cardio' };
+const TYPE_COLOR = { balanced:'#FFD700', upper:'#CC2200', legs:'#4DA6FF', core:'#00D9A3', cardio:'#FF8C42' };
+
+/* Difficulty tier a quest is generated at. Custom mode may shift one tier up
+   or down from the player's own tier (clamped at the ends of the ladder);
+   balanced quests always use the player's tier. XP is unaffected — it is
+   always earned at the player's own tier multiplier (see finishQuest). */
+function questRank(){
+  if(state.settings.lastMode!=='custom') return state.rank;
+  const i=RANK_IDS.indexOf(state.rank)+(state.settings.rankOffset||0);
+  return RANK_IDS[Math.max(0,Math.min(RANK_IDS.length-1,i))];
+}
 
 /* Broad muscle group for the re-roll: a push can swap for a pull (both upper),
    a hinge for a squat (both lower), core stays core, full-body stays full-body. */
 const TYPE_GROUP = { push:'upper', pull:'upper', hinge:'lower', squat:'lower', core:'core', fullbody:'fullbody' };
-const REROLLS_PER_QUEST = 3;
 
 /* ============================================================
    SESSION GENERATOR
    ============================================================ */
-function genQuest(rank, type, durMin){
+function genQuest(rank, type, durMin, rest){
   const target = durMin*60;
   const avail = POOL.filter(e => e.ranks.includes(rank) && owned(e));
   const used = new Set();
   const chosen = [];
-  const totalT = () => chosen.reduce((s,e)=>s+exTime(e,rank),0);
+  const totalT = () => chosen.reduce((s,e)=>s+exTime(e,rank,rest),0);
   const tryAdd = e => { if(e && !used.has(e.id)){ chosen.push(e); used.add(e.id); return true; } return false; };
   const addOneFrom = cats => { const c=shuffle(avail.filter(e=>cats.includes(e.category)&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
 
   const primMap = { upper:['push','pull'], legs:['hinge','squat'], core:['core'] };
-  const offMap  = { upper:'core', legs:'core', core:'fullbody' };
+  const offMap  = { upper:'core', legs:'core', core:'fullbody', cardio:'core' };
+  // Cardio is a tag rather than a category: its primary pool cuts across
+  // categories (jump squats, mountain climbers, jumping jacks…).
+  const isPrimary = type==='cardio' ? (e=>e.cardio) : (e=>(primMap[type]||[]).includes(e.category));
+  const addOnePrimary = () => { const c=shuffle(avail.filter(e=>isPrimary(e)&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
+
+  const addOneCardio = () => { const c=shuffle(avail.filter(e=>e.cardio&&!used.has(e.id))); if(c.length) tryAdd(c[0]); };
 
   if(type==='balanced'){
     addOneFrom(['push']); addOneFrom(['pull']); addOneFrom(['hinge','squat']); addOneFrom(['core']);
+    if(!chosen.some(e=>e.cardio)) addOneCardio();
   } else {
-    addOneFrom(primMap[type]);
+    addOnePrimary();
     addOneFrom([offMap[type]]);
   }
 
   let fill;
   if(type==='balanced') fill = shuffle(avail.filter(e=>!used.has(e.id)));
-  else fill = shuffle(avail.filter(e=>primMap[type].includes(e.category) && !used.has(e.id)));
+  else fill = shuffle(avail.filter(e=>isPrimary(e) && !used.has(e.id)));
 
   for(const e of fill){
     if(chosen.length>=10) break;
-    if(totalT()+exTime(e,rank) > target && chosen.length>=4) break;
+    if(totalT()+exTime(e,rank,rest) > target && chosen.length>=4) break;
     tryAdd(e);
   }
   if(chosen.length<4){
@@ -1127,6 +1184,7 @@ function sfx(name){
   const t=c.currentTime;
   if(name==='chime'){ [523,659,784].forEach((f,i)=>beep(f,t+i*0.05,0.12,'square',0.16)); }
   else if(name==='bell'){ beep(880,t,0.45,'triangle',0.20); beep(1320,t+0.01,0.45,'sine',0.08); }
+  else if(name==='switch'){ beep(660,t,0.22,'triangle',0.20); beep(990,t+0.26,0.40,'triangle',0.20); beep(1485,t+0.27,0.40,'sine',0.07); }
   else if(name==='fanfare'){
     const seq=[[523,0,.13],[523,.13,.13],[523,.26,.13],[659,.40,.18],[784,.60,.18],[1047,.82,.45]];
     seq.forEach(([f,dt,d])=>beep(f,t+dt,d,'square',0.18));
@@ -1160,17 +1218,27 @@ function goTab(tab){
    PRE-QUEST CONFIG
    ============================================================ */
 function setMode(m){ state.settings.lastMode=m; save(); renderConfig(); }
+function setRankOffset(o){ state.settings.rankOffset=o; save(); renderConfig(); }
 function setFocus(f){ state.settings.lastFocus=f; save(); renderConfig(); }
 function setDuration(d){ state.settings.lastDuration=d; save(); renderConfig(); }
+function setRest(r){ state.settings.restSecs=r; save(); renderConfig(); }
 
 function resolvedType(){ return state.settings.lastMode==='balanced' ? 'balanced' : state.settings.lastFocus; }
 
 function renderConfig(){
   const s=state.settings;
   document.querySelectorAll('#mode-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.mode===s.lastMode));
-  $('focus-seg').style.display = s.lastMode==='targeted' ? 'flex' : 'none';
+  $('custom-cfg').style.display = s.lastMode==='custom' ? 'flex' : 'none';
   document.querySelectorAll('#focus-seg .opt').forEach(o=>o.classList.toggle('on', o.dataset.focus===s.lastFocus));
+  // Level picker: the player's tier plus its neighbours (fewer at the ends).
+  const ri=RANK_IDS.indexOf(state.rank), qr=questRank();
+  $('rank-seg').innerHTML=[-1,0,1].filter(o=>RANKS[ri+o]).map(o=>{
+    const r=RANKS[ri+o];
+    return '<div class="opt'+(r.id===qr?' on':'')+(o===0?' gold':'')+'" onclick="setRankOffset('+o+')">'+r.name+'</div>';
+  }).join('');
   document.querySelectorAll('#dur-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.dur===s.lastDuration));
+  document.querySelectorAll('#rest-seg .opt').forEach(o=>o.classList.toggle('on', +o.dataset.rest===s.restSecs));
+  $('cfg-hint').innerHTML='Complete every set of a trial<br>before the next. '+s.restSecs+'s recovery between sets.';
 
   const r=rankObj(state.rank), lp=levelProgress(state.xp);
   $('cfg-rank').textContent=r.name.toUpperCase();
@@ -1196,10 +1264,10 @@ let quest=null, restTimer=null, holdTimer=null;
 
 function beginQuest(){
   ac(); // unlock audio on user gesture
-  const rank=state.rank, type=resolvedType(), durMin=state.settings.lastDuration;
-  const exercises=genQuest(rank,type,durMin);
+  const rank=questRank(), type=resolvedType(), durMin=state.settings.lastDuration, rest=state.settings.restSecs;
+  const exercises=genQuest(rank,type,durMin,rest);
   if(!exercises.length){ alert('No trials available with your current inventory.'); return; }
-  quest={ rank, type, durMin, exercises, exIdx:0, setIdx:0, completedSets:0, rerollsLeft:REROLLS_PER_QUEST };
+  quest={ rank, type, durMin, rest, exercises, exIdx:0, setIdx:0, completedSets:0 };
   $('q-rank').textContent=rankObj(rank).name.toUpperCase();
   $('quest').classList.add('active');
   renderTrial();
@@ -1215,7 +1283,8 @@ function renderTrial(){
   $('q-pills').innerHTML=
     '<span class="pill pill-purple">'+ex.sets[rank]+' sets</span>'+
     '<span class="pill pill-teal">'+repsLabel(ex,rank)+'</span>'+
-    '<span class="pill pill-gray">'+ex.weight[rank]+'</span>';
+    '<span class="pill pill-gray">'+ex.weight[rank]+'</span>'+
+    (ex.cardio ? '<span class="pill pill-gold">Cardio</span>' : '');
   $('q-segs').innerHTML=quest.exercises.map((_,i)=>
     '<div class="s '+(i<quest.exIdx?'done':i===quest.exIdx?'now':'')+'"></div>').join('');
   renderDots();
@@ -1223,36 +1292,36 @@ function renderTrial(){
 }
 
 /* ---- randomizer (dice) ---------------------------------------
-   Up to REROLLS_PER_QUEST times per quest, swap the current trial for a
-   different exercise in the SAME broad group (upper / lower / core /
-   full-body) that the player owns the gear for and isn't already doing,
-   then restart the trial from its first set. */
+   Swap the current trial for a different exercise in the SAME broad group
+   (upper / lower / core / full-body, or cardio for a cardio trial) that the
+   player owns the gear for and isn't already doing, then restart the trial
+   from its first set. Unlimited: the dice only grey out when nothing else
+   is available to swap in. */
 function rerollCandidates(){
   if(!quest) return [];
   const cur=quest.exercises[quest.exIdx];
   const group=TYPE_GROUP[cur.category];
   const inQuest=new Set(quest.exercises.map(e=>e.id));
+  // A cardio trial swaps for another cardio trial so the quest keeps its
+  // heart-rate slot; everything else stays within its broad muscle group.
   return POOL.filter(e=>
-    TYPE_GROUP[e.category]===group &&
+    (cur.cardio ? e.cardio : TYPE_GROUP[e.category]===group) &&
     e.ranks.includes(quest.rank) &&
     owned(e) &&
     !inQuest.has(e.id));
 }
 function updateDice(){
   const btn=$('q-dice'); if(!btn||!quest) return;
-  const left=quest.rerollsLeft;
-  $('q-dice-n').textContent=left;
-  btn.disabled = left<=0 || rerollCandidates().length===0;
+  btn.disabled = rerollCandidates().length===0;
 }
 function rerollTrial(){
-  if(!quest || quest.rerollsLeft<=0) return;
+  if(!quest) return;
   const pool=rerollCandidates();
   if(!pool.length){ updateDice(); return; }
   ac();
   clearInterval(restTimer); clearInterval(holdTimer);
   quest.exercises[quest.exIdx]=pool[Math.floor(Math.random()*pool.length)];
   quest.setIdx=0;
-  quest.rerollsLeft--;
   sfx('chime');
   burstAt('q-dice',['#FFD700','#FFE873','#6C63FF','#ffffff']);
   renderTrial();
@@ -1272,6 +1341,7 @@ function showWork(){
   const ex=quest.exercises[quest.exIdx];
   if(ex.timed){
     $('act-timed').style.display='block';
+    $('hold-label').textContent = ex.sides ? 'HOLD · SIDE 1 OF 2' : 'HOLD';
     $('hold-time').textContent=fmt(ex.reps[quest.rank]);
     const b=$('hold-btn'); b.disabled=false; b.innerHTML='<i class="ti ti-player-play"></i> Begin Trial';
   } else {
@@ -1287,13 +1357,20 @@ function repSetDone(){ setComplete(true); }
 function startHold(){
   ac();
   const ex=quest.exercises[quest.exIdx];
-  let left=ex.reps[quest.rank];
+  const per=ex.reps[quest.rank];          // seconds per side (or total, if single-sided)
+  const half=ex.sides ? per : 0;          // seconds remaining at the switch point
+  let left=per*(ex.sides?2:1);
   $('hold-btn').disabled=true;
-  $('hold-time').textContent=fmt(left);
+  $('hold-label').textContent = ex.sides ? 'HOLD · SIDE 1 OF 2' : 'HOLD';
+  $('hold-time').textContent=fmt(per);
   clearInterval(holdTimer);
   holdTimer=setInterval(()=>{
-    left--; $('hold-time').textContent=fmt(left);
-    if(left>=1 && left<=4) countBeep(5-left);
+    left--;
+    // The display counts each side down separately: 25…1, bell, 25…1.
+    $('hold-time').textContent=fmt(left>half ? left-half : left);
+    const toBoundary = left>half ? left-half : left;
+    if(toBoundary>=1 && toBoundary<=4) countBeep(5-toBoundary);
+    if(half && left===half){ sfx('switch'); $('hold-label').textContent='SWITCH · SIDE 2 OF 2'; }
     if(left<=0){ clearInterval(holdTimer); sfx('bell'); setComplete(false); }
   },1000);
 }
@@ -1320,7 +1397,7 @@ function enterRest(kind){
   $('act-rest').style.display='block';
   const bell = kind==='set';
   $('rest-label').textContent = kind==='set' ? 'RECOVERY' : 'PREPARE FOR NEXT TRIAL';
-  startRest(60, bell, ()=>{ showWork(); });
+  startRest(quest.rest||60, bell, ()=>{ showWork(); });
 }
 function startRest(secs, bell, onEnd){
   clearInterval(restTimer);
@@ -1345,14 +1422,14 @@ function abandonQuest(){
 function finishQuest(){
   clearInterval(restTimer); clearInterval(holdTimer);
   const base=BASE_XP[quest.durMin]||100;
-  const earned=base*rankMult(quest.rank);
+  const earned=base*rankMult(state.rank);   // player's own tier, not the quest's difficulty
   const prevLevel=levelFromXp(state.xp);
   state.xp += earned;
   state.level=levelFromXp(state.xp);
   const leveledUp=state.level>prevLevel;
   state.history.push({
     date: isoDate(), type: quest.type, durMin: quest.durMin, xp: earned,
-    rank: quest.rank, level: state.level, sets: quest.completedSets,
+    rank: quest.rank, tier: state.rank, level: state.level, sets: quest.completedSets,
     exercises: quest.exercises.map(e=>e.name.replace(/&amp;/g,'&')),
     exIds: quest.exercises.map(e=>e.id)   // stable refs for future analytics; names stay for display
   });
