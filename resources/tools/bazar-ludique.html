@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grand Bazar · étiquettes et liste</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --feutre:#17352C;
+  --carton:#F6F1E4;
+  --carton-ombre:#E7DFCC;
+  --encre:#191712;
+  --gris:#7C7566;
+  --rouge:#A83224;
+  --or:#C9922B;
+  --serif:"Iowan Old Style","Hoefler Text","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --billet:Helvetica,Arial,"Helvetica Neue",sans-serif;
+  --bw:95.95mm; --bh:51.08mm;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--feutre);
+  background-image:radial-gradient(circle at 20% 0%,#20493B 0%,#17352C 60%);
+  color:var(--encre);
+  font-family:var(--sans);
+  font-size:15px;line-height:1.5;padding-bottom:92px;
+}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+/* ---------- entête ---------- */
+.bandeau{padding:28px 24px 20px;max-width:1500px;margin:0 auto;color:var(--carton)}
+.bandeau h1{font-family:var(--serif);font-size:clamp(30px,4.2vw,46px);font-weight:600;letter-spacing:-.01em;margin:0}
+.bandeau .sous{margin:4px 0 22px;color:#B9C7BF;max-width:62ch}
+.identite{display:flex;flex-wrap:wrap;gap:26px 40px;align-items:flex-end}
+.champ-papier{display:flex;flex-direction:column;gap:3px;min-width:230px;flex:1 1 260px;max-width:420px}
+.champ-papier span{font-size:12.5px;color:#9FB3A8;letter-spacing:.02em}
+.champ-papier input{
+  font-family:var(--serif);font-size:21px;color:var(--carton);background:transparent;
+  border:0;border-bottom:1.5px solid #567065;padding:4px 2px;
+}
+.champ-papier input::placeholder{color:#4F675C;font-style:italic}
+.champ-papier input:focus{border-bottom-color:var(--or)}
+
+/* ---------- atelier ---------- */
+.atelier{
+  max-width:1500px;margin:0 auto;padding:24px;
+  display:grid;grid-template-columns:minmax(420px,1fr) minmax(380px,560px);gap:24px;align-items:start;
+}
+@media (max-width:1080px){.atelier{grid-template-columns:1fr}}
+.panneau{background:var(--carton);border-radius:3px;box-shadow:0 14px 34px rgba(0,0,0,.34)}
+.panneau-tete{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 20px 10px;border-bottom:1px solid var(--carton-ombre)}
+.panneau-tete h2{font-family:var(--serif);font-size:20px;margin:0;font-weight:600}
+.panneau-tete p{margin:0;font-size:12.5px;color:var(--gris)}
+
+/* ---------- table ---------- */
+.enveloppe-table{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;font-size:12px;color:var(--gris);padding:10px 8px;border-bottom:1px solid var(--carton-ombre);white-space:nowrap}
+th:first-child,td:first-child{padding-left:20px;width:52px}
+th:last-child,td:last-child{padding-right:20px}
+td{padding:0;border-bottom:1px solid #EDE6D6;vertical-align:middle}
+tbody tr:nth-child(even){background:rgba(0,0,0,.017)}
+tbody tr.actif{background:#FBF3DC}
+tbody tr.actif .no{background:var(--rouge);color:var(--carton);border-color:var(--rouge)}
+.no{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:50%;border:1px solid #CFC5AC;font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+td input{width:100%;border:0;background:transparent;font:inherit;color:var(--encre);padding:11px 8px;border-radius:2px}
+td input::placeholder{color:#B8AF9A}
+td input:focus{background:#FFF;box-shadow:inset 0 0 0 1px var(--or)}
+td.prix input{text-align:right;font-variant-numeric:tabular-nums}
+.col-prix{text-align:right;width:130px}
+.col-notes{width:34%}
+.pied-table{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;flex-wrap:wrap}
+.total{font-family:var(--serif);font-size:17px}
+.total b{font-variant-numeric:tabular-nums}
+
+/* ---------- planche d'étiquettes ---------- */
+.planche{position:sticky;top:24px}
+.pages{display:flex;flex-direction:column;gap:18px;padding:18px 0 0}
+.pages.large{overflow-x:auto;padding-bottom:10px}
+.page-cadre{margin:0 auto}
+.page{width:215.9mm;height:279.4mm;padding:12mm;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.4);transform-origin:top left}
+.page-grille{display:grid;grid-template-columns:repeat(2,var(--bw));grid-template-rows:repeat(5,var(--bh))}
+
+.billet{position:relative;width:var(--bw);height:var(--bh);border:.2mm solid #A8A8A8;background:#fff;font-family:var(--billet);color:#000;overflow:hidden}
+.billet.vide{background:#FAFAF8}
+.billet.vide .b-tete{background:#9AA8A1}
+.billet.actif{outline:1.5px solid var(--or);outline-offset:-1.5px}
+.b-tete{position:absolute;top:0;left:0;right:0;height:9mm;background:var(--feutre);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 4mm;font-size:9pt;font-weight:700;letter-spacing:.02em}
+.b-tete .b-evt{flex:1;text-align:center}
+.b-tete .b-no{font-variant-numeric:tabular-nums}
+
+.b-champ{position:absolute;left:5mm;right:5mm;display:flex;align-items:flex-start;gap:2mm}
+.b-champ>span.b-lab{width:13mm;flex:none;font-size:7.5pt;font-weight:700;color:#555}
+.b-champ input,.b-champ textarea,.b-champ .b-val{
+  flex:1;min-width:0;border:0;background:transparent;padding:0;margin:0;
+  color:#000;font-family:var(--billet);resize:none;overflow:hidden;display:block;
+}
+.b-champ .b-val{white-space:pre-wrap;overflow-wrap:anywhere}
+.b-champ input:focus,.b-champ textarea:focus{background:#FFFBEF}
+.b-souligne{border-bottom:.2mm solid #C4C4C4!important}
+.b-souligne:focus{border-bottom-color:var(--or)!important}
+.billet.vide .b-souligne{border-bottom-style:dashed!important}
+.deborde{border-bottom-color:var(--rouge)!important;background:#FDF3F2!important}
+
+/* --- disposition AVEC note --- */
+.b-nom{top:12.8mm}
+.b-nom>span.b-lab,.b-nom input,.b-nom .b-val{line-height:4.59mm}
+.b-nom input,.b-nom .b-val{font-size:10pt;height:4.59mm;white-space:nowrap;text-overflow:ellipsis}
+.b-jeu{top:20.8mm}
+.b-jeu>span.b-lab,.b-jeu textarea,.b-jeu .b-val{line-height:4.59mm}
+.b-jeu textarea,.b-jeu .b-val{font-size:10pt;font-weight:700;height:9.18mm}
+.b-prix{top:33.2mm}
+.b-prix>span.b-lab{line-height:4.59mm;padding-top:1.6mm}
+.b-prix input,.b-prix .b-val{font-size:15pt;font-weight:700;line-height:6.88mm;height:6.88mm;white-space:nowrap}
+.b-note{top:42.45mm}
+.b-note>span.b-lab{font-size:7pt;line-height:3.67mm}
+.b-note textarea,.b-note .b-val{font-size:8pt;font-style:italic;color:#333;line-height:3.67mm;height:7.34mm}
+
+/* --- disposition SANS note --- */
+.billet.sansnote .b-note{display:none}
+.billet.sansnote .b-nom{top:14.8mm}
+.billet.sansnote .b-jeu{top:24.5mm}
+.billet.sansnote .b-jeu>span.b-lab,.billet.sansnote .b-jeu textarea,.billet.sansnote .b-jeu .b-val{line-height:5.04mm}
+.billet.sansnote .b-jeu textarea,.billet.sansnote .b-jeu .b-val{font-size:11pt;height:10.08mm}
+.billet.sansnote .b-prix{top:38.25mm}
+.billet.sansnote .b-prix>span.b-lab{padding-top:2.4mm}
+.billet.sansnote .b-prix input,.billet.sansnote .b-prix .b-val{font-size:18pt;line-height:8.26mm;height:8.26mm}
+
+.legende{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 20px 4px;font-size:12.5px;color:var(--gris)}
+.zoom.actif{border-color:var(--encre);color:var(--encre);background:#EDE6D6}
+
+/* ---------- barre d'action ---------- */
+.barre{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(11,26,21,.94);backdrop-filter:blur(8px);border-top:1px solid #2E5546;color:var(--carton)}
+.barre-int{max-width:1500px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.etat{font-size:13.5px;color:#B9C7BF;flex:1;min-width:220px}
+.etat b{color:var(--carton);font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer;border-radius:3px;transition:background .12s,border-color .12s}
+.btn{padding:10px 18px;border:1px solid transparent;font-weight:600}
+.btn-1{background:var(--or);color:#2A1E05;border-color:var(--or)}
+.btn-1:hover{background:#DCA83F}
+.btn-2{background:transparent;color:var(--carton);border-color:#4A6C5D}
+.btn-2:hover{background:#20493B}
+.btn-3{background:transparent;color:#9FB3A8;border-color:transparent;padding:10px 12px}
+.btn-3:hover{color:var(--carton)}
+.btn-mini{background:transparent;border:1px solid #CFC5AC;color:var(--gris);padding:6px 12px;font-size:13px}
+.btn-mini:hover{border-color:var(--gris);color:var(--encre)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.avis{max-width:1500px;margin:0 auto;padding:0 24px 8px;font-size:13px;color:#F0C97A}
+.avis:empty{display:none}
+
+/* ====================================================================
+   COUCHE D'IMPRESSION
+   Construite à la demande, jamais visible à l'écran. Elle ne contient
+   que les jeux réellement saisis: pas d'étiquette fantôme, pas de page
+   blanche, et aucun aplat de couleur qui disparaîtrait si le navigateur
+   n'imprime pas les fonds.
+   ==================================================================== */
+#impression{display:none}
+.feuille{background:#fff;color:#000}
+.feuille-liste{padding:14mm 16mm;font-family:var(--sans)}
+.feuille-liste h1{font-family:var(--serif);font-size:16pt;margin:0 0 1.5mm;font-weight:600}
+.feuille-liste .meta{font-size:9.5pt;margin:0 0 5mm;color:#333}
+.feuille-liste .meta b{font-weight:600}
+.tab-liste{width:100%;border-collapse:collapse;font-size:9.5pt;line-height:1.35}
+.tab-liste th{text-align:left;font-size:8pt;font-weight:700;color:#000;border-bottom:.6mm solid #000;padding:1.4mm 2mm}
+.tab-liste td{border-bottom:.2mm solid #999;padding:1.6mm 2mm;vertical-align:top}
+.tab-liste .c-no{width:10mm;text-align:right;color:#444}
+.tab-liste .c-prix{width:24mm;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tab-liste .c-notes{width:54mm;font-size:8.5pt;color:#333}
+/* le total est une ligne du corps: un tfoot se réimprime à chaque page */
+.tab-liste .r-total td{border-bottom:0;border-top:.6mm solid #000;font-weight:700;padding-top:2.5mm}
+/* densités automatiques quand la liste dépasse 20 jeux */
+.tab-liste.serre{font-size:8.5pt}
+.tab-liste.serre td{padding:1.1mm 2mm}
+.tab-liste.serre .c-notes{font-size:7.5pt}
+.tab-liste.tres-serre{font-size:7.5pt}
+.tab-liste.tres-serre td{padding:.65mm 1.6mm}
+.tab-liste.tres-serre .c-notes{font-size:7pt}
+.feuille-liste .signature{margin-top:9mm;font-size:9.5pt;color:#444}
+.feuille-billets{padding:12mm}
+.grille-i{display:grid;grid-template-columns:repeat(2,95.95mm);grid-template-rows:repeat(5,51mm)}
+.grille-i .billet{height:51mm}
+/* Bandeau noir, texte blanc. Le rectangle est un SVG et non un
+   background-color: Chrome n'imprime pas les arrière-plans par défaut, ce qui
+   donnait du blanc sur blanc. Un SVG est du contenu, il s'imprime toujours. */
+.grille-i .b-tete{background:transparent;color:#fff;height:9mm}
+.b-fond{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0}
+.b-tete>span{position:relative;z-index:1}
+
+@media print{
+  @page{size:letter;margin:0}
+  html,body{background:#fff!important;padding:0!important;margin:0!important}
+  body>*{display:none!important}
+  body>#impression{display:block!important}
+  .feuille{break-after:page;page-break-after:always;overflow:hidden}
+  .feuille:last-child{break-after:auto;page-break-after:auto}
+  .tab-liste tr{break-inside:avoid;page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header class="bandeau">
+  <h1>Grand Bazar</h1>
+  <p class="sous">Remplis la liste, les étiquettes se montent toutes seules. Tu peux écrire des deux côtés: la table et les étiquettes restent synchronisées.</p>
+  <div class="identite">
+    <label class="champ-papier">
+      <span>Nom complet du vendeur</span>
+      <input id="vendeur" placeholder="Prénom Nom" autocomplete="name">
+    </label>
+    <label class="champ-papier">
+      <span>Événement</span>
+      <input id="evenement" value="FJL - GRAND BAZAR">
+    </label>
+  </div>
+</header>
+
+<main class="atelier">
+
+  <section class="panneau" aria-label="Liste des jeux">
+    <div class="panneau-tete">
+      <h2>Liste des jeux</h2>
+      <p>Le prix accepte 12, 12.50 ou 12,50</p>
+    </div>
+    <div class="enveloppe-table">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">N°</th>
+            <th scope="col">Nom complet du jeu</th>
+            <th scope="col" class="col-prix">Prix demandé ($)</th>
+            <th scope="col" class="col-notes">Notes</th>
+          </tr>
+        </thead>
+        <tbody id="corps"></tbody>
+      </table>
+    </div>
+    <div class="pied-table">
+      <div style="display:flex;gap:8px">
+        <button class="btn-mini" id="ajouter">Ajouter une ligne</button>
+        <button class="btn-mini" id="vider">Tout effacer</button>
+      </div>
+      <p class="total">Total demandé <b id="total">0,00 $</b></p>
+    </div>
+  </section>
+
+  <section class="panneau planche" aria-label="Aperçu des étiquettes">
+    <div class="panneau-tete">
+      <h2>Étiquettes</h2>
+      <p>10 par page, format lettre</p>
+    </div>
+    <p class="legende">
+      <span>Une note dans la table ajoute la ligne NOTE sur l'étiquette.</span>
+      <span style="display:flex;gap:6px;flex:none">
+        <button class="btn-mini zoom actif" data-z="fit">Ajusté</button>
+        <button class="btn-mini zoom" data-z="1">100 %</button>
+      </span>
+    </p>
+    <div class="pages" id="pages"></div>
+    <div style="height:18px"></div>
+  </section>
+
+</main>
+
+<div class="barre">
+  <p class="avis" id="avis"></p>
+  <div class="barre-int">
+    <p class="etat" id="etat"></p>
+    <button class="btn btn-3" id="imprimer">Imprimer</button>
+    <button class="btn btn-2" id="exp-xlsx">Exporter XLSX</button>
+    <button class="btn btn-1" id="exp-pdf">Exporter PDF</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ====================== état ====================== */
+var LIGNES_DEPART = 20;
+var etat = { vendeur:"", evenement:"FJL - GRAND BAZAR", lignes:[] };
+for (var i=0;i<LIGNES_DEPART;i++) etat.lignes.push({jeu:"",prix:"",notes:""});
+
+var refs = [];
+var $ = function(id){ return document.getElementById(id); };
+var argent = new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'});
+
+/* ====================== géométrie partagée écran / PDF / impression ====== */
+var GEO = {
+  avecNote: {
+    nom:  {base:16, taille:10, regle:17.39},
+    jeu:  {base:24, taille:10, regle:29.98, lignes:2},
+    prix: {base:38, taille:15, regle:40.08},
+    note: {base:45, taille:8,  lignes:2}
+  },
+  sansNote: {
+    nom:  {base:18, taille:10, regle:19.39},
+    jeu:  {base:28, taille:11, regle:34.58, lignes:2},
+    prix: {base:44, taille:18, regle:46.51}
+  }
+};
+
+/* ====================== persistance ====================== */
+var CLE = 'bazar-ludique-v1';
+function sauver(){ try{ localStorage.setItem(CLE, JSON.stringify(etat)); }catch(e){} }
+function relire(){
+  try{
+    var brut = localStorage.getItem(CLE);
+    if(!brut) return;
+    var o = JSON.parse(brut);
+    if(o && Array.isArray(o.lignes) && o.lignes.length){
+      etat.vendeur = o.vendeur||"";
+      etat.evenement = o.evenement||etat.evenement;
+      etat.lignes = o.lignes.map(function(l){ return {jeu:l.jeu||"", prix:l.prix||"", notes:l.notes||""}; });
+    }
+  }catch(e){}
+}
+
+/* ====================== utilitaires ====================== */
+function nombrePrix(v){
+  if(v===null||v===undefined) return NaN;
+  var s = String(v).replace(/\s/g,'').replace(/\$/g,'').replace(',', '.');
+  if(s==='') return NaN;
+  var n = parseFloat(s);
+  return isNaN(n) ? NaN : n;
+}
+function prixAffiche(v){ var n = nombrePrix(v); return isNaN(n) ? (v||"") : argent.format(n); }
+function aNote(i){ return (etat.lignes[i].notes||'').trim() !== ''; }
+function lignesRemplies(){
+  var out = [];
+  etat.lignes.forEach(function(l,i){
+    if((l.jeu||"").trim()!=="") out.push({no:i+1, jeu:l.jeu.trim(), prix:l.prix, notes:(l.notes||"").trim()});
+  });
+  return out;
+}
+function sommeDe(jeux){
+  return jeux.reduce(function(s,j){ var n=nombrePrix(j.prix); return s+(isNaN(n)?0:n); },0);
+}
+function nomFichier(ext){
+  var base = (etat.vendeur||'vendeur').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+             .replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'vendeur';
+  return 'Bazar_' + base + (ext==='pdf' ? '_etiquettes.pdf' : '_liste.xlsx');
+}
+function avis(msg, duree){
+  $('avis').textContent = msg || '';
+  if(msg && duree!==0) setTimeout(function(){ if($('avis').textContent===msg) $('avis').textContent=''; }, duree||7000);
+}
+function txt(el, s){ el.textContent = s; return el; }
+
+/* ====================== table ====================== */
+function construireTable(){
+  var corps = $('corps');
+  corps.innerHTML = '';
+  etat.lignes.forEach(function(l, i){
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><span class="no">'+(i+1)+'</span></td>'+
+      '<td><input data-f="jeu" placeholder="Titre du jeu"></td>'+
+      '<td class="prix"><input data-f="prix" inputmode="decimal" placeholder="0,00"></td>'+
+      '<td><input data-f="notes" placeholder="État, langue, pièce manquante..."></td>';
+    corps.appendChild(tr);
+    if(!refs[i]) refs[i] = {table:{}, billet:{}};
+    refs[i].tr = tr;
+    ['jeu','prix','notes'].forEach(function(f){
+      var el = tr.querySelector('[data-f="'+f+'"]');
+      refs[i].table[f] = el;
+      el.value = (f==='prix') ? prixAffiche(l.prix) : l[f];
+      brancher(el, i, f, 'table');
+    });
+  });
+}
+
+/* ====================== étiquettes éditables ====================== */
+function construireBillets(){
+  var pages = $('pages');
+  pages.innerHTML = '';
+  var nbPages = Math.max(1, Math.ceil(etat.lignes.length/10));
+  for(var p=0;p<nbPages;p++){
+    var cadre = document.createElement('div'); cadre.className = 'page-cadre';
+    var page  = document.createElement('div'); page.className = 'page';
+    var grille= document.createElement('div'); grille.className = 'page-grille';
+    page.appendChild(grille); cadre.appendChild(page); pages.appendChild(cadre);
+    for(var k=0;k<10;k++){
+      var i = p*10+k;
+      if(i>=etat.lignes.length) break;
+      grille.appendChild(faireBillet(i));
+    }
+  }
+  ajuster();
+}
+
+function faireBillet(i){
+  var l = etat.lignes[i];
+  var art = document.createElement('article');
+  art.className = 'billet';
+  art.innerHTML =
+    '<div class="b-tete"><span class="b-no">N° '+(i+1)+'</span><span class="b-evt"></span>'+
+      '<span class="b-no" style="visibility:hidden">N° '+(i+1)+'</span></div>'+
+    '<label class="b-champ b-nom"><span class="b-lab">NOM:</span><input class="b-souligne" data-f="vendeur"></label>'+
+    '<label class="b-champ b-jeu"><span class="b-lab">JEU:</span><textarea class="b-souligne" data-f="jeu" rows="2"></textarea></label>'+
+    '<label class="b-champ b-prix"><span class="b-lab">PRIX:</span><input class="b-souligne" data-f="prix" inputmode="decimal"></label>'+
+    '<label class="b-champ b-note"><span class="b-lab">NOTE:</span><textarea data-f="notes" rows="2"></textarea></label>';
+
+  if(!refs[i]) refs[i] = {table:{}, billet:{}};
+  refs[i].art = art;
+  art.querySelector('.b-evt').textContent = etat.evenement;
+  refs[i].billet.evt = art.querySelector('.b-evt');
+
+  var vend = art.querySelector('[data-f="vendeur"]');
+  vend.value = etat.vendeur;
+  refs[i].billet.vendeur = vend;
+  vend.addEventListener('input', function(){
+    etat.vendeur = vend.value; $('vendeur').value = vend.value; diffuserVendeur(vend); sauver();
+  });
+  vend.addEventListener('focus', function(){ marquer(i,true); });
+  vend.addEventListener('blur',  function(){ marquer(i,false); });
+
+  ['jeu','prix','notes'].forEach(function(f){
+    var el = art.querySelector('[data-f="'+f+'"]');
+    refs[i].billet[f] = el;
+    el.value = (f==='prix') ? prixAffiche(l.prix) : l[f];
+    if(el.tagName==='TEXTAREA'){
+      el.addEventListener('keydown', function(e){ if(e.key==='Enter') e.preventDefault(); });
+      el.addEventListener('input', function(){
+        if(el.value.indexOf('\n')>-1) el.value = el.value.replace(/\s*\n\s*/g,' ');
+      });
+    }
+    brancher(el, i, f, 'billet');
+  });
+  majAspectBillet(i);
+  return art;
+}
+
+/* ====================== synchronisation ====================== */
+function brancher(el, i, champ, source){
+  el.addEventListener('input', function(){
+    etat.lignes[i][champ] = el.value;
+    var jumeau = (source==='table') ? refs[i].billet[champ] : refs[i].table[champ];
+    if(jumeau && jumeau!==document.activeElement) jumeau.value = el.value;
+    if(champ==='jeu' || champ==='notes') majAspectBillet(i);
+    majEtat(); sauver();
+  });
+  el.addEventListener('focus', function(){ marquer(i,true); });
+  el.addEventListener('blur', function(){
+    if(champ==='prix'){
+      var n = nombrePrix(el.value);
+      if(!isNaN(n)){
+        etat.lignes[i].prix = String(n);
+        var joli = argent.format(n);
+        el.value = joli;
+        var jumeau = (source==='table') ? refs[i].billet.prix : refs[i].table.prix;
+        if(jumeau) jumeau.value = joli;
+        majEtat(); sauver();
+      }
+    }
+    marquer(i,false);
+    majAspectBillet(i);
+  });
+}
+function diffuserVendeur(sauf){
+  refs.forEach(function(r){
+    if(r.billet && r.billet.vendeur && r.billet.vendeur!==sauf) r.billet.vendeur.value = etat.vendeur;
+  });
+}
+function marquer(i, on){
+  if(refs[i].tr)  refs[i].tr.classList.toggle('actif', on);
+  if(refs[i].art) refs[i].art.classList.toggle('actif', on);
+}
+function majAspectBillet(i){
+  var r = refs[i];
+  if(!r || !r.art) return;
+  r.art.classList.toggle('vide', (etat.lignes[i].jeu||'').trim()==='');
+  var garde = document.activeElement === r.billet.notes;
+  r.art.classList.toggle('sansnote', !aNote(i) && !garde);
+  signalerDebordement(r.billet.jeu);
+  signalerDebordement(r.billet.notes);
+}
+function signalerDebordement(ta){
+  if(!ta || ta.tagName!=='TEXTAREA') return;
+  var trop = ta.scrollHeight > ta.clientHeight + 1;
+  ta.classList.toggle('deborde', trop);
+  ta.title = trop ? "Trop long pour l'étiquette: le texte sera coupé à l'impression." : '';
+}
+function majEtat(){
+  var jeux = lignesRemplies();
+  var somme = sommeDe(jeux);
+  var pages = Math.max(1, Math.ceil(jeux.length/10));
+  $('total').textContent = argent.format(somme);
+  $('etat').innerHTML = '<b>'+jeux.length+'</b> jeu'+(jeux.length>1?'x':'')+
+    ' · <b>'+pages+'</b> page'+(pages>1?'s':'')+' d\'étiquettes · total <b>'+argent.format(somme)+'</b>';
+  var vide = jeux.length===0;
+  $('exp-pdf').disabled = vide;
+  $('exp-xlsx').disabled = vide;
+  $('imprimer').disabled = vide;
+}
+
+/* ====================== mise à l'échelle ====================== */
+var zoom = 'fit';
+function ajuster(){
+  var zone = $('pages');
+  if(!zone) return;
+  zone.classList.toggle('large', zoom!=='fit');
+  var dispo = zone.clientWidth;
+  [].forEach.call(zone.querySelectorAll('.page-cadre'), function(cadre){
+    var page = cadre.firstChild;
+    page.style.transform = 'none';
+    var w = page.offsetWidth, h = page.offsetHeight;
+    if(!w) return;
+    var s = (zoom==='fit') ? Math.min(1, dispo/w) : zoom;
+    page.style.transform = 'scale('+s+')';
+    cadre.style.width = (w*s)+'px';
+    cadre.style.height = (h*s)+'px';
+  });
+  refs.forEach(function(r){ if(r.art){ signalerDebordement(r.billet.jeu); signalerDebordement(r.billet.notes); } });
+}
+window.addEventListener('resize', ajuster);
+[].forEach.call(document.querySelectorAll('.zoom'), function(b){
+  b.addEventListener('click', function(){
+    zoom = (b.dataset.z==='fit') ? 'fit' : parseFloat(b.dataset.z);
+    [].forEach.call(document.querySelectorAll('.zoom'), function(o){ o.classList.remove('actif'); });
+    b.classList.add('actif');
+    ajuster();
+  });
+});
+
+/* ====================== PDF ====================== */
+function jsPDFdispo(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+function xlsxDispo(){ return !!window.XLSX; }
+var M=12, PW=215.9, PH=279.4;
+
+function construirePdf(){
+  var doc = new window.jspdf.jsPDF({unit:'mm', format:'letter'});
+  doc.setLineHeightFactor(1.3);
+  var jeux = lignesRemplies();
+  var gw = (PW-2*M)/2, gh = (PH-2*M)/5;
+  jeux.forEach(function(j,k){
+    if(k>0 && k%10===0) doc.addPage();
+    var idx=k%10;
+    dessinerBillet(doc, j, M+(idx%2)*gw, M+Math.floor(idx/2)*gh, gw, gh);
+  });
+  return doc;
+}
+function dessinerBillet(doc, j, x, y, w, h){
+  var g = j.notes ? GEO.avecNote : GEO.sansNote;
+  var lx = x+5, vx = x+20, rw = w-25, rx = x+w-5;
+
+  doc.setDrawColor(168); doc.setLineWidth(0.2); doc.rect(x, y, w, h);
+  doc.setFillColor(23,53,44); doc.rect(x, y, w, 9, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('N° '+j.no, x+4, y+5.9);
+  doc.text(etat.evenement||'', x+w/2, y+5.9, {align:'center'});
+
+  doc.setDrawColor(196);
+  function etiquette(t, base, taille){
+    doc.setTextColor(85,85,85); doc.setFont('helvetica','bold'); doc.setFontSize(taille||7.5);
+    doc.text(t, lx, y+base);
+  }
+  function regle(pos){ doc.line(vx, y+pos, rx, y+pos); }
+
+  etiquette('NOM:', g.nom.base);
+  doc.setTextColor(0,0,0); doc.setFont('helvetica','normal'); doc.setFontSize(g.nom.taille);
+  doc.text(premiereLigne(doc, etat.vendeur||'', rw), vx, y+g.nom.base);
+  regle(g.nom.regle);
+
+  etiquette('JEU:', g.jeu.base);
+  doc.setTextColor(0,0,0); doc.setFont('helvetica','bold'); doc.setFontSize(g.jeu.taille);
+  doc.text(doc.splitTextToSize(j.jeu, rw).slice(0, g.jeu.lignes), vx, y+g.jeu.base);
+  regle(g.jeu.regle);
+
+  etiquette('PRIX:', g.prix.base);
+  doc.setTextColor(0,0,0); doc.setFont('helvetica','bold'); doc.setFontSize(g.prix.taille);
+  doc.text(prixAffiche(j.prix), vx, y+g.prix.base);
+  regle(g.prix.regle);
+
+  if(j.notes && g.note){
+    etiquette('NOTE:', g.note.base, 7);
+    doc.setFont('helvetica','italic'); doc.setFontSize(g.note.taille); doc.setTextColor(51,51,51);
+    doc.text(doc.splitTextToSize(j.notes, w-20).slice(0, g.note.lignes), lx+11, y+g.note.base);
+  }
+}
+function premiereLigne(doc, t, largeur){
+  var l = doc.splitTextToSize(t||'', largeur);
+  return l.length ? l[0] : '';
+}
+
+/* ====================== XLSX ====================== */
+function construireClasseur(){
+  var jeux = lignesRemplies();
+  var aoa = [
+    ['Vendeur', etat.vendeur||''],
+    ['Événement', etat.evenement||''],
+    [],
+    ['N°','Nom complet du jeu','Prix demandé ($)','Notes']
+  ];
+  jeux.forEach(function(j){
+    var n = nombrePrix(j.prix);
+    aoa.push([j.no, j.jeu, isNaN(n)?'':n, j.notes]);
+  });
+  aoa.push([]); aoa.push(['','Total', sommeDe(jeux), '']);
+
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:6},{wch:42},{wch:16},{wch:38}];
+  for(var r=4; r<4+jeux.length; r++){
+    var c = XLSX.utils.encode_cell({r:r, c:2});
+    if(ws[c] && typeof ws[c].v === 'number') ws[c].z = '0.00';
+  }
+  var tc = XLSX.utils.encode_cell({r:aoa.length-1, c:2});
+  if(ws[tc]) ws[tc].z = '0.00';
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Liste');
+  return wb;
+}
+
+/* ====================== couche d'impression ====================== */
+function construireImpression(){
+  var jeux = lignesRemplies();
+  var racine = document.createElement('div');
+  racine.id = 'impression';
+
+  /* --- feuille 1: la liste --- */
+  var f = document.createElement('section');
+  f.className = 'feuille feuille-liste';
+  f.appendChild(txt(document.createElement('h1'), etat.evenement || 'Grand Bazar'));
+  var meta = document.createElement('p');
+  meta.className = 'meta';
+  meta.innerHTML = 'Vendeur <b></b> · ' + jeux.length + ' jeu' + (jeux.length>1?'x':'');
+  meta.querySelector('b').textContent = etat.vendeur || '(sans nom)';
+  f.appendChild(meta);
+
+  var t = document.createElement('table');
+  t.className = 'tab-liste' + (jeux.length>28 ? ' tres-serre' : (jeux.length>20 ? ' serre' : ''));
+  t.innerHTML = '<thead><tr><th class="c-no">N°</th><th>Nom complet du jeu</th>'+
+                '<th class="c-prix">Prix demandé</th><th class="c-notes">Notes</th></tr></thead>';
+  var tb = document.createElement('tbody');
+  jeux.forEach(function(j){
+    var tr = document.createElement('tr');
+    var c1 = document.createElement('td'); c1.className='c-no';    c1.textContent = j.no;
+    var c2 = document.createElement('td');                          c2.textContent = j.jeu;
+    var c3 = document.createElement('td'); c3.className='c-prix';  c3.textContent = prixAffiche(j.prix);
+    var c4 = document.createElement('td'); c4.className='c-notes'; c4.textContent = j.notes;
+    tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3); tr.appendChild(c4);
+    tb.appendChild(tr);
+  });
+  var trT = document.createElement('tr');
+  trT.className = 'r-total';
+  trT.innerHTML = '<td></td><td>Total demandé</td><td class="c-prix"></td><td></td>';
+  trT.querySelector('.c-prix').textContent = argent.format(sommeDe(jeux));
+  tb.appendChild(trT);
+  t.appendChild(tb);
+  f.appendChild(t);
+
+  var sig = document.createElement('p');
+  sig.className = 'signature';
+  sig.textContent = 'Signature du vendeur: ______________________________     Date: ______________';
+  f.appendChild(sig);
+  racine.appendChild(f);
+
+  /* --- feuilles suivantes: les étiquettes, 10 par page --- */
+  for(var p=0; p*10 < jeux.length; p++){
+    var fb = document.createElement('section');
+    fb.className = 'feuille feuille-billets';
+    var gr = document.createElement('div');
+    gr.className = 'grille-i';
+    for(var k=0; k<10; k++){
+      var j = jeux[p*10+k];
+      if(!j) break;
+      gr.appendChild(billetStatique(j));
+    }
+    fb.appendChild(gr);
+    racine.appendChild(fb);
+  }
+  return racine;
+}
+
+function billetStatique(j){
+  var art = document.createElement('article');
+  art.className = 'billet' + (j.notes ? '' : ' sansnote');
+  art.innerHTML =
+    '<div class="b-tete">'+
+      '<svg class="b-fond" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">'+
+        '<rect x="0" y="0" width="100" height="10" fill="#000"></rect></svg>'+
+      '<span class="b-no"></span><span class="b-evt"></span>'+
+      '<span class="b-no" style="visibility:hidden"></span></div>'+
+    '<div class="b-champ b-nom"><span class="b-lab">NOM:</span><span class="b-val b-souligne"></span></div>'+
+    '<div class="b-champ b-jeu"><span class="b-lab">JEU:</span><span class="b-val b-souligne"></span></div>'+
+    '<div class="b-champ b-prix"><span class="b-lab">PRIX:</span><span class="b-val b-souligne"></span></div>'+
+    (j.notes ? '<div class="b-champ b-note"><span class="b-lab">NOTE:</span><span class="b-val"></span></div>' : '');
+  var nos = art.querySelectorAll('.b-no');
+  nos[0].textContent = 'N° ' + j.no;
+  nos[1].textContent = 'N° ' + j.no;
+  art.querySelector('.b-evt').textContent = etat.evenement || '';
+  art.querySelector('.b-nom .b-val').textContent  = etat.vendeur || '';
+  art.querySelector('.b-jeu .b-val').textContent  = j.jeu;
+  art.querySelector('.b-prix .b-val').textContent = prixAffiche(j.prix);
+  if(j.notes) art.querySelector('.b-note .b-val').textContent = j.notes;
+  return art;
+}
+
+/* ====================== actions ====================== */
+$('exp-pdf').addEventListener('click', function(){
+  if(!jsPDFdispo()){ avis("La librairie PDF ne s'est pas chargée. Reconnecte-toi et recharge la page, ou utilise Imprimer.", 0); return; }
+  construirePdf().save(nomFichier('pdf'));
+});
+
+$('exp-xlsx').addEventListener('click', function(){
+  if(!xlsxDispo()){ avis("La librairie XLSX ne s'est pas chargée. Reconnecte-toi et recharge la page.", 0); return; }
+  XLSX.writeFile(construireClasseur(), nomFichier('xlsx'));
+});
+
+$('imprimer').addEventListener('click', function(){
+  var vieux = $('impression');
+  if(vieux) vieux.remove();
+  document.body.appendChild(construireImpression());
+  setTimeout(function(){ window.print(); }, 60);
+});
+window.addEventListener('afterprint', function(){
+  var z = $('impression');
+  if(z) z.remove();
+});
+
+$('ajouter').addEventListener('click', function(){
+  etat.lignes.push({jeu:"",prix:"",notes:""});
+  refs.push({table:{},billet:{}});
+  tout(); sauver();
+});
+$('vider').addEventListener('click', function(){
+  if(!confirm("Effacer toutes les lignes et le nom? Cette action est définitive.")) return;
+  etat.lignes = [];
+  for(var i=0;i<LIGNES_DEPART;i++) etat.lignes.push({jeu:"",prix:"",notes:""});
+  etat.vendeur = ""; refs = []; $('vendeur').value = "";
+  tout(); sauver();
+});
+$('vendeur').addEventListener('input', function(){ etat.vendeur = this.value; diffuserVendeur(null); sauver(); });
+$('evenement').addEventListener('input', function(){
+  etat.evenement = this.value;
+  refs.forEach(function(r){ if(r.billet && r.billet.evt) r.billet.evt.textContent = etat.evenement; });
+  sauver();
+});
+
+/* ====================== démarrage ====================== */
+function tout(){ construireTable(); construireBillets(); majEtat(); }
+relire();
+$('vendeur').value = etat.vendeur;
+$('evenement').value = etat.evenement;
+tout();
+window.addEventListener('load', ajuster);
+setTimeout(ajuster, 200);
+window.addEventListener('load', function(){
+  if(!jsPDFdispo() || !xlsxDispo())
+    avis("Export PDF ou XLSX indisponible hors ligne: ouvre la page une fois avec une connexion. Le bouton Imprimer, lui, fonctionne toujours.", 0);
+});
+})();
+</script>
+</body>
+</html>
