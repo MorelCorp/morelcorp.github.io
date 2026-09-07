@@ -319,6 +319,18 @@ show_title: true
     version="1.0.0"
   %}
 
+  {% include microapp_card.html
+    title="Étiquettes pour bazar de jeux"
+    url="/resources/tools/bazar-ludique.html"
+    screenshot="/images/microapps/bazar-ludique.jpg"
+    category="Facilitation"
+    description="Remplissez la liste des jeux à vendre et obtenez automatiquement les étiquettes de prix correspondantes, prêtes à imprimer ou à exporter en PDF/XLSX."
+    type="PWA"
+    local_memory="true"
+    upgradeable="false"
+    version="1.0.0"
+  %}
+
 </div>
 
 <div class="microapp-philosophy">

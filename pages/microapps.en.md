@@ -319,6 +319,18 @@ show_title: true
     version="1.0.0"
   %}
 
+  {% include microapp_card.html
+    title="Board Game Bazaar Tickets"
+    url="/resources/tools/bazar-ludique.html"
+    screenshot="/images/microapps/bazar-ludique.jpg"
+    category="Facilitation"
+    description="Fill in a seller's list of board games for sale and get matching price tags generated automatically, ready to print or export as PDF/XLSX."
+    type="PWA"
+    local_memory="true"
+    upgradeable="false"
+    version="1.0.0"
+  %}
+
 </div>
 
 <div class="microapp-philosophy">
