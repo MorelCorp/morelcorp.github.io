@@ -200,6 +200,18 @@ show_title: true
 <div class="microapps-grid">
 
   {% include microapp_card.html
+    title="ChromaCam"
+    url="/resources/tools/chromacam/chromacam.html"
+    screenshot="/images/microapps/chromacam.jpg"
+    category="Productivity"
+    description="Pointez la caméra sur n'importe quoi et touchez l'écran : une cible montre la zone analysée et la couleur revient en RGB, HEX et HSL, nommée de façon exacte et courante, en français et en anglais."
+    type="PWA"
+    local_memory="true"
+    upgradeable="true"
+    version="1.0.0"
+  %}
+
+  {% include microapp_card.html
     title="1-2-4-All Session Manager"
     url="/resources/tools/124all-session-manager.html"
     screenshot="/images/microapps/124all.jpg"
