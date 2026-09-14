@@ -1,0 +1,17 @@
+{
+  "name": "ChromaCam — camera colour picker",
+  "short_name": "ChromaCam",
+  "description": "Point your camera at anything, touch the screen, and read the colour back as RGB, HEX and HSL with its exact and everyday names in English and French.",
+  "start_url": "./chromacam.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0F14",
+  "theme_color": "#0B0F14",
+  "categories": ["utilities", "photo", "productivity"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
